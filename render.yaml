@@ -1,0 +1,73 @@
+services:
+  # PostgreSQL Database
+  - type: pserv
+    name: aimak-postgres
+    plan: free
+    databaseName: aimak_db
+    databaseUser: aimak_user
+    ipAllowList: []
+
+  # Redis Instance
+  - type: redis
+    name: aimak-redis
+    plan: free
+    ipAllowList: []
+
+  # Backend API Service
+  - type: web
+    name: aimak-api
+    runtime: node
+    plan: free
+    buildCommand: cd apps/api && pnpm install && pnpm prisma generate && pnpm build
+    startCommand: cd apps/api && pnpm prisma migrate deploy && pnpm start:prod
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 4000
+      - key: DATABASE_URL
+        fromDatabase:
+          name: aimak-postgres
+          property: connectionString
+      - key: REDIS_HOST
+        fromService:
+          name: aimak-redis
+          type: redis
+          property: host
+      - key: REDIS_PORT
+        fromService:
+          name: aimak-redis
+          type: redis
+          property: port
+      - key: JWT_SECRET
+        generateValue: true
+        sync: false
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: FRONTEND_URL
+        fromService:
+          name: aimak-web
+          type: web
+          property: host
+
+  # Frontend Web Service
+  - type: web
+    name: aimak-web
+    runtime: node
+    plan: free
+    buildCommand: cd apps/web && pnpm install && pnpm build
+    startCommand: cd apps/web && pnpm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_PUBLIC_API_URL
+        fromService:
+          name: aimak-api
+          type: web
+          property: host
+          envVarKey: API_URL
+      - key: NEXT_PUBLIC_APP_NAME
+        value: Aimak Akshamy
+      - key: NEXT_PUBLIC_APP_DESCRIPTION
+        value: City Newspaper
