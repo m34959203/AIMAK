@@ -1,7 +1,7 @@
 # ==========================================
 # Render.com Deployment Configuration
 # Project: Aimak Akshamy - City Newspaper Platform
-# Version: 1.0.1
+# Version: 1.0.2
 # ==========================================
 
 services:
@@ -12,7 +12,7 @@ services:
     name: aimak-postgres
     plan: free
     region: frankfurt
-    ipAllowList: []
+    # ipAllowList НЕ поддерживается для pserv на free плане
 
   # ==========================================
   # CACHE: Redis 7
@@ -20,6 +20,9 @@ services:
   - type: redis
     name: aimak-redis
     plan: free
+    region: frankfurt
+    # Для Redis ipAllowList ОБЯЗАТЕЛЕН (пустой массив = доступ только от Render)
+    ipAllowList: []
     maxmemoryPolicy: allkeys-lru
 
   # ==========================================
@@ -31,11 +34,9 @@ services:
     plan: free
     region: frankfurt
     
-    # Root Directory (если API в подпапке)
-    rootDir: apps/api
-    
     # Build Command
     buildCommand: |
+      cd apps/api && 
       corepack enable pnpm && 
       pnpm install --frozen-lockfile && 
       pnpm prisma generate && 
@@ -43,6 +44,7 @@ services:
     
     # Start Command
     startCommand: |
+      cd apps/api && 
       pnpm prisma migrate deploy && 
       pnpm start:prod
     
@@ -242,17 +244,15 @@ services:
     plan: free
     region: frankfurt
     
-    # Root Directory
-    rootDir: apps/web
-    
     # Build Command
     buildCommand: |
+      cd apps/web && 
       corepack enable pnpm && 
       pnpm install --frozen-lockfile && 
       pnpm build
     
     # Start Command
-    startCommand: pnpm start
+    startCommand: cd apps/web && pnpm start
     
     # Health Check
     healthCheckPath: /
