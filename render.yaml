@@ -1,17 +1,22 @@
 # ==========================================
-# Render.com Deployment Configuration
+# Render.com Blueprint Configuration
 # Project: Aimak Akshamy - City Newspaper Platform
-# Version: 1.0.4 - FIXED
+# Version: 2.0.0 - CORRECT STRUCTURE
 # ==========================================
 
-services:
-  # ==========================================
-  # DATABASE: PostgreSQL 15
-  # ==========================================
-  - type: pserv
-    name: aimak-postgres
+# ==========================================
+# DATABASES (PostgreSQL, не в services!)
+# ==========================================
+databases:
+  - name: aimak-postgres
+    databaseName: aimak_db
+    user: aimak_user
     plan: free
 
+# ==========================================
+# SERVICES (Web, Redis, Workers, etc.)
+# ==========================================
+services:
   # ==========================================
   # CACHE: Redis 7
   # ==========================================
@@ -44,6 +49,7 @@ services:
       - key: PORT
         value: 4000
       
+      # Database connection from databases section
       - key: DATABASE_URL
         fromDatabase:
           name: aimak-postgres
