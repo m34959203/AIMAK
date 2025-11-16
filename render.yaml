@@ -20,8 +20,6 @@ services:
   - type: redis
     name: aimak-redis
     plan: free
-    region: frankfurt
-    ipAllowList: []
     maxmemoryPolicy: allkeys-lru
 
   # ==========================================
