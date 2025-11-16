@@ -11,8 +11,6 @@ services:
     plan: free
     databaseName: aimak_db
     databaseUser: aimak_user
-    ipAllowList: []
-    # Регион (выберите ближайший к Казахстану)
     region: frankfurt
 
   # ==========================================
@@ -21,7 +19,6 @@ services:
   - type: redis
     name: aimak-redis
     plan: free
-    ipAllowList: []
     maxmemoryPolicy: allkeys-lru
     region: frankfurt
 
