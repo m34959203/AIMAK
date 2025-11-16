@@ -1,11 +1,14 @@
 'use client';
 
 import Link from 'next/link';
+import { useState } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import { getInitials } from '@/lib/utils';
+import { SearchBar } from './search-bar';
 
 export function Header() {
   const { user, isAuthenticated, logout } = useAuth();
+  const [showSearch, setShowSearch] = useState(false);
 
   return (
     <header className="border-b">
@@ -28,6 +31,27 @@ export function Header() {
             <Link href="/about" className="hover:text-gray-600">
               О нас
             </Link>
+
+            <button
+              onClick={() => setShowSearch(!showSearch)}
+              className="hover:text-gray-600"
+              title="Поиск"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={2}
+                stroke="currentColor"
+                className="w-5 h-5"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
+                />
+              </svg>
+            </button>
 
             {isAuthenticated && user ? (
               <>
@@ -60,6 +84,12 @@ export function Header() {
             )}
           </div>
         </nav>
+
+        {showSearch && (
+          <div className="mt-4">
+            <SearchBar />
+          </div>
+        )}
       </div>
     </header>
   );
