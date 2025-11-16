@@ -1,6 +1,8 @@
+# ==========================================
 # Render.com Deployment Configuration
 # Project: Aimak Akshamy - City Newspaper Platform
-# Version: 1.0.0
+# Version: 1.0.1
+# ==========================================
 
 services:
   # ==========================================
@@ -9,11 +11,8 @@ services:
   - type: pserv
     name: aimak-postgres
     plan: free
-    databaseName: aimak_db
-    databaseUser: aimak_user
-    ipAllowList: []
-    # Регион (выберите ближайший к Казахстану)
     region: frankfurt
+    ipAllowList: []
 
   # ==========================================
   # CACHE: Redis 7
@@ -21,9 +20,9 @@ services:
   - type: redis
     name: aimak-redis
     plan: free
+    region: frankfurt
     ipAllowList: []
     maxmemoryPolicy: allkeys-lru
-    region: frankfurt
 
   # ==========================================
   # BACKEND: NestJS API
@@ -33,129 +32,208 @@ services:
     runtime: node
     plan: free
     region: frankfurt
-
-    # Build настройки
+    
+    # Root Directory (если API в подпапке)
+    rootDir: apps/api
+    
+    # Build Command
     buildCommand: |
-      cd apps/api &&
-      corepack enable &&
-      pnpm install --frozen-lockfile &&
-      pnpm prisma generate &&
+      corepack enable pnpm && 
+      pnpm install --frozen-lockfile && 
+      pnpm prisma generate && 
       pnpm build
-
-    # Start настройки
+    
+    # Start Command
     startCommand: |
-      cd apps/api &&
-      pnpm prisma migrate deploy &&
+      pnpm prisma migrate deploy && 
       pnpm start:prod
-
-    # Health check
+    
+    # Health Check
     healthCheckPath: /api/health
-
-    # Auto-deploy настройки
+    
+    # Auto-deploy
     autoDeploy: true
-
+    
     # Environment Variables
     envVars:
-      # Node Environment
+      # ==========================================
+      # Node Configuration
+      # ==========================================
       - key: NODE_ENV
         value: production
-
+      
       - key: PORT
         value: 4000
-
+      
+      # ==========================================
       # Database Connection
+      # ==========================================
       - key: DATABASE_URL
         fromDatabase:
           name: aimak-postgres
           property: connectionString
-
+      
+      # ==========================================
       # Redis Connection
+      # ==========================================
       - key: REDIS_URL
         fromService:
           name: aimak-redis
           type: redis
           property: connectionString
-
+      
       - key: REDIS_HOST
         fromService:
           name: aimak-redis
           type: redis
           property: host
-
+      
       - key: REDIS_PORT
         fromService:
           name: aimak-redis
           type: redis
           property: port
-
-      # JWT Configuration
+      
+      # ==========================================
+      # JWT Authentication
+      # ==========================================
       - key: JWT_SECRET
         generateValue: true
-        sync: false
-
+      
       - key: JWT_EXPIRES_IN
         value: 15m
-
+      
       - key: JWT_REFRESH_SECRET
         generateValue: true
-        sync: false
-
+      
       - key: JWT_REFRESH_EXPIRES_IN
         value: 7d
-
+      
+      # ==========================================
       # CORS Configuration
+      # ==========================================
+      - key: CORS_ORIGIN
+        fromService:
+          name: aimak-web
+          type: web
+          property: host
+      
       - key: FRONTEND_URL
         fromService:
           name: aimak-web
           type: web
           property: host
-
-      # AI API Keys (добавить вручную в Render Dashboard)
+      
+      # ==========================================
+      # AI Services (Set manually in Dashboard)
+      # ==========================================
       - key: GEMINI_API_KEY
         sync: false
-
+      
       - key: OPENAI_API_KEY
         sync: false
-
-      # File Storage (MinIO/S3 - добавить позже)
+      
+      - key: AI_MODEL_PRIMARY
+        value: gemini-pro-1.5
+      
+      - key: AI_MODEL_FALLBACK
+        value: gpt-4-turbo-preview
+      
+      # ==========================================
+      # File Storage (S3/MinIO)
+      # ==========================================
       - key: S3_ENDPOINT
         sync: false
-
+      
       - key: S3_ACCESS_KEY
         sync: false
-
+      
       - key: S3_SECRET_KEY
         sync: false
-
+      
       - key: S3_BUCKET
         value: aimak-media
-
+      
+      - key: S3_REGION
+        value: eu-central-1
+      
+      # ==========================================
       # External Services
+      # ==========================================
       - key: KASPI_API_KEY
         sync: false
-
+      
+      - key: KASPI_API_URL
+        value: https://api.kaspi.kz/v1
+      
       - key: EGOV_CLIENT_ID
         sync: false
-
-      # Email Service (SendGrid/AWS SES)
+      
+      - key: EGOV_CLIENT_SECRET
+        sync: false
+      
+      - key: EGOV_API_URL
+        value: https://egov.kz/services/P30.11/rest
+      
+      # ==========================================
+      # Email Service
+      # ==========================================
       - key: SMTP_HOST
         sync: false
-
+      
       - key: SMTP_PORT
         value: 587
-
+      
       - key: SMTP_USER
         sync: false
-
+      
       - key: SMTP_PASSWORD
         sync: false
-
+      
+      - key: EMAIL_FROM
+        value: noreply@aimak.kz
+      
+      - key: EMAIL_FROM_NAME
+        value: Аймақ ақшамы
+      
+      # ==========================================
       # Analytics
+      # ==========================================
       - key: GA_MEASUREMENT_ID
         sync: false
-
+      
       - key: YANDEX_METRIKA_ID
         sync: false
+      
+      # ==========================================
+      # Search Engine
+      # ==========================================
+      - key: ELASTICSEARCH_URL
+        sync: false
+      
+      - key: MEILISEARCH_HOST
+        sync: false
+      
+      - key: MEILISEARCH_API_KEY
+        sync: false
+      
+      # ==========================================
+      # Application Settings
+      # ==========================================
+      - key: APP_NAME
+        value: Aimak Akshamy
+      
+      - key: APP_URL
+        fromService:
+          name: aimak-api
+          type: web
+          property: host
+      
+      - key: RATE_LIMIT_PUBLIC
+        value: 100
+      
+      - key: RATE_LIMIT_AUTHENTICATED
+        value: 1000
 
   # ==========================================
   # FRONTEND: Next.js 14
@@ -165,103 +243,216 @@ services:
     runtime: node
     plan: free
     region: frankfurt
-
+    
+    # Root Directory
+    rootDir: apps/web
+    
     # Build Command
     buildCommand: |
-      cd apps/web &&
-      corepack enable &&
-      pnpm install --frozen-lockfile &&
+      corepack enable pnpm && 
+      pnpm install --frozen-lockfile && 
       pnpm build
-
+    
     # Start Command
-    startCommand: cd apps/web && pnpm start
-
-    # Health check
+    startCommand: pnpm start
+    
+    # Health Check
     healthCheckPath: /
-
+    
     # Auto-deploy
     autoDeploy: true
-
+    
     # Environment Variables
     envVars:
-      # Node Environment
+      # ==========================================
+      # Node Configuration
+      # ==========================================
       - key: NODE_ENV
         value: production
-
+      
       - key: PORT
         value: 3000
-
+      
+      # ==========================================
       # API Connection
+      # ==========================================
       - key: NEXT_PUBLIC_API_URL
         fromService:
           name: aimak-api
           type: web
           property: host
-
+      
       - key: API_URL
         fromService:
           name: aimak-api
           type: web
           property: host
-
-      # App Configuration
+      
+      # ==========================================
+      # Application Information
+      # ==========================================
       - key: NEXT_PUBLIC_APP_NAME
         value: Аймақ ақшамы
-
+      
       - key: NEXT_PUBLIC_APP_NAME_EN
         value: Aimak Akshamy
-
+      
       - key: NEXT_PUBLIC_APP_DESCRIPTION
         value: Қалалық газет - City Newspaper
-
+      
+      - key: NEXT_PUBLIC_APP_KEYWORDS
+        value: газета, жаңалықтар, қазақстан, новости, новости казахстана
+      
+      # ==========================================
+      # Localization
+      # ==========================================
       - key: NEXT_PUBLIC_DEFAULT_LANGUAGE
         value: kz
-
+      
       - key: NEXT_PUBLIC_SUPPORTED_LANGUAGES
         value: kz,ru
-
+      
+      - key: NEXT_PUBLIC_DEFAULT_LOCALE
+        value: kk-KZ
+      
+      # ==========================================
       # SEO Configuration
+      # ==========================================
       - key: NEXT_PUBLIC_SITE_URL
         fromService:
           name: aimak-web
           type: web
           property: host
-
+      
       - key: NEXT_PUBLIC_SITE_NAME
         value: aimak.kz
-
-      # Analytics (Public)
+      
+      - key: NEXT_PUBLIC_SITE_TITLE
+        value: Аймақ ақшамы - Қалалық газет
+      
+      - key: NEXT_PUBLIC_OG_IMAGE
+        value: /images/og-image.jpg
+      
+      # ==========================================
+      # Analytics & Tracking
+      # ==========================================
       - key: NEXT_PUBLIC_GA_ID
         sync: false
-
+      
       - key: NEXT_PUBLIC_YANDEX_METRIKA_ID
         sync: false
-
-      # CDN Configuration
+      
+      - key: NEXT_PUBLIC_FACEBOOK_PIXEL_ID
+        sync: false
+      
+      - key: NEXT_PUBLIC_HOTJAR_ID
+        sync: false
+      
+      # ==========================================
+      # CDN & Media
+      # ==========================================
       - key: NEXT_PUBLIC_CDN_URL
         sync: false
-
+      
+      - key: NEXT_PUBLIC_MEDIA_URL
+        sync: false
+      
+      - key: NEXT_PUBLIC_IMAGE_DOMAINS
+        value: aimak.kz,cdn.aimak.kz,storage.googleapis.com
+      
+      # ==========================================
       # Feature Flags
+      # ==========================================
       - key: NEXT_PUBLIC_ENABLE_COMMENTS
         value: true
-
+      
       - key: NEXT_PUBLIC_ENABLE_DARK_MODE
         value: true
-
+      
       - key: NEXT_PUBLIC_ENABLE_PWA
         value: true
+      
+      - key: NEXT_PUBLIC_ENABLE_OFFLINE
+        value: true
+      
+      - key: NEXT_PUBLIC_ENABLE_PUSH_NOTIFICATIONS
+        value: true
+      
+      - key: NEXT_PUBLIC_ENABLE_ADS
+        value: true
+      
+      # ==========================================
+      # Ad Services
+      # ==========================================
+      - key: NEXT_PUBLIC_GOOGLE_ADSENSE_ID
+        sync: false
+      
+      - key: NEXT_PUBLIC_YANDEX_DIRECT_ID
+        sync: false
+      
+      # ==========================================
+      # Social Media
+      # ==========================================
+      - key: NEXT_PUBLIC_FACEBOOK_APP_ID
+        sync: false
+      
+      - key: NEXT_PUBLIC_VK_APP_ID
+        sync: false
+      
+      - key: NEXT_PUBLIC_TELEGRAM_BOT_NAME
+        value: aimak_bot
+      
+      # ==========================================
+      # Performance
+      # ==========================================
+      - key: NEXT_PUBLIC_ENABLE_ANALYTICS
+        value: true
+      
+      - key: NEXT_PUBLIC_IMAGE_OPTIMIZATION
+        value: true
+      
+      - key: NEXT_PUBLIC_LAZY_LOAD_IMAGES
+        value: true
+      
+      # ==========================================
+      # Security
+      # ==========================================
+      - key: NEXT_PUBLIC_RECAPTCHA_SITE_KEY
+        sync: false
+      
+      - key: RECAPTCHA_SECRET_KEY
+        sync: false
 
 # ==========================================
-# НАСТРОЙКИ МОНИТОРИНГА
+# DEPLOYMENT NOTES
 # ==========================================
-# Добавьте в Render Dashboard:
-# - Notifications: Email/Slack alerts
-# - Health checks: Enabled
-# - Auto-scaling: Disabled (free plan)
-# - Logs retention: 7 days (free plan)
-
+# 
+# После деплоя выполните:
+# 
+# 1. Добавьте секретные ключи в Render Dashboard:
+#    - GEMINI_API_KEY
+#    - OPENAI_API_KEY
+#    - SMTP_PASSWORD
+#    - KASPI_API_KEY
+#    - EGOV_CLIENT_SECRET
+#    - S3_ACCESS_KEY
+#    - S3_SECRET_KEY
+#    - NEXT_PUBLIC_GA_ID
+#    - NEXT_PUBLIC_YANDEX_METRIKA_ID
+#    - NEXT_PUBLIC_RECAPTCHA_SITE_KEY
+#    - RECAPTCHA_SECRET_KEY
+# 
+# 2. Настройте Custom Domains:
+#    Frontend: aimak.kz, www.aimak.kz
+#    API: api.aimak.kz
+# 
+# 3. Включите мониторинг:
+#    - Health checks: Enabled
+#    - Notifications: Email/Slack
+#    - Log retention: 7 days
+# 
+# 4. Настройте SSL сертификаты (автоматически через Render)
+# 
+# 5. Проверьте переменные окружения в Render Dashboard
+# 
 # ==========================================
-# CUSTOM DOMAINS (добавить позже)
-# ==========================================
-# Frontend: aimak.kz, www.aimak.kz
-# API: api.aimak.kz
