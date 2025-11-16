@@ -3,15 +3,15 @@
 import { useArticles } from '@/hooks/use-articles';
 import { ArticleCard } from '@/components/article-card';
 
-export default function Home() {
+export default function ArticlesPage() {
   const { data: articles, isLoading, error } = useArticles(true);
 
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
-        <h1 className="text-4xl font-bold mb-4">Добро пожаловать в Aimak Akshamy</h1>
-        <p className="text-lg text-gray-600">
-          Городская газета - актуальные новости и события
+        <h1 className="text-4xl font-bold mb-4">Все статьи</h1>
+        <p className="text-gray-600">
+          Читайте последние новости и публикации
         </p>
       </div>
 
@@ -41,5 +41,5 @@ export default function Home() {
         </div>
       )}
     </div>
-  )
+  );
 }
