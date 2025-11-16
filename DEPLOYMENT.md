@@ -90,7 +90,7 @@ Render создаст следующие сервисы:
    - Root Directory: оставьте пустым
    - Build Command:
      ```bash
-     cd apps/api && pnpm install && pnpm prisma generate && pnpm build
+     cd apps/api && corepack enable && pnpm install --frozen-lockfile && pnpm prisma generate && pnpm build
      ```
    - Start Command:
      ```bash
@@ -98,17 +98,22 @@ Render создаст следующие сервисы:
      ```
    - Plan: **Free**
 
-3. **Environment Variables** (добавьте следующие):
+3. **Environment Variables** (добавьте основные):
    ```
    NODE_ENV=production
    PORT=4000
    DATABASE_URL=<Internal Database URL из шага 1>
+   REDIS_URL=<Internal Redis URL из шага 2>
    REDIS_HOST=<Redis Host из шага 2>
    REDIS_PORT=<Redis Port из шага 2>
    JWT_SECRET=<сгенерируйте случайную строку минимум 32 символа>
-   JWT_EXPIRES_IN=7d
+   JWT_EXPIRES_IN=15m
+   JWT_REFRESH_SECRET=<сгенерируйте другую случайную строку минимум 32 символа>
+   JWT_REFRESH_EXPIRES_IN=7d
    FRONTEND_URL=https://<будет известен после деплоя frontend>
    ```
+
+   Опциональные переменные добавьте по мере необходимости (см. раздел "Настройка переменных окружения")
 
 4. **Advanced** → Health Check Path: `/api/health`
 5. Нажмите **Create Web Service**
@@ -125,7 +130,7 @@ Render создаст следующие сервисы:
    - Root Directory: оставьте пустым
    - Build Command:
      ```bash
-     cd apps/web && pnpm install && pnpm build
+     cd apps/web && corepack enable && pnpm install --frozen-lockfile && pnpm build
      ```
    - Start Command:
      ```bash
@@ -133,13 +138,25 @@ Render создаст следующие сервисы:
      ```
    - Plan: **Free**
 
-3. **Environment Variables**:
+3. **Environment Variables** (основные):
    ```
    NODE_ENV=production
+   PORT=3000
    NEXT_PUBLIC_API_URL=https://<URL вашего aimak-api сервиса>
-   NEXT_PUBLIC_APP_NAME=Aimak Akshamy
-   NEXT_PUBLIC_APP_DESCRIPTION=City Newspaper
+   API_URL=https://<URL вашего aimak-api сервиса>
+   NEXT_PUBLIC_APP_NAME=Аймақ ақшамы
+   NEXT_PUBLIC_APP_NAME_EN=Aimak Akshamy
+   NEXT_PUBLIC_APP_DESCRIPTION=Қалалық газет - City Newspaper
+   NEXT_PUBLIC_DEFAULT_LANGUAGE=kz
+   NEXT_PUBLIC_SUPPORTED_LANGUAGES=kz,ru
+   NEXT_PUBLIC_SITE_URL=https://<URL вашего aimak-web сервиса>
+   NEXT_PUBLIC_SITE_NAME=aimak.kz
+   NEXT_PUBLIC_ENABLE_COMMENTS=true
+   NEXT_PUBLIC_ENABLE_DARK_MODE=true
+   NEXT_PUBLIC_ENABLE_PWA=true
    ```
+
+   Опциональные переменные для аналитики и CDN добавьте позже (см. раздел "Настройка переменных окружения")
 
 4. Нажмите **Create Web Service**
 
@@ -156,25 +173,79 @@ Render создаст следующие сервисы:
 
 ### Backend API (aimak-api)
 
-| Переменная | Значение | Обязательная |
-|------------|----------|--------------|
-| `NODE_ENV` | `production` | ✅ |
-| `PORT` | `4000` | ✅ |
-| `DATABASE_URL` | Internal Database URL | ✅ |
-| `REDIS_HOST` | Redis Internal Host | ✅ |
-| `REDIS_PORT` | Redis Internal Port | ✅ |
-| `JWT_SECRET` | Случайная строка (32+ символов) | ✅ |
-| `JWT_EXPIRES_IN` | `7d` | ✅ |
-| `FRONTEND_URL` | URL фронтенда | ✅ |
+#### Основные переменные (обязательные)
+
+| Переменная | Значение | Описание |
+|------------|----------|----------|
+| `NODE_ENV` | `production` | Режим работы |
+| `PORT` | `4000` | Порт API |
+| `DATABASE_URL` | Internal Database URL | Подключение к PostgreSQL |
+| `REDIS_URL` | Internal Redis URL | Полный URL Redis |
+| `REDIS_HOST` | Redis Internal Host | Хост Redis |
+| `REDIS_PORT` | Redis Internal Port | Порт Redis |
+| `JWT_SECRET` | Случайная строка (32+ символов) | Секрет для access токенов |
+| `JWT_EXPIRES_IN` | `15m` | Время жизни access токена |
+| `JWT_REFRESH_SECRET` | Случайная строка (32+ символов) | Секрет для refresh токенов |
+| `JWT_REFRESH_EXPIRES_IN` | `7d` | Время жизни refresh токена |
+| `FRONTEND_URL` | URL фронтенда | Для CORS настройки |
+
+#### Дополнительные переменные (опциональные)
+
+| Переменная | Описание | Когда нужна |
+|------------|----------|-------------|
+| `GEMINI_API_KEY` | API ключ Google Gemini | Для AI функций |
+| `OPENAI_API_KEY` | API ключ OpenAI | Для AI функций |
+| `S3_ENDPOINT` | S3-совместимое хранилище | Для загрузки файлов |
+| `S3_ACCESS_KEY` | S3 access key | Для загрузки файлов |
+| `S3_SECRET_KEY` | S3 secret key | Для загрузки файлов |
+| `S3_BUCKET` | `aimak-media` | Имя S3 bucket |
+| `KASPI_API_KEY` | Kaspi.kz API ключ | Для платежей |
+| `EGOV_CLIENT_ID` | eGov.kz client ID | Для интеграции с eGov |
+| `SMTP_HOST` | SMTP сервер | Для отправки email |
+| `SMTP_PORT` | `587` | SMTP порт |
+| `SMTP_USER` | SMTP пользователь | Для отправки email |
+| `SMTP_PASSWORD` | SMTP пароль | Для отправки email |
+| `GA_MEASUREMENT_ID` | Google Analytics ID | Для аналитики |
+| `YANDEX_METRIKA_ID` | Яндекс.Метрика ID | Для аналитики |
 
 ### Frontend (aimak-web)
 
-| Переменная | Значение | Обязательная |
+#### Основные переменные (обязательные)
+
+| Переменная | Значение | Описание |
+|------------|----------|----------|
+| `NODE_ENV` | `production` | Режим работы |
+| `PORT` | `3000` | Порт frontend |
+| `NEXT_PUBLIC_API_URL` | URL API (с https://) | URL бэкенда |
+| `API_URL` | URL API (с https://) | Внутренний URL бэкенда |
+
+#### Локализация
+
+| Переменная | Значение | Описание |
+|------------|----------|----------|
+| `NEXT_PUBLIC_APP_NAME` | `Аймақ ақшамы` | Название на казахском |
+| `NEXT_PUBLIC_APP_NAME_EN` | `Aimak Akshamy` | Название на английском |
+| `NEXT_PUBLIC_APP_DESCRIPTION` | `Қалалық газет - City Newspaper` | Описание |
+| `NEXT_PUBLIC_DEFAULT_LANGUAGE` | `kz` | Язык по умолчанию |
+| `NEXT_PUBLIC_SUPPORTED_LANGUAGES` | `kz,ru` | Поддерживаемые языки |
+
+#### SEO и аналитика
+
+| Переменная | Описание | Обязательная |
 |------------|----------|--------------|
-| `NODE_ENV` | `production` | ✅ |
-| `NEXT_PUBLIC_API_URL` | URL API (с /api) | ✅ |
-| `NEXT_PUBLIC_APP_NAME` | `Aimak Akshamy` | ❌ |
-| `NEXT_PUBLIC_APP_DESCRIPTION` | `City Newspaper` | ❌ |
+| `NEXT_PUBLIC_SITE_URL` | URL сайта | ✅ |
+| `NEXT_PUBLIC_SITE_NAME` | `aimak.kz` | ❌ |
+| `NEXT_PUBLIC_GA_ID` | Google Analytics ID | ❌ |
+| `NEXT_PUBLIC_YANDEX_METRIKA_ID` | Яндекс.Метрика ID | ❌ |
+| `NEXT_PUBLIC_CDN_URL` | CDN URL для медиа | ❌ |
+
+#### Feature Flags
+
+| Переменная | Значение | Описание |
+|------------|----------|----------|
+| `NEXT_PUBLIC_ENABLE_COMMENTS` | `true` | Включить комментарии |
+| `NEXT_PUBLIC_ENABLE_DARK_MODE` | `true` | Включить темную тему |
+| `NEXT_PUBLIC_ENABLE_PWA` | `true` | Включить PWA |
 
 ---
 
