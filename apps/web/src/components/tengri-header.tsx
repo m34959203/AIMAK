@@ -64,7 +64,7 @@ export function TengriHeader({ lang = 'kz' }: HeaderProps) {
         <div className="container mx-auto px-4 py-2">
           <div className="flex items-center justify-between text-sm">
             <div className="flex items-center gap-6 text-gray-600">
-              <span className="font-medium">Қарағанды</span>
+              <span className="font-medium">Сатпаев</span>
               <span>🌤️ +15°C</span>
               <span>USD: 450₸</span>
               <span>EUR: 520₸</span>

@@ -1,6 +1,16 @@
 'use client';
 
 import Link from 'next/link';
+import {
+  FaInstagram,
+  FaTelegram,
+  FaVk,
+  FaFacebook,
+  FaTwitter,
+  FaYoutube,
+  FaTiktok,
+  FaWhatsapp
+} from 'react-icons/fa';
 
 interface FooterProps {
   lang?: 'kz' | 'ru';
@@ -19,9 +29,8 @@ export function TengriFooter({ lang = 'kz' }: FooterProps) {
       editorial: 'Редакция',
       adDepartment: 'Жарнама бөлімі',
       followUs: 'Бізді іздеңіз',
-      mobileApps: 'Мобильді қосымшалар',
       copyright: 'Барлық құқықтар қорғалған',
-      aboutText: '«Аймақ ақшамы» - Қарағанды қаласының қоғамдық-саяси газеті',
+      aboutText: '«Аймақ ақшамы» - Сатпаев қаласының қоғамдық-саяси газеті',
     },
     ru: {
       about: 'О нас',
@@ -34,23 +43,22 @@ export function TengriFooter({ lang = 'kz' }: FooterProps) {
       editorial: 'Редакция',
       adDepartment: 'Рекламный отдел',
       followUs: 'Мы в соцсетях',
-      mobileApps: 'Мобильные приложения',
       copyright: 'Все права защищены',
-      aboutText: '«Аймақ ақшамы» - общественно-политическая газета города Караганды',
+      aboutText: '«Аймақ ақшамы» - общественно-политическая газета города Сатпаев',
     },
   };
 
   const text = t[lang];
 
   const socialLinks = [
-    { name: 'Instagram', icon: '📷', url: 'https://instagram.com/aimakakshamy' },
-    { name: 'Telegram', icon: '✈️', url: 'https://t.me/aimakakshamy' },
-    { name: 'VK', icon: '🔵', url: 'https://vk.com/aimakakshamy' },
-    { name: 'Facebook', icon: '📘', url: 'https://facebook.com/aimakakshamy' },
-    { name: 'Twitter', icon: '🐦', url: 'https://twitter.com/aimakakshamy' },
-    { name: 'YouTube', icon: '▶️', url: 'https://youtube.com/@aimakakshamy' },
-    { name: 'TikTok', icon: '🎵', url: 'https://tiktok.com/@aimakakshamy' },
-    { name: 'WhatsApp', icon: '💬', url: 'https://wa.me/77005000500' },
+    { name: 'Instagram', icon: FaInstagram, url: 'https://instagram.com/aimakakshamy' },
+    { name: 'Telegram', icon: FaTelegram, url: 'https://t.me/aimakakshamy' },
+    { name: 'VK', icon: FaVk, url: 'https://vk.com/aimakakshamy' },
+    { name: 'Facebook', icon: FaFacebook, url: 'https://facebook.com/aimakakshamy' },
+    { name: 'Twitter', icon: FaTwitter, url: 'https://twitter.com/aimakakshamy' },
+    { name: 'YouTube', icon: FaYoutube, url: 'https://youtube.com/@aimakakshamy' },
+    { name: 'TikTok', icon: FaTiktok, url: 'https://tiktok.com/@aimakakshamy' },
+    { name: 'WhatsApp', icon: FaWhatsapp, url: 'https://wa.me/77005000500' },
   ];
 
   const categories = [
@@ -148,43 +156,22 @@ export function TengriFooter({ lang = 'kz' }: FooterProps) {
             <h4 className="font-semibold text-white mb-4 uppercase text-sm">
               {text.followUs}
             </h4>
-            <div className="grid grid-cols-4 gap-2 mb-6">
-              {socialLinks.map((social) => (
-                <a
-                  key={social.name}
-                  href={social.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-10 h-10 bg-gray-800 rounded flex items-center justify-center hover:bg-green-600 transition text-xl"
-                  title={social.name}
-                >
-                  {social.icon}
-                </a>
-              ))}
-            </div>
-
-            <h4 className="font-semibold text-white mb-4 uppercase text-sm">
-              {text.mobileApps}
-            </h4>
-            <div className="space-y-2">
-              <a
-                href="#"
-                className="block bg-gray-800 rounded px-4 py-2 hover:bg-gray-700 transition text-sm"
-              >
-                📱 App Store
-              </a>
-              <a
-                href="#"
-                className="block bg-gray-800 rounded px-4 py-2 hover:bg-gray-700 transition text-sm"
-              >
-                📱 Google Play
-              </a>
-              <a
-                href="#"
-                className="block bg-gray-800 rounded px-4 py-2 hover:bg-gray-700 transition text-sm"
-              >
-                📱 Huawei AppGallery
-              </a>
+            <div className="grid grid-cols-4 gap-2">
+              {socialLinks.map((social) => {
+                const Icon = social.icon;
+                return (
+                  <a
+                    key={social.name}
+                    href={social.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-10 h-10 bg-gray-800 rounded flex items-center justify-center hover:bg-green-600 transition text-xl"
+                    title={social.name}
+                  >
+                    <Icon />
+                  </a>
+                );
+              })}
             </div>
           </div>
         </div>
