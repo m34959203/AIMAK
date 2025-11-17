@@ -19,6 +19,52 @@ async function getCategoryArticles(categorySlug: string) {
   }
 }
 
+// Fallback categories if API is unavailable
+const FALLBACK_CATEGORIES = [
+  {
+    slug: 'zhanalyqtar',
+    nameKz: 'ЖАҢАЛЫҚТАР',
+    nameRu: 'НОВОСТИ',
+    descriptionKz: 'Сатпаев қаласы мен облысының соңғы жаңалықтары',
+    descriptionRu: 'Последние новости города Сатпаев и области',
+  },
+  {
+    slug: 'ozekti',
+    nameKz: 'ӨЗЕКТІ',
+    nameRu: 'АКТУАЛЬНО',
+    descriptionKz: 'Өзекті мәселелер мен маңызды оқиғалар',
+    descriptionRu: 'Актуальные вопросы и важные события',
+  },
+  {
+    slug: 'sayasat',
+    nameKz: 'САЯСАТ',
+    nameRu: 'ПОЛИТИКА',
+    descriptionKz: 'Саяси жаңалықтар және талдаулар',
+    descriptionRu: 'Политические новости и аналитика',
+  },
+  {
+    slug: 'madeniyet',
+    nameKz: 'МӘДЕНИЕТ',
+    nameRu: 'КУЛЬТУРА',
+    descriptionKz: 'Мәдени оқиғалар, өнер және әдебиет',
+    descriptionRu: 'Культурные события, искусство и литература',
+  },
+  {
+    slug: 'qogam',
+    nameKz: 'ҚОҒАМ',
+    nameRu: 'ОБЩЕСТВО',
+    descriptionKz: 'Қоғамдық өмір және әлеуметтік мәселелер',
+    descriptionRu: 'Общественная жизнь и социальные вопросы',
+  },
+  {
+    slug: 'kazakhmys',
+    nameKz: 'KAZAKHMYS NEWS',
+    nameRu: 'KAZAKHMYS NEWS',
+    descriptionKz: 'Қазақмыс корпорациясы жаңалықтары',
+    descriptionRu: 'Новости корпорации Казахмыс',
+  },
+];
+
 async function getCategory(categorySlug: string) {
   try {
     const res = await fetch(
@@ -27,14 +73,16 @@ async function getCategory(categorySlug: string) {
     );
 
     if (!res.ok) {
-      return null;
+      // Use fallback categories if API fails
+      return FALLBACK_CATEGORIES.find((cat) => cat.slug === categorySlug) || null;
     }
 
     const categories = await res.json();
     return categories.find((cat: any) => cat.slug === categorySlug);
   } catch (error) {
     console.error('Failed to fetch category:', error);
-    return null;
+    // Use fallback categories if API fails
+    return FALLBACK_CATEGORIES.find((cat) => cat.slug === categorySlug) || null;
   }
 }
 
