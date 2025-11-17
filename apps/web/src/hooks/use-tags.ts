@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { tagsApi } from '@/lib/api';
+import type { CreateBilingualTagDto } from '@/types';
 
 export function useTags() {
   return useQuery({
@@ -26,7 +27,7 @@ export function useCreateTag() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: { name: string }) => tagsApi.create(data),
+    mutationFn: (data: CreateBilingualTagDto) => tagsApi.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tags'] });
     },
@@ -37,7 +38,7 @@ export function useUpdateTag() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: { name: string } }) =>
+    mutationFn: ({ id, data }: { id: string; data: Partial<CreateBilingualTagDto> }) =>
       tagsApi.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tags'] });
