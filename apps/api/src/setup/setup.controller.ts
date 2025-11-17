@@ -1,0 +1,197 @@
+import { Controller, Post, HttpCode, HttpStatus } from '@nestjs/common';
+import { PrismaService } from '../common/prisma/prisma.service';
+import * as bcrypt from 'bcrypt';
+import { ArticleStatus } from '@prisma/client';
+
+@Controller('setup')
+export class SetupController {
+  constructor(private prisma: PrismaService) {}
+
+  @Post('initialize')
+  @HttpCode(HttpStatus.OK)
+  async initialize() {
+    const results = {
+      categories: 0,
+      admin: false,
+      articles: 0,
+    };
+
+    try {
+      // 1. Create categories
+      const categories = [
+        {
+          slug: 'zhanalyqtar',
+          nameKz: 'ЖАҢАЛЫҚТАР',
+          nameRu: 'НОВОСТИ',
+          descriptionKz: 'Сатпаев қаласы мен облысының соңғы жаңалықтары',
+          descriptionRu: 'Последние новости города Сатпаев и области',
+          sortOrder: 1,
+        },
+        {
+          slug: 'ozekti',
+          nameKz: 'ӨЗЕКТІ',
+          nameRu: 'АКТУАЛЬНО',
+          descriptionKz: 'Өзекті мәселелер мен маңызды оқиғалар',
+          descriptionRu: 'Актуальные вопросы и важные события',
+          sortOrder: 2,
+        },
+        {
+          slug: 'sayasat',
+          nameKz: 'САЯСАТ',
+          nameRu: 'ПОЛИТИКА',
+          descriptionKz: 'Саяси жаңалықтар және талдаулар',
+          descriptionRu: 'Политические новости и аналитика',
+          sortOrder: 3,
+        },
+        {
+          slug: 'madeniyet',
+          nameKz: 'МӘДЕНИЕТ',
+          nameRu: 'КУЛЬТУРА',
+          descriptionKz: 'Мәдени оқиғалар, өнер және әдебиет',
+          descriptionRu: 'Культурные события, искусство и литература',
+          sortOrder: 4,
+        },
+        {
+          slug: 'qogam',
+          nameKz: 'ҚОҒАМ',
+          nameRu: 'ОБЩЕСТВО',
+          descriptionKz: 'Қоғамдық өмір және әлеуметтік мәселелер',
+          descriptionRu: 'Общественная жизнь и социальные вопросы',
+          sortOrder: 5,
+        },
+        {
+          slug: 'kazakhmys',
+          nameKz: 'KAZAKHMYS NEWS',
+          nameRu: 'KAZAKHMYS NEWS',
+          descriptionKz: 'Қазақмыс корпорациясы жаңалықтары',
+          descriptionRu: 'Новости корпорации Казахмыс',
+          sortOrder: 6,
+        },
+      ];
+
+      for (const category of categories) {
+        const existing = await this.prisma.category.findUnique({
+          where: { slug: category.slug },
+        });
+
+        if (!existing) {
+          await this.prisma.category.create({ data: category });
+          results.categories++;
+        }
+      }
+
+      // 2. Create admin user if not exists
+      const adminEmail = 'admin@aimakakshamy.kz';
+      const existingAdmin = await this.prisma.user.findUnique({
+        where: { email: adminEmail },
+      });
+
+      if (!existingAdmin) {
+        const hashedPassword = await bcrypt.hash('admin123', 10);
+        await this.prisma.user.create({
+          data: {
+            email: adminEmail,
+            firstName: 'Админ',
+            lastName: 'Редактор',
+            password: hashedPassword,
+            role: 'ADMIN',
+          },
+        });
+        results.admin = true;
+      }
+
+      // 3. Create sample articles if none exist
+      const existingArticles = await this.prisma.article.count();
+      if (existingArticles === 0) {
+        const firstCategory = await this.prisma.category.findFirst({
+          where: { slug: 'zhanalyqtar' },
+        });
+
+        const admin = await this.prisma.user.findUnique({
+          where: { email: adminEmail },
+        });
+
+        if (firstCategory && admin) {
+          // Create 2 sample articles
+          const sampleArticles = [
+            {
+              titleKz: 'Сатпаев қаласында жаңа мәдениет үйі ашылды',
+              titleRu: 'В городе Сатпаев открылся новый дом культуры',
+              slugKz: 'satpaev-qalasynda-zhana-madeniyet-uii-ashyldy',
+              slugRu: 'v-gorode-satpaev-otkrylsya-novyy-dom-kultury',
+              excerptKz: 'Қала әкімі жаңа мәдениет үйінің ашылу салтанатына қатысты',
+              excerptRu:
+                'Глава города принял участие в торжественном открытии нового дома культуры',
+              contentKz:
+                'Сатпаев қаласында жаңа заманауи мәдениет үйі ашылды. Жаңа ғимарат 500 адамға арналған концерт залы, көрме галереясы және балалар студияларымен жабдықталған.',
+              contentRu:
+                'В городе Сатпаев состоялось торжественное открытие нового современного дома культуры. Новое здание оборудовано концертным залом на 500 человек, выставочной галереей и детскими студиями.',
+              categoryId: firstCategory.id,
+              authorId: admin.id,
+              status: ArticleStatus.PUBLISHED,
+              isFeatured: true,
+            },
+            {
+              titleKz: 'Аймақтағы жол жөндеу жұмыстары басталды',
+              titleRu: 'Начались дорожно-ремонтные работы в регионе',
+              slugKz: 'aimaqtagy-zhol-zhondeu-zhumystary-bastaldy',
+              slugRu: 'nachalis-dorozhno-remontnye-raboty-v-regione',
+              excerptKz: 'Облыс бойынша 50 км жол жөнделетін болады',
+              excerptRu: 'По области будет отремонтировано 50 км дорог',
+              contentKz:
+                'Облыс әкімдігі аймақтағы негізгі көшелер мен жолдарды жөндеу жұмыстарын бастады. Жұмыстар мамыр айынан қыркүйек айына дейін жалғасады.',
+              contentRu:
+                'Областная акиматура начала ремонтные работы основных улиц и дорог в регионе. Работы продлятся с мая по сентябрь.',
+              categoryId: firstCategory.id,
+              authorId: admin.id,
+              status: ArticleStatus.PUBLISHED,
+            },
+          ];
+
+          for (const article of sampleArticles) {
+            await this.prisma.article.create({ data: article });
+            results.articles++;
+          }
+        }
+      }
+
+      return {
+        success: true,
+        message: 'Database initialized successfully',
+        results,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: error.message,
+        results,
+      };
+    }
+  }
+
+  @Post('check')
+  @HttpCode(HttpStatus.OK)
+  async check() {
+    try {
+      const categoriesCount = await this.prisma.category.count();
+      const usersCount = await this.prisma.user.count();
+      const articlesCount = await this.prisma.article.count();
+      const adminExists = await this.prisma.user.findUnique({
+        where: { email: 'admin@aimakakshamy.kz' },
+      });
+
+      return {
+        database: 'connected',
+        categories: categoriesCount,
+        users: usersCount,
+        articles: articlesCount,
+        adminExists: !!adminExists,
+      };
+    } catch (error) {
+      return {
+        database: 'error',
+        error: error.message,
+      };
+    }
+  }
+}
