@@ -9,15 +9,17 @@ export default function AdminTagsPage() {
   const deleteTag = useDeleteTag();
 
   const [showForm, setShowForm] = useState(false);
-  const [name, setName] = useState('');
+  const [nameKz, setNameKz] = useState('');
+  const [nameRu, setNameRu] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     createTag.mutate(
-      { name },
+      { nameKz, nameRu },
       {
         onSuccess: () => {
-          setName('');
+          setNameKz('');
+          setNameRu('');
           setShowForm(false);
         },
       }
@@ -52,7 +54,7 @@ export default function AdminTagsPage() {
 
       {showForm && (
         <div className="bg-white shadow-md rounded-lg p-6 mb-8">
-          <h2 className="text-2xl font-bold mb-4">Новый тег</h2>
+          <h2 className="text-2xl font-bold mb-4">Новый тег (Билингвальный)</h2>
           <form onSubmit={handleSubmit} className="space-y-4">
             {createTag.isError && (
               <div className="p-3 bg-red-100 border border-red-400 text-red-700 rounded">
@@ -60,18 +62,34 @@ export default function AdminTagsPage() {
               </div>
             )}
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Название *
-              </label>
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Название тега"
-                required
-              />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Название (Қазақша) *
+                </label>
+                <input
+                  type="text"
+                  value={nameKz}
+                  onChange={(e) => setNameKz(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Мысалы: Саясат"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Название (Русский) *
+                </label>
+                <input
+                  type="text"
+                  value={nameRu}
+                  onChange={(e) => setNameRu(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Например: Политика"
+                  required
+                />
+              </div>
             </div>
 
             <button
@@ -99,14 +117,17 @@ export default function AdminTagsPage() {
               className="bg-white shadow-md rounded-lg px-4 py-3 border hover:shadow-lg transition-shadow flex items-center gap-3"
             >
               <div>
-                <span className="font-semibold">{tag.name}</span>
+                <div className="flex flex-col">
+                  <span className="font-semibold">{tag.nameKz}</span>
+                  <span className="text-xs text-gray-500">{tag.nameRu}</span>
+                </div>
                 <span className="text-xs text-gray-500 ml-2">
-                  ({(tag as any)._count?.articles || 0})
+                  ({(tag as any)._count?.articles || 0} статей)
                 </span>
               </div>
               <button
                 onClick={() => handleDelete(tag.id)}
-                className="text-red-600 hover:text-red-800 text-sm"
+                className="text-red-600 hover:text-red-800 text-sm font-bold"
               >
                 ×
               </button>
