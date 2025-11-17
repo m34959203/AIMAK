@@ -24,7 +24,12 @@ export default function RegisterPage() {
         <form onSubmit={handleSubmit} className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
           {registerError && (
             <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
-              Ошибка регистрации. Возможно, пользователь с таким email уже существует.
+              <p className="font-bold">Ошибка регистрации:</p>
+              <p className="text-sm mt-1">
+                {(registerError as any)?.response?.data?.message ||
+                 (registerError as any)?.message ||
+                 'Неизвестная ошибка. Проверьте данные и попробуйте еще раз.'}
+              </p>
             </div>
           )}
 
