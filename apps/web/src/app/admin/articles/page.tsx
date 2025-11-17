@@ -72,7 +72,7 @@ export default function AdminArticlesPage() {
                 <tr key={article.id}>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">
-                      {article.title}
+                      {article.titleKz}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -82,7 +82,7 @@ export default function AdminArticlesPage() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-500">
-                      {article.category.name}
+                      {article.category.nameKz}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">

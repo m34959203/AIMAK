@@ -4,16 +4,22 @@ import type { Article } from '@/types';
 
 interface ArticleCardProps {
   article: Article;
+  lang?: 'kz' | 'ru';
 }
 
-export function ArticleCard({ article }: ArticleCardProps) {
+export function ArticleCard({ article, lang = 'kz' }: ArticleCardProps) {
+  const title = lang === 'kz' ? article.titleKz : article.titleRu || article.titleKz;
+  const excerpt = lang === 'kz' ? article.excerptKz : article.excerptRu || article.excerptKz;
+  const slug = lang === 'kz' ? article.slugKz : article.slugRu || article.slugKz;
+  const categoryName = lang === 'kz' ? article.category.nameKz : article.category.nameRu;
+
   return (
     <article className="border rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
       {article.coverImage && (
         <div className="aspect-video bg-gray-200">
           <img
             src={article.coverImage}
-            alt={article.title}
+            alt={title}
             className="w-full h-full object-cover"
           />
         </div>
@@ -21,20 +27,20 @@ export function ArticleCard({ article }: ArticleCardProps) {
       <div className="p-6">
         <div className="flex items-center gap-2 mb-2">
           <span className="text-sm text-gray-500">
-            {article.category.name}
+            {categoryName}
           </span>
           <span className="text-gray-300">•</span>
           <span className="text-sm text-gray-500">
             {formatDate(article.publishedAt || article.createdAt)}
           </span>
         </div>
-        <Link href={`/articles/${article.slug}`}>
+        <Link href={`/${lang}/${article.category.slug}/${slug}`}>
           <h3 className="text-xl font-bold mb-2 hover:text-blue-600">
-            {article.title}
+            {title}
           </h3>
         </Link>
-        {article.excerpt && (
-          <p className="text-gray-600 mb-4">{article.excerpt}</p>
+        {excerpt && (
+          <p className="text-gray-600 mb-4">{excerpt}</p>
         )}
         <div className="flex items-center justify-between">
           <div className="text-sm text-gray-500">
@@ -46,7 +52,7 @@ export function ArticleCard({ article }: ArticleCardProps) {
                 key={tag.id}
                 className="text-xs bg-gray-100 px-2 py-1 rounded"
               >
-                {tag.name}
+                {lang === 'kz' ? tag.nameKz : tag.nameRu}
               </span>
             ))}
           </div>
