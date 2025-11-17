@@ -7,9 +7,18 @@ import { UpdateTagDto } from './dto/update-tag.dto';
 export class TagsService {
   constructor(private prisma: PrismaService) {}
 
+  private generateSlug(name: string): string {
+    return name
+      .toLowerCase()
+      .replace(/[^a-zа-яәіңғүұқөһ0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '');
+  }
+
   async create(dto: CreateTagDto) {
+    const slug = this.generateSlug(dto.name);
+
     const existingTag = await this.prisma.tag.findUnique({
-      where: { name: dto.name },
+      where: { slug },
     });
 
     if (existingTag) {
@@ -18,7 +27,9 @@ export class TagsService {
 
     return this.prisma.tag.create({
       data: {
-        name: dto.name,
+        nameKz: dto.name,
+        nameRu: dto.name, // Use same name for now
+        slug,
       },
     });
   }
@@ -31,7 +42,7 @@ export class TagsService {
         },
       },
       orderBy: {
-        name: 'asc',
+        nameKz: 'asc',
       },
     });
   }
@@ -44,9 +55,12 @@ export class TagsService {
           where: { published: true },
           select: {
             id: true,
-            title: true,
-            slug: true,
-            excerpt: true,
+            titleKz: true,
+            titleRu: true,
+            slugKz: true,
+            slugRu: true,
+            excerptKz: true,
+            excerptRu: true,
             coverImage: true,
             publishedAt: true,
             author: {
@@ -79,19 +93,27 @@ export class TagsService {
       throw new NotFoundException('Tag not found');
     }
 
+    const updateData: any = {};
+
     if (dto.name) {
+      const slug = this.generateSlug(dto.name);
+
       const existingTag = await this.prisma.tag.findUnique({
-        where: { name: dto.name },
+        where: { slug },
       });
 
       if (existingTag && existingTag.id !== id) {
         throw new ConflictException('Tag with this name already exists');
       }
+
+      updateData.nameKz = dto.name;
+      updateData.nameRu = dto.name; // Use same name for now
+      updateData.slug = slug;
     }
 
     return this.prisma.tag.update({
       where: { id },
-      data: dto,
+      data: updateData,
     });
   }
 

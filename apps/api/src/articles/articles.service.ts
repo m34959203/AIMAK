@@ -10,21 +10,22 @@ export class ArticlesService {
   private generateSlug(title: string): string {
     return title
       .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/[^a-zа-яәіңғүұқөһ0-9]+/g, '-')
       .replace(/(^-|-$)/g, '');
   }
 
   async create(dto: CreateArticleDto, authorId: string) {
-    const slug = this.generateSlug(dto.title);
+    const slugKz = this.generateSlug(dto.title);
 
     const article = await this.prisma.article.create({
       data: {
-        title: dto.title,
-        slug,
-        content: dto.content,
-        excerpt: dto.excerpt,
+        titleKz: dto.title,
+        slugKz,
+        contentKz: dto.content,
+        excerptKz: dto.excerpt,
         coverImage: dto.coverImage,
         published: dto.published || false,
+        status: dto.published ? 'PUBLISHED' : 'DRAFT',
         publishedAt: dto.published ? new Date() : null,
         authorId,
         categoryId: dto.categoryId,
@@ -102,8 +103,9 @@ export class ArticlesService {
   }
 
   async findBySlug(slug: string) {
-    const article = await this.prisma.article.findUnique({
-      where: { slug },
+    // Try Kazakh slug first
+    let article = await this.prisma.article.findUnique({
+      where: { slugKz: slug },
       include: {
         author: {
           select: {
@@ -118,13 +120,32 @@ export class ArticlesService {
       },
     });
 
+    // If not found, try Russian slug
+    if (!article) {
+      article = await this.prisma.article.findUnique({
+        where: { slugRu: slug },
+        include: {
+          author: {
+            select: {
+              id: true,
+              email: true,
+              firstName: true,
+              lastName: true,
+            },
+          },
+          category: true,
+          tags: true,
+        },
+      });
+    }
+
     if (!article) {
       throw new NotFoundException('Article not found');
     }
 
     // Increment views
     await this.prisma.article.update({
-      where: { slug },
+      where: { id: article.id },
       data: { views: { increment: 1 } },
     });
 
@@ -144,16 +165,37 @@ export class ArticlesService {
       throw new ForbiddenException('You can only update your own articles');
     }
 
-    const updateData: any = {
-      ...dto,
-    };
+    const updateData: any = {};
 
+    // Map old fields to new bilingual fields
     if (dto.title) {
-      updateData.slug = this.generateSlug(dto.title);
+      updateData.titleKz = dto.title;
+      updateData.slugKz = this.generateSlug(dto.title);
     }
 
-    if (dto.published && !article.published) {
-      updateData.publishedAt = new Date();
+    if (dto.content) {
+      updateData.contentKz = dto.content;
+    }
+
+    if (dto.excerpt) {
+      updateData.excerptKz = dto.excerpt;
+    }
+
+    if (dto.coverImage !== undefined) {
+      updateData.coverImage = dto.coverImage;
+    }
+
+    if (dto.categoryId) {
+      updateData.categoryId = dto.categoryId;
+    }
+
+    if (dto.published !== undefined) {
+      updateData.published = dto.published;
+      updateData.status = dto.published ? 'PUBLISHED' : 'DRAFT';
+
+      if (dto.published && !article.published) {
+        updateData.publishedAt = new Date();
+      }
     }
 
     if (dto.tagIds) {
@@ -161,7 +203,6 @@ export class ArticlesService {
         set: [],
         connect: dto.tagIds.map((id) => ({ id })),
       };
-      delete updateData.tagIds;
     }
 
     return this.prisma.article.update({
