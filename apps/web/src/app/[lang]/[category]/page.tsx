@@ -87,7 +87,7 @@ export default async function CategoryPage({
                   {params.lang === 'kz' ? 'Таңдаулы' : 'Избранное'}
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                  {featuredArticles.map((article) => (
+                  {featuredArticles.map((article: any) => (
                     <TengriArticleCard
                       key={article.id}
                       article={article}
@@ -107,7 +107,7 @@ export default async function CategoryPage({
 
               {regularArticles.length > 0 ? (
                 <div className="space-y-4">
-                  {regularArticles.map((article) => (
+                  {regularArticles.map((article: any) => (
                     <TengriArticleCard
                       key={article.id}
                       article={article}
@@ -137,7 +137,7 @@ export default async function CategoryPage({
                 {articles
                   .sort((a: any, b: any) => (b.views || 0) - (a.views || 0))
                   .slice(0, 5)
-                  .map((article, index) => (
+                  .map((article: any, index: number) => (
                     <div key={article.id} className="flex gap-3">
                       <div className="flex-shrink-0">
                         <span className="text-2xl font-bold text-gray-200">
