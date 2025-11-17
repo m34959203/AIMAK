@@ -10,7 +10,7 @@ export class CategoriesService {
   private generateSlug(name: string): string {
     return name
       .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/[^a-zа-яәіңғүұқөһ0-9]+/g, '-')
       .replace(/(^-|-$)/g, '');
   }
 
@@ -27,9 +27,11 @@ export class CategoriesService {
 
     return this.prisma.category.create({
       data: {
-        name: dto.name,
+        nameKz: dto.name,
+        nameRu: dto.name, // Use same name for now
         slug,
-        description: dto.description,
+        descriptionKz: dto.description,
+        descriptionRu: dto.description,
       },
     });
   }
@@ -42,7 +44,7 @@ export class CategoriesService {
         },
       },
       orderBy: {
-        name: 'asc',
+        nameKz: 'asc',
       },
     });
   }
@@ -55,9 +57,12 @@ export class CategoriesService {
           where: { published: true },
           select: {
             id: true,
-            title: true,
-            slug: true,
-            excerpt: true,
+            titleKz: true,
+            titleRu: true,
+            slugKz: true,
+            slugRu: true,
+            excerptKz: true,
+            excerptRu: true,
             coverImage: true,
             publishedAt: true,
             author: {
@@ -90,10 +95,17 @@ export class CategoriesService {
       throw new NotFoundException('Category not found');
     }
 
-    const updateData: any = { ...dto };
+    const updateData: any = {};
 
     if (dto.name) {
+      updateData.nameKz = dto.name;
+      updateData.nameRu = dto.name; // Use same name for now
       updateData.slug = this.generateSlug(dto.name);
+    }
+
+    if (dto.description !== undefined) {
+      updateData.descriptionKz = dto.description;
+      updateData.descriptionRu = dto.description;
     }
 
     return this.prisma.category.update({

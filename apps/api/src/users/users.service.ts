@@ -35,8 +35,10 @@ export class UsersService {
         articles: {
           select: {
             id: true,
-            title: true,
-            slug: true,
+            titleKz: true,
+            titleRu: true,
+            slugKz: true,
+            slugRu: true,
             published: true,
             publishedAt: true,
             createdAt: true,
