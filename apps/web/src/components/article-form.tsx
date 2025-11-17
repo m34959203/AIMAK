@@ -34,7 +34,7 @@ export function ArticleForm({ article, onSubmit, isLoading }: ArticleFormProps) 
   );
 
   // Status and flags
-  const [status, setStatus] = useState<ArticleStatus>(article?.status || 'DRAFT');
+  const [status, setStatus] = useState<ArticleStatus>(article?.status || ArticleStatus.DRAFT);
   const [isBreaking, setIsBreaking] = useState(article?.isBreaking || false);
   const [isFeatured, setIsFeatured] = useState(article?.isFeatured || false);
   const [isPinned, setIsPinned] = useState(article?.isPinned || false);
@@ -271,11 +271,11 @@ export function ArticleForm({ article, onSubmit, isLoading }: ArticleFormProps) 
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
             required
           >
-            <option value="DRAFT">Черновик</option>
-            <option value="REVIEW">На проверке</option>
-            <option value="SCHEDULED">Запланировано</option>
-            <option value="PUBLISHED">Опубликовано</option>
-            <option value="ARCHIVED">В архиве</option>
+            <option value={ArticleStatus.DRAFT}>Черновик</option>
+            <option value={ArticleStatus.REVIEW}>На проверке</option>
+            <option value={ArticleStatus.SCHEDULED}>Запланировано</option>
+            <option value={ArticleStatus.PUBLISHED}>Опубликовано</option>
+            <option value={ArticleStatus.ARCHIVED}>В архиве</option>
           </select>
         </div>
 
