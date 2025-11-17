@@ -11,8 +11,9 @@ services:
   - type: pserv
     name: aimak-postgres
     plan: free
+    databaseName: aimak_db
+    databaseUser: aimak_user
     region: frankfurt
-    ipAllowList: []
 
   # ==========================================
   # CACHE: Redis 7

@@ -1,11 +1,12 @@
 'use client';
 
+import { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useArticles } from '@/hooks/use-articles';
 import { ArticleCard } from '@/components/article-card';
 import { useMemo } from 'react';
 
-export default function SearchPage() {
+function SearchResults() {
   const searchParams = useSearchParams();
   const query = searchParams.get('q') || '';
   const { data: articles, isLoading } = useArticles(true);
@@ -57,5 +58,19 @@ export default function SearchPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function SearchPage() {
+  return (
+    <Suspense fallback={
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center py-12">
+          <p className="text-gray-600">Загрузка...</p>
+        </div>
+      </div>
+    }>
+      <SearchResults />
+    </Suspense>
   );
 }
