@@ -19,6 +19,7 @@ export interface Category {
   name: string;
   slug: string;
   description?: string;
+  articles?: Article[];
   createdAt: string;
   updatedAt: string;
 }
