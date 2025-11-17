@@ -12,20 +12,12 @@ export default function AdminPage() {
   const { data: categories } = useCategories();
   const { data: tags } = useTags();
 
-  if (!user) {
-    return (
-      <div className="container mx-auto px-4 py-12">
-        <p className="text-center">Загрузка...</p>
-      </div>
-    );
-  }
-
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
         <h1 className="text-4xl font-bold mb-2">Панель редактора</h1>
         <p className="text-gray-600">
-          Добро пожаловать, {user.firstName} {user.lastName}!
+          {user ? `Добро пожаловать, ${user.firstName} ${user.lastName}!` : 'Добро пожаловать в панель редактора!'}
         </p>
       </div>
 
@@ -61,29 +53,25 @@ export default function AdminPage() {
           </p>
         </Link>
 
-        {user.role === 'ADMIN' && (
-          <>
-            <Link
-              href="/admin/categories"
-              className="border rounded-lg p-6 hover:shadow-lg transition-shadow"
-            >
-              <h3 className="text-xl font-bold mb-2">Управление категориями</h3>
-              <p className="text-gray-600">
-                Добавляйте и редактируйте категории
-              </p>
-            </Link>
+        <Link
+          href="/admin/categories"
+          className="border rounded-lg p-6 hover:shadow-lg transition-shadow"
+        >
+          <h3 className="text-xl font-bold mb-2">Управление категориями</h3>
+          <p className="text-gray-600">
+            Добавляйте и редактируйте категории
+          </p>
+        </Link>
 
-            <Link
-              href="/admin/tags"
-              className="border rounded-lg p-6 hover:shadow-lg transition-shadow"
-            >
-              <h3 className="text-xl font-bold mb-2">Управление тегами</h3>
-              <p className="text-gray-600">
-                Добавляйте и редактируйте теги
-              </p>
-            </Link>
-          </>
-        )}
+        <Link
+          href="/admin/tags"
+          className="border rounded-lg p-6 hover:shadow-lg transition-shadow"
+        >
+          <h3 className="text-xl font-bold mb-2">Управление тегами</h3>
+          <p className="text-gray-600">
+            Добавляйте и редактируйте теги
+          </p>
+        </Link>
       </div>
     </div>
   );
