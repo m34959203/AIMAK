@@ -3,14 +3,14 @@
 import { useRouter } from 'next/navigation';
 import { ArticleForm } from '@/components/article-form';
 import { useCreateArticle } from '@/hooks/use-articles';
-import type { CreateArticleDto, UpdateArticleDto } from '@/types';
+import type { CreateBilingualArticleDto, UpdateBilingualArticleDto } from '@/types';
 
 export default function NewArticlePage() {
   const router = useRouter();
   const createArticle = useCreateArticle();
 
-  const handleSubmit = (data: CreateArticleDto | UpdateArticleDto) => {
-    createArticle.mutate(data as CreateArticleDto, {
+  const handleSubmit = (data: CreateBilingualArticleDto | UpdateBilingualArticleDto) => {
+    createArticle.mutate(data as CreateBilingualArticleDto, {
       onSuccess: () => {
         router.push('/admin/articles');
       },

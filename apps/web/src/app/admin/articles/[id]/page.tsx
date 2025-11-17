@@ -3,7 +3,7 @@
 import { useParams, useRouter } from 'next/navigation';
 import { ArticleForm } from '@/components/article-form';
 import { useArticle, useUpdateArticle } from '@/hooks/use-articles';
-import type { UpdateArticleDto } from '@/types';
+import type { UpdateBilingualArticleDto } from '@/types';
 
 export default function EditArticlePage() {
   const params = useParams();
@@ -13,7 +13,7 @@ export default function EditArticlePage() {
   const { data: article, isLoading } = useArticle(id);
   const updateArticle = useUpdateArticle();
 
-  const handleSubmit = (data: UpdateArticleDto) => {
+  const handleSubmit = (data: UpdateBilingualArticleDto) => {
     updateArticle.mutate(
       { id, data },
       {
