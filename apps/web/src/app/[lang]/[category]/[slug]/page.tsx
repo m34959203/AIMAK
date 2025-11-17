@@ -207,7 +207,7 @@ export default async function ArticlePage({
                   {params.lang === 'kz' ? 'Ұқсас мақалалар' : 'Похожие статьи'}
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {relatedArticles.map((relatedArticle) => (
+                  {relatedArticles.map((relatedArticle: any) => (
                     <TengriArticleCard
                       key={relatedArticle.id}
                       article={relatedArticle}
