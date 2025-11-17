@@ -8,6 +8,7 @@ export default function ArticlePage() {
   const params = useParams();
   const slug = params.slug as string;
   const { data: article, isLoading, error } = useArticleBySlug(slug);
+  const lang = 'kz'; // Default language
 
   if (isLoading) {
     return (
@@ -29,6 +30,10 @@ export default function ArticlePage() {
     );
   }
 
+  const title = lang === 'kz' ? article.titleKz : article.titleRu || article.titleKz;
+  const content = lang === 'kz' ? article.contentKz : article.contentRu || article.contentKz;
+  const categoryName = lang === 'kz' ? article.category.nameKz : article.category.nameRu;
+
   return (
     <div className="container mx-auto px-4 py-8">
       <article className="max-w-4xl mx-auto">
@@ -36,7 +41,7 @@ export default function ArticlePage() {
           <div className="aspect-video mb-8 rounded-lg overflow-hidden">
             <img
               src={article.coverImage}
-              alt={article.title}
+              alt={title}
               className="w-full h-full object-cover"
             />
           </div>
@@ -45,7 +50,7 @@ export default function ArticlePage() {
         <div className="mb-6">
           <div className="flex items-center gap-2 mb-4">
             <span className="text-sm bg-blue-100 text-blue-800 px-3 py-1 rounded">
-              {article.category.name}
+              {categoryName}
             </span>
             <span className="text-gray-300">•</span>
             <span className="text-sm text-gray-500">
@@ -55,7 +60,7 @@ export default function ArticlePage() {
             <span className="text-sm text-gray-500">{article.views} просмотров</span>
           </div>
 
-          <h1 className="text-4xl font-bold mb-4">{article.title}</h1>
+          <h1 className="text-4xl font-bold mb-4">{title}</h1>
 
           <div className="flex items-center gap-4 text-gray-600">
             <span>
@@ -65,7 +70,7 @@ export default function ArticlePage() {
         </div>
 
         <div className="prose max-w-none mb-8">
-          <div className="whitespace-pre-wrap">{article.content}</div>
+          <div className="whitespace-pre-wrap">{content}</div>
         </div>
 
         {article.tags.length > 0 && (
@@ -77,7 +82,7 @@ export default function ArticlePage() {
                   key={tag.id}
                   className="text-sm bg-gray-100 px-3 py-1 rounded"
                 >
-                  {tag.name}
+                  {lang === 'kz' ? tag.nameKz : tag.nameRu}
                 </span>
               ))}
             </div>
