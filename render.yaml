@@ -21,6 +21,7 @@ services:
   - type: redis
     name: aimak-redis
     plan: free
+    ipAllowList: []
     maxmemoryPolicy: allkeys-lru
 
   # ==========================================
