@@ -7,8 +7,8 @@ import type {
   Article,
   Category,
   Tag,
-  CreateArticleDto,
-  UpdateArticleDto,
+  CreateBilingualArticleDto,
+  UpdateBilingualArticleDto,
 } from '@/types';
 
 // Правильно формируем API URL
@@ -81,8 +81,8 @@ export const articlesApi = {
     }),
   getById: (id: string) => api.get<Article>(`/articles/${id}`),
   getBySlug: (slug: string) => api.get<Article>(`/articles/slug/${slug}`),
-  create: (data: CreateArticleDto) => api.post<Article>('/articles', data),
-  update: (id: string, data: UpdateArticleDto) =>
+  create: (data: CreateBilingualArticleDto) => api.post<Article>('/articles', data),
+  update: (id: string, data: UpdateBilingualArticleDto) =>
     api.patch<Article>(`/articles/${id}`, data),
   delete: (id: string) => api.delete(`/articles/${id}`),
 };

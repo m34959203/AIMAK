@@ -15,20 +15,44 @@ export class ArticlesService {
   }
 
   async create(dto: CreateArticleDto, authorId: string) {
-    const slugKz = this.generateSlug(dto.title);
+    const slugKz = this.generateSlug(dto.titleKz);
+    const slugRu = dto.titleRu ? this.generateSlug(dto.titleRu) : undefined;
+
+    // Determine status based on both status field and backward-compatible published field
+    let status = dto.status || 'DRAFT';
+    if (dto.published !== undefined) {
+      status = dto.published ? 'PUBLISHED' : 'DRAFT';
+    }
 
     const article = await this.prisma.article.create({
       data: {
-        titleKz: dto.title,
+        // Kazakh content (required)
+        titleKz: dto.titleKz,
         slugKz,
-        contentKz: dto.content,
-        excerptKz: dto.excerpt,
+        contentKz: dto.contentKz,
+        excerptKz: dto.excerptKz,
+
+        // Russian content (optional)
+        titleRu: dto.titleRu,
+        slugRu,
+        contentRu: dto.contentRu,
+        excerptRu: dto.excerptRu,
+
+        // Common fields
         coverImage: dto.coverImage,
-        published: dto.published || false,
-        status: dto.published ? 'PUBLISHED' : 'DRAFT',
-        publishedAt: dto.published ? new Date() : null,
-        authorId,
         categoryId: dto.categoryId,
+
+        // Status and flags
+        status,
+        published: status === 'PUBLISHED',
+        publishedAt: status === 'PUBLISHED' ? new Date() : null,
+        isBreaking: dto.isBreaking || false,
+        isFeatured: dto.isFeatured || false,
+        isPinned: dto.isPinned || false,
+        allowComments: dto.allowComments !== false, // Default to true
+
+        authorId,
+
         tags: dto.tagIds
           ? {
               connect: dto.tagIds.map((id) => ({ id })),
@@ -167,20 +191,35 @@ export class ArticlesService {
 
     const updateData: any = {};
 
-    // Map old fields to new bilingual fields
-    if (dto.title) {
-      updateData.titleKz = dto.title;
-      updateData.slugKz = this.generateSlug(dto.title);
+    // Kazakh content
+    if (dto.titleKz) {
+      updateData.titleKz = dto.titleKz;
+      updateData.slugKz = this.generateSlug(dto.titleKz);
     }
 
-    if (dto.content) {
-      updateData.contentKz = dto.content;
+    if (dto.contentKz !== undefined) {
+      updateData.contentKz = dto.contentKz;
     }
 
-    if (dto.excerpt) {
-      updateData.excerptKz = dto.excerpt;
+    if (dto.excerptKz !== undefined) {
+      updateData.excerptKz = dto.excerptKz;
     }
 
+    // Russian content
+    if (dto.titleRu !== undefined) {
+      updateData.titleRu = dto.titleRu;
+      updateData.slugRu = dto.titleRu ? this.generateSlug(dto.titleRu) : null;
+    }
+
+    if (dto.contentRu !== undefined) {
+      updateData.contentRu = dto.contentRu;
+    }
+
+    if (dto.excerptRu !== undefined) {
+      updateData.excerptRu = dto.excerptRu;
+    }
+
+    // Common fields
     if (dto.coverImage !== undefined) {
       updateData.coverImage = dto.coverImage;
     }
@@ -189,7 +228,18 @@ export class ArticlesService {
       updateData.categoryId = dto.categoryId;
     }
 
-    if (dto.published !== undefined) {
+    // Status and flags
+    if (dto.status) {
+      updateData.status = dto.status;
+      updateData.published = dto.status === 'PUBLISHED';
+
+      if (dto.status === 'PUBLISHED' && article.status !== 'PUBLISHED') {
+        updateData.publishedAt = new Date();
+      }
+    }
+
+    // Backward compatibility with published field
+    if (dto.published !== undefined && !dto.status) {
       updateData.published = dto.published;
       updateData.status = dto.published ? 'PUBLISHED' : 'DRAFT';
 
@@ -198,6 +248,23 @@ export class ArticlesService {
       }
     }
 
+    if (dto.isBreaking !== undefined) {
+      updateData.isBreaking = dto.isBreaking;
+    }
+
+    if (dto.isFeatured !== undefined) {
+      updateData.isFeatured = dto.isFeatured;
+    }
+
+    if (dto.isPinned !== undefined) {
+      updateData.isPinned = dto.isPinned;
+    }
+
+    if (dto.allowComments !== undefined) {
+      updateData.allowComments = dto.allowComments;
+    }
+
+    // Tags
     if (dto.tagIds) {
       updateData.tags = {
         set: [],

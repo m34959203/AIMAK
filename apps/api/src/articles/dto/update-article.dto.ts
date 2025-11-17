@@ -1,22 +1,48 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional, IsString, IsBoolean, IsArray } from 'class-validator';
+import { IsOptional, IsString, IsBoolean, IsArray, IsEnum } from 'class-validator';
+
+export enum ArticleStatus {
+  DRAFT = 'DRAFT',
+  REVIEW = 'REVIEW',
+  SCHEDULED = 'SCHEDULED',
+  PUBLISHED = 'PUBLISHED',
+  ARCHIVED = 'ARCHIVED',
+}
 
 export class UpdateArticleDto {
-  @ApiPropertyOptional({ example: 'Updated Article Title' })
+  // Kazakh content
+  @ApiPropertyOptional({ example: 'Жаңартылған тақырып' })
   @IsString()
   @IsOptional()
-  title?: string;
+  titleKz?: string;
 
-  @ApiPropertyOptional({ example: 'Updated content...' })
+  @ApiPropertyOptional({ example: 'Жаңартылған мазмұн...' })
   @IsString()
   @IsOptional()
-  content?: string;
+  contentKz?: string;
 
-  @ApiPropertyOptional({ example: 'Updated excerpt' })
+  @ApiPropertyOptional({ example: 'Жаңартылған сипаттама' })
   @IsString()
   @IsOptional()
-  excerpt?: string;
+  excerptKz?: string;
 
+  // Russian content
+  @ApiPropertyOptional({ example: 'Обновленный заголовок' })
+  @IsString()
+  @IsOptional()
+  titleRu?: string;
+
+  @ApiPropertyOptional({ example: 'Обновленное содержание...' })
+  @IsString()
+  @IsOptional()
+  contentRu?: string;
+
+  @ApiPropertyOptional({ example: 'Обновленное описание' })
+  @IsString()
+  @IsOptional()
+  excerptRu?: string;
+
+  // Common fields
   @ApiPropertyOptional({ example: 'https://example.com/new-image.jpg' })
   @IsString()
   @IsOptional()
@@ -33,7 +59,34 @@ export class UpdateArticleDto {
   @IsOptional()
   tagIds?: string[];
 
+  // Status and flags
+  @ApiPropertyOptional({ example: 'PUBLISHED', enum: ArticleStatus })
+  @IsEnum(ArticleStatus)
+  @IsOptional()
+  status?: ArticleStatus;
+
+  @ApiPropertyOptional({ example: false })
+  @IsBoolean()
+  @IsOptional()
+  isBreaking?: boolean;
+
   @ApiPropertyOptional({ example: true })
+  @IsBoolean()
+  @IsOptional()
+  isFeatured?: boolean;
+
+  @ApiPropertyOptional({ example: false })
+  @IsBoolean()
+  @IsOptional()
+  isPinned?: boolean;
+
+  @ApiPropertyOptional({ example: true })
+  @IsBoolean()
+  @IsOptional()
+  allowComments?: boolean;
+
+  // Backward compatibility
+  @ApiPropertyOptional({ example: true, deprecated: true, description: 'Use status=PUBLISHED instead' })
   @IsBoolean()
   @IsOptional()
   published?: boolean;
