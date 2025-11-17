@@ -7,64 +7,250 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Role {
+  USER
+  EDITOR
+  ADMIN
+}
+
+enum ArticleStatus {
+  DRAFT
+  REVIEW
+  SCHEDULED
+  PUBLISHED
+  ARCHIVED
+}
+
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  password  String
-  firstName String
-  lastName  String
-  role      Role     @default(USER)
-  articles  Article[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           String    @id @default(uuid())
+  email        String    @unique
+  password     String
+  firstName    String
+  lastName     String
+  avatarUrl    String?
+  bio          String?
+  role         Role      @default(USER)
+  isActive     Boolean   @default(true)
+  isVerified   Boolean   @default(false)
+  articles     Article[]
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  lastLoginAt  DateTime?
 
   @@map("users")
 }
 
 model Article {
-  id          String    @id @default(uuid())
-  title       String
-  slug        String    @unique
-  content     String
-  excerpt     String?
-  coverImage  String?
-  published   Boolean   @default(false)
-  publishedAt DateTime?
-  authorId    String
-  author      User      @relation(fields: [authorId], references: [id])
-  categoryId  String
-  category    Category  @relation(fields: [categoryId], references: [id])
-  tags        Tag[]
-  views       Int       @default(0)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id             String        @id @default(uuid())
+
+  // Казахский язык
+  slugKz         String        @unique @map("slug_kz")
+  titleKz        String        @map("title_kz")
+  subtitleKz     String?       @map("subtitle_kz")
+  excerptKz      String?       @map("excerpt_kz")
+  contentKz      String        @map("content_kz")
+
+  // Русский язык
+  slugRu         String?       @unique @map("slug_ru")
+  titleRu        String?       @map("title_ru")
+  subtitleRu     String?       @map("subtitle_ru")
+  excerptRu      String?       @map("excerpt_ru")
+  contentRu      String?       @map("content_ru")
+
+  // Медиа
+  coverImage     String?       @map("cover_image")
+  featuredImageId String?      @map("featured_image_id")
+
+  // Статус и публикация
+  status         ArticleStatus @default(DRAFT)
+  published      Boolean       @default(false)
+  publishedAt    DateTime?     @map("published_at")
+  scheduledAt    DateTime?     @map("scheduled_at")
+
+  // Флаги
+  isBreaking     Boolean       @default(false) @map("is_breaking")
+  isFeatured     Boolean       @default(false) @map("is_featured")
+  isPinned       Boolean       @default(false) @map("is_pinned")
+  allowComments  Boolean       @default(true) @map("allow_comments")
+
+  // Метрики
+  views          Int           @default(0)
+  likes          Int           @default(0)
+  shares         Int           @default(0)
+
+  // AI
+  aiGenerated    Boolean       @default(false) @map("ai_generated")
+  aiProvider     String?       @map("ai_provider")
+
+  // Связи
+  authorId       String        @map("author_id")
+  author         User          @relation(fields: [authorId], references: [id])
+  categoryId     String        @map("category_id")
+  category       Category      @relation(fields: [categoryId], references: [id])
+  tags           Tag[]
+
+  // Временные метки
+  createdAt      DateTime      @default(now()) @map("created_at")
+  updatedAt      DateTime      @updatedAt @map("updated_at")
+  deletedAt      DateTime?     @map("deleted_at")
 
   @@map("articles")
+  @@index([slugKz])
+  @@index([slugRu])
+  @@index([categoryId])
+  @@index([authorId])
+  @@index([status])
+  @@index([publishedAt])
 }
 
 model Category {
-  id          String    @id @default(uuid())
-  name        String
-  slug        String    @unique
-  description String?
-  articles    Article[]
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id            String    @id @default(uuid())
+  slug          String    @unique
+
+  // Двуязычность
+  nameKz        String    @map("name_kz")
+  nameRu        String    @map("name_ru")
+  descriptionKz String?   @map("description_kz")
+  descriptionRu String?   @map("description_ru")
+
+  // Иерархия
+  parentId      String?   @map("parent_id")
+  parent        Category? @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children      Category[] @relation("CategoryHierarchy")
+
+  sortOrder     Int       @default(0) @map("sort_order")
+  isActive      Boolean   @default(true) @map("is_active")
+
+  articles      Article[]
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
 
   @@map("categories")
+  @@index([slug])
+  @@index([parentId])
 }
 
 model Tag {
-  id        String    @id @default(uuid())
-  name      String    @unique
-  articles  Article[]
-  createdAt DateTime  @default(now())
+  id         String    @id @default(uuid())
+  slug       String    @unique
+  nameKz     String    @map("name_kz")
+  nameRu     String    @map("name_ru")
+  usageCount Int       @default(0) @map("usage_count")
+  articles   Article[]
+  createdAt  DateTime  @default(now()) @map("created_at")
 
   @@map("tags")
+  @@index([slug])
 }
 
-enum Role {
-  USER
-  EDITOR
-  ADMIN
+// Модель для медиафайлов
+model MediaFile {
+  id               String   @id @default(uuid())
+  filename         String
+  originalFilename String   @map("original_filename")
+  mimeType         String   @map("mime_type")
+  size             Int
+  width            Int?
+  height           Int?
+  url              String
+  thumbnailUrl     String?  @map("thumbnail_url")
+
+  // Двуязычные описания
+  altTextKz        String?  @map("alt_text_kz")
+  altTextRu        String?  @map("alt_text_ru")
+  captionKz        String?  @map("caption_kz")
+  captionRu        String?  @map("caption_ru")
+
+  uploadedById     String?  @map("uploaded_by_id")
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  @@map("media_files")
+  @@index([uploadedById])
+}
+
+// Комментарии
+model Comment {
+  id          String    @id @default(uuid())
+  articleId   String    @map("article_id")
+  userId      String?   @map("user_id")
+  parentId    String?   @map("parent_id")
+  parent      Comment?  @relation("CommentReplies", fields: [parentId], references: [id])
+  replies     Comment[] @relation("CommentReplies")
+
+  content     String
+
+  // Для гостей
+  guestName   String?   @map("guest_name")
+  guestEmail  String?   @map("guest_email")
+
+  isApproved  Boolean   @default(false) @map("is_approved")
+  isDeleted   Boolean   @default(false) @map("is_deleted")
+  likes       Int       @default(0)
+
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@map("comments")
+  @@index([articleId])
+  @@index([userId])
+  @@index([parentId])
+}
+
+// Рекламные блоки
+enum AdPosition {
+  HEADER
+  SIDEBAR_TOP
+  SIDEBAR_MIDDLE
+  IN_CONTENT
+  FOOTER
+  STICKY_BOTTOM
+}
+
+enum AdSize {
+  BANNER_728x90
+  LARGE_BANNER_970x90
+  RECTANGLE_300x250
+  HALF_PAGE_300x600
+  MOBILE_BANNER_320x50
+  NATIVE
+}
+
+model AdUnit {
+  id               String     @id @default(uuid())
+  code             String     @unique
+  name             String
+  position         AdPosition
+  size             AdSize
+  htmlContent      String?    @map("html_content")
+  clickUrl         String?    @map("click_url")
+  isActive         Boolean    @default(true) @map("is_active")
+  priority         Int        @default(0)
+  totalImpressions Int        @default(0) @map("total_impressions")
+  totalClicks      Int        @default(0) @map("total_clicks")
+  createdAt        DateTime   @default(now()) @map("created_at")
+
+  @@map("ad_units")
+  @@index([position])
+  @@index([isActive])
+}
+
+// AI генерации
+model AIGeneration {
+  id            String   @id @default(uuid())
+  userId        String   @map("user_id")
+  articleId     String?  @map("article_id")
+  operationType String   @map("operation_type")
+  provider      String
+  inputText     String?  @map("input_text")
+  outputText    String?  @map("output_text")
+  inputTokens   Int?     @map("input_tokens")
+  outputTokens  Int?     @map("output_tokens")
+  costUsd       Float?   @map("cost_usd")
+  durationMs    Int?     @map("duration_ms")
+  status        String   @default("success")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  @@map("ai_generations")
+  @@index([userId])
+  @@index([provider])
 }
