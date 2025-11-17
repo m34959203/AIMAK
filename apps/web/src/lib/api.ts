@@ -14,18 +14,24 @@ import type {
 // Правильно формируем API URL
 const getApiUrl = () => {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
-  
+
+  let baseUrl = apiUrl.trim();
+
+  // Если это только имя сервиса (без точек), добавляем .onrender.com
+  if (!baseUrl.includes('.') && !baseUrl.startsWith('http') && !baseUrl.includes('localhost')) {
+    baseUrl = `${baseUrl}.onrender.com`;
+  }
+
   // Если URL не начинается с http, добавляем https://
-  let baseUrl = apiUrl;
   if (!baseUrl.startsWith('http')) {
     baseUrl = `https://${baseUrl}`;
   }
-  
+
   // Если URL не заканчивается на /api, добавляем
   if (!baseUrl.endsWith('/api')) {
     baseUrl = `${baseUrl}/api`;
   }
-  
+
   return baseUrl;
 };
 
