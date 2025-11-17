@@ -11,7 +11,25 @@ import type {
   UpdateArticleDto,
 } from '@/types';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
+// Правильно формируем API URL
+const getApiUrl = () => {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+  
+  // Если URL не начинается с http, добавляем https://
+  let baseUrl = apiUrl;
+  if (!baseUrl.startsWith('http')) {
+    baseUrl = `https://${baseUrl}`;
+  }
+  
+  // Если URL не заканчивается на /api, добавляем
+  if (!baseUrl.endsWith('/api')) {
+    baseUrl = `${baseUrl}/api`;
+  }
+  
+  return baseUrl;
+};
+
+const API_URL = getApiUrl();
 
 const api = axios.create({
   baseURL: API_URL,
