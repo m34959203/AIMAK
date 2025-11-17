@@ -84,7 +84,7 @@ export default async function HomePage({
               </div>
 
               <div className="space-y-4">
-                {mainArticles.map((article) => (
+                {mainArticles.map((article: any) => (
                   <TengriArticleCard
                     key={article.id}
                     article={article}
@@ -132,7 +132,7 @@ export default async function HomePage({
                 {params.lang === 'kz' ? 'Танымал' : 'Популярное'}
               </h3>
               <div className="space-y-4">
-                {sidebarArticles.map((article, index) => (
+                {sidebarArticles.map((article: any, index: number) => (
                   <div key={article.id} className="flex gap-3">
                     <div className="flex-shrink-0">
                       <span className="text-3xl font-bold text-gray-200">
@@ -171,7 +171,7 @@ export default async function HomePage({
                   🔥 {params.lang === 'kz' ? 'Тренд' : 'В тренде'}
                 </h3>
                 <div className="space-y-3">
-                  {trendingArticles.map((article) => (
+                  {trendingArticles.map((article: any) => (
                     <div key={article.id}>
                       <a
                         href={`/${params.lang}/${article.category?.slug}/${
