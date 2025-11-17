@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useCategories } from '@/hooks/use-categories';
 import { useTags } from '@/hooks/use-tags';
-import type { Article, CreateBilingualArticleDto, UpdateBilingualArticleDto, ArticleStatus } from '@/types';
+import { ArticleStatus } from '@/types';
+import type { Article, CreateBilingualArticleDto, UpdateBilingualArticleDto } from '@/types';
 
 interface ArticleFormProps {
   article?: Article;
