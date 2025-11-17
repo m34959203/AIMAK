@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../common/prisma/prisma.service';
-import { CreateArticleDto } from './dto/create-article.dto';
+import { CreateArticleDto, ArticleStatus } from './dto/create-article.dto';
 import { UpdateArticleDto } from './dto/update-article.dto';
 
 @Injectable()
@@ -19,9 +19,9 @@ export class ArticlesService {
     const slugRu = dto.titleRu ? this.generateSlug(dto.titleRu) : undefined;
 
     // Determine status based on both status field and backward-compatible published field
-    let status = dto.status || 'DRAFT';
+    let status: ArticleStatus = dto.status || ArticleStatus.DRAFT;
     if (dto.published !== undefined) {
-      status = dto.published ? 'PUBLISHED' : 'DRAFT';
+      status = dto.published ? ArticleStatus.PUBLISHED : ArticleStatus.DRAFT;
     }
 
     const article = await this.prisma.article.create({
