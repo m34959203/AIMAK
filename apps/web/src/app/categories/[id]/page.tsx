@@ -7,6 +7,7 @@ import { ArticleCard } from '@/components/article-card';
 export default function CategoryPage() {
   const params = useParams();
   const id = params.id as string;
+  const lang = 'kz'; // Default language for legacy route
   const { data: category, isLoading, error } = useCategory(id);
 
   if (isLoading) {
@@ -29,12 +30,15 @@ export default function CategoryPage() {
     );
   }
 
+  const categoryName = lang === 'kz' ? category.nameKz : category.nameRu;
+  const categoryDescription = lang === 'kz' ? category.descriptionKz : category.descriptionRu;
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
-        <h1 className="text-4xl font-bold mb-4">{category.name}</h1>
-        {category.description && (
-          <p className="text-lg text-gray-600">{category.description}</p>
+        <h1 className="text-4xl font-bold mb-4">{categoryName}</h1>
+        {categoryDescription && (
+          <p className="text-lg text-gray-600">{categoryDescription}</p>
         )}
       </div>
 
@@ -47,7 +51,7 @@ export default function CategoryPage() {
       {category.articles && category.articles.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {category.articles.map((article) => (
-            <ArticleCard key={article.id} article={article as any} />
+            <ArticleCard key={article.id} article={article as any} lang={lang} />
           ))}
         </div>
       )}
