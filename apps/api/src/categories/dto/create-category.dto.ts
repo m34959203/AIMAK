@@ -5,7 +5,7 @@ export class CreateCategoryDto {
   @ApiProperty({ example: 'Technology' })
   @IsString()
   @IsNotEmpty()
-  name: string;
+  name!: string;
 
   @ApiPropertyOptional({ example: 'Articles about technology' })
   @IsString()

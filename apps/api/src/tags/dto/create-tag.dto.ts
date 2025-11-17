@@ -5,5 +5,5 @@ export class CreateTagDto {
   @ApiProperty({ example: 'JavaScript' })
   @IsString()
   @IsNotEmpty()
-  name: string;
+  name!: string;
 }
