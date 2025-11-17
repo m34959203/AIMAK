@@ -11,7 +11,7 @@ export enum ArticleStatus {
 
 export class CreateArticleDto {
   // Kazakh content (required)
-  @ApiProperty({ example: 'Қарағандының соңғы жаңалықтары' })
+  @ApiProperty({ example: 'Сатпаевтың соңғы жаңалықтары' })
   @IsString()
   @IsNotEmpty()
   titleKz!: string;
@@ -27,7 +27,7 @@ export class CreateArticleDto {
   excerptKz?: string;
 
   // Russian content (optional)
-  @ApiPropertyOptional({ example: 'Последние новости Караганды' })
+  @ApiPropertyOptional({ example: 'Последние новости Сатпаева' })
   @IsString()
   @IsOptional()
   titleRu?: string;

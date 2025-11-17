@@ -5,7 +5,7 @@ import '../globals.css';
 
 export const metadata = {
   title: 'Аймақ ақшамы - Қалалық газет',
-  description: 'Қарағанды қаласының қоғамдық-саяси газеті',
+  description: 'Сатпаев қаласының қоғамдық-саяси газеті',
 };
 
 export default function LangLayout({

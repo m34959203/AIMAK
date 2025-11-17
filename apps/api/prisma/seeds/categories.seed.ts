@@ -7,8 +7,8 @@ const categories = [
     slug: 'zhanalyqtar',
     nameKz: 'ЖАҢАЛЫҚТАР',
     nameRu: 'НОВОСТИ',
-    descriptionKz: 'Қарағанды қаласы мен облысының соңғы жаңалықтары',
-    descriptionRu: 'Последние новости города Караганды и области',
+    descriptionKz: 'Сатпаев қаласы мен облысының соңғы жаңалықтары',
+    descriptionRu: 'Последние новости города Сатпаев и области',
     sortOrder: 1,
   },
   {

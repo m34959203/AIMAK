@@ -21,7 +21,7 @@ export function TengriFooter({ lang = 'kz' }: FooterProps) {
       followUs: 'Бізді іздеңіз',
       mobileApps: 'Мобильді қосымшалар',
       copyright: 'Барлық құқықтар қорғалған',
-      aboutText: '«Аймақ ақшамы» - Қарағанды қаласының қоғамдық-саяси газеті',
+      aboutText: '«Аймақ ақшамы» - Сатпаев қаласының қоғамдық-саяси газеті',
     },
     ru: {
       about: 'О нас',
@@ -36,7 +36,7 @@ export function TengriFooter({ lang = 'kz' }: FooterProps) {
       followUs: 'Мы в соцсетях',
       mobileApps: 'Мобильные приложения',
       copyright: 'Все права защищены',
-      aboutText: '«Аймақ ақшамы» - общественно-политическая газета города Караганды',
+      aboutText: '«Аймақ ақшамы» - общественно-политическая газета города Сатпаев',
     },
   };
 
