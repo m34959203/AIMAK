@@ -1,6 +1,7 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { Role } from '@prisma/client';
 
 @Injectable()
 export class UsersService {
@@ -89,5 +90,53 @@ export class UsersService {
     });
 
     return { message: 'User deleted successfully' };
+  }
+
+  /**
+   * Временный метод для создания первого админа
+   * Работает только если в системе ещё нет админов
+   */
+  async createFirstAdmin(email: string) {
+    // Проверяем, есть ли уже админы в системе
+    const existingAdmins = await this.prisma.user.count({
+      where: { role: Role.ADMIN },
+    });
+
+    if (existingAdmins > 0) {
+      throw new ForbiddenException('Admin already exists in the system');
+    }
+
+    // Находим пользователя по email
+    const user = await this.prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (!user) {
+      throw new NotFoundException(`User with email ${email} not found`);
+    }
+
+    if (user.role === Role.ADMIN) {
+      throw new BadRequestException('User is already an admin');
+    }
+
+    // Повышаем до админа
+    const updatedUser = await this.prisma.user.update({
+      where: { id: user.id },
+      data: { role: Role.ADMIN },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        role: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    return {
+      message: 'First admin created successfully',
+      user: updatedUser,
+    };
   }
 }
