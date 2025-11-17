@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { categoriesApi } from '@/lib/api';
+import type { CreateBilingualCategoryDto } from '@/types';
 
 export function useCategories() {
   return useQuery({
@@ -26,7 +27,7 @@ export function useCreateCategory() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: { name: string; description?: string }) =>
+    mutationFn: (data: CreateBilingualCategoryDto) =>
       categoriesApi.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['categories'] });
@@ -43,7 +44,7 @@ export function useUpdateCategory() {
       data,
     }: {
       id: string;
-      data: { name?: string; description?: string };
+      data: Partial<CreateBilingualCategoryDto>;
     }) => categoriesApi.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['categories'] });
