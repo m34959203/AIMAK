@@ -1,8 +1,17 @@
 # ==========================================
-# Render.com Blueprint - WITHOUT Database Creation
+# Render.com Blueprint - WITH Database Creation
 # Project: Aimak Akshamy
-# Version: 2.1.0
+# Version: 2.2.0
 # ==========================================
+
+# ==========================================
+# DATABASES
+# ==========================================
+databases:
+  - name: aimak-postgres
+    plan: free
+    databaseName: aimak_db
+    user: aimak_user
 
 services:
   # ==========================================
@@ -12,7 +21,6 @@ services:
   - type: redis
     name: aimak-redis
     plan: free
-    ipAllowList: []
     maxmemoryPolicy: allkeys-lru
 
   # ==========================================
@@ -38,9 +46,11 @@ services:
       - key: PORT
         value: 4000
       
-      # DATABASE - добавите вручную
+      # DATABASE - автоматически из databases секции
       - key: DATABASE_URL
-        sync: false
+        fromDatabase:
+          name: aimak-postgres
+          property: connectionString
       
       # REDIS
       - key: REDIS_URL
