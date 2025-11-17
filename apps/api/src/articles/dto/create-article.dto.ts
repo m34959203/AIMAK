@@ -5,12 +5,12 @@ export class CreateArticleDto {
   @ApiProperty({ example: 'My First Article' })
   @IsString()
   @IsNotEmpty()
-  title: string;
+  title!: string;
 
   @ApiProperty({ example: 'This is the content of my article...' })
   @IsString()
   @IsNotEmpty()
-  content: string;
+  content!: string;
 
   @ApiPropertyOptional({ example: 'A brief summary of the article' })
   @IsString()
@@ -25,7 +25,7 @@ export class CreateArticleDto {
   @ApiProperty({ example: 'category-uuid' })
   @IsString()
   @IsNotEmpty()
-  categoryId: string;
+  categoryId!: string;
 
   @ApiPropertyOptional({ example: ['tag-uuid-1', 'tag-uuid-2'] })
   @IsArray()
