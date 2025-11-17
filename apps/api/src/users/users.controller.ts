@@ -3,6 +3,7 @@ import {
   Get,
   Patch,
   Delete,
+  Post,
   Param,
   Body,
   UseGuards,
@@ -17,32 +18,51 @@ import { Role } from '@prisma/client';
 
 @ApiTags('users')
 @Controller('users')
-@UseGuards(JwtAuthGuard, RolesGuard)
-@ApiBearerAuth()
 export class UsersController {
   constructor(private usersService: UsersService) {}
 
+  /**
+   * Публичный endpoint для создания первого админа
+   * Работает только если в системе ещё нет админов
+   */
+  @Post('create-first-admin')
+  @ApiOperation({
+    summary: 'Create first admin (Public, works only once)',
+    description: 'Promotes a user to admin role. Only works if no admins exist in the system yet.'
+  })
+  createFirstAdmin(@Body() body: { email: string }) {
+    return this.usersService.createFirstAdmin(body.email);
+  }
+
   @Get()
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Get all users (Admin only)' })
   findAll() {
     return this.usersService.findAll();
   }
 
   @Get(':id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Get user by id' })
   findOne(@Param('id') id: string) {
     return this.usersService.findOne(id);
   }
 
   @Patch(':id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Update user' })
   update(@Param('id') id: string, @Body() dto: UpdateUserDto) {
     return this.usersService.update(id, dto);
   }
 
   @Delete(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Delete user (Admin only)' })
   remove(@Param('id') id: string) {
     return this.usersService.remove(id);
