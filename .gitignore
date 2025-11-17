@@ -21,3 +21,6 @@ Thumbs.db
 prisma/migrations/**/migration.sql
 uploads/*
 !uploads/.gitkeep
+
+# TypeScript build info
+*.tsbuildinfo

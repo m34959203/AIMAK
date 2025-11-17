@@ -9,6 +9,8 @@ import type {
   Tag,
   CreateBilingualArticleDto,
   UpdateBilingualArticleDto,
+  CreateBilingualCategoryDto,
+  CreateBilingualTagDto,
 } from '@/types';
 
 // Правильно формируем API URL
@@ -91,9 +93,9 @@ export const articlesApi = {
 export const categoriesApi = {
   getAll: () => api.get<Category[]>('/categories'),
   getById: (id: string) => api.get<Category>(`/categories/${id}`),
-  create: (data: { name: string; description?: string }) =>
+  create: (data: CreateBilingualCategoryDto) =>
     api.post<Category>('/categories', data),
-  update: (id: string, data: { name?: string; description?: string }) =>
+  update: (id: string, data: Partial<CreateBilingualCategoryDto>) =>
     api.patch<Category>(`/categories/${id}`, data),
   delete: (id: string) => api.delete(`/categories/${id}`),
 };
@@ -102,8 +104,8 @@ export const categoriesApi = {
 export const tagsApi = {
   getAll: () => api.get<Tag[]>('/tags'),
   getById: (id: string) => api.get<Tag>(`/tags/${id}`),
-  create: (data: { name: string }) => api.post<Tag>('/tags', data),
-  update: (id: string, data: { name: string }) =>
+  create: (data: CreateBilingualTagDto) => api.post<Tag>('/tags', data),
+  update: (id: string, data: Partial<CreateBilingualTagDto>) =>
     api.patch<Tag>(`/tags/${id}`, data),
   delete: (id: string) => api.delete(`/tags/${id}`),
 };
