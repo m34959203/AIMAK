@@ -4,21 +4,43 @@ export enum Role {
   ADMIN = 'ADMIN',
 }
 
+export enum ArticleStatus {
+  DRAFT = 'DRAFT',
+  REVIEW = 'REVIEW',
+  SCHEDULED = 'SCHEDULED',
+  PUBLISHED = 'PUBLISHED',
+  ARCHIVED = 'ARCHIVED',
+}
+
 export interface User {
   id: string;
   email: string;
   firstName: string;
   lastName: string;
+  avatarUrl?: string;
+  bio?: string;
   role: Role;
+  isActive: boolean;
+  isVerified: boolean;
   createdAt: string;
   updatedAt: string;
+  lastLoginAt?: string;
 }
 
 export interface Category {
   id: string;
-  name: string;
   slug: string;
-  description?: string;
+  // Bilingual fields
+  nameKz: string;
+  nameRu: string;
+  descriptionKz?: string;
+  descriptionRu?: string;
+  // Hierarchy
+  parentId?: string;
+  parent?: Category;
+  children?: Category[];
+  sortOrder: number;
+  isActive: boolean;
   articles?: Article[];
   createdAt: string;
   updatedAt: string;
@@ -26,27 +48,103 @@ export interface Category {
 
 export interface Tag {
   id: string;
-  name: string;
+  slug: string;
+  nameKz: string;
+  nameRu: string;
+  usageCount: number;
+  articles?: Article[];
   createdAt: string;
 }
 
 export interface Article {
   id: string;
-  title: string;
-  slug: string;
-  content: string;
-  excerpt?: string;
+
+  // Kazakh language
+  slugKz: string;
+  titleKz: string;
+  subtitleKz?: string;
+  excerptKz?: string;
+  contentKz: string;
+
+  // Russian language
+  slugRu?: string;
+  titleRu?: string;
+  subtitleRu?: string;
+  excerptRu?: string;
+  contentRu?: string;
+
+  // Media
   coverImage?: string;
+  featuredImageId?: string;
+
+  // Status and publication
+  status: ArticleStatus;
   published: boolean;
   publishedAt?: string;
+  scheduledAt?: string;
+
+  // Flags
+  isBreaking: boolean;
+  isFeatured: boolean;
+  isPinned: boolean;
+  allowComments: boolean;
+
+  // Metrics
   views: number;
+  likes: number;
+  shares: number;
+
+  // AI
+  aiGenerated: boolean;
+  aiProvider?: string;
+
+  // Relations
+  authorId: string;
   author: {
     id: string;
     firstName: string;
     lastName: string;
+    avatarUrl?: string;
   };
+  categoryId: string;
   category: Category;
   tags: Tag[];
+
+  // Timestamps
+  createdAt: string;
+  updatedAt: string;
+  deletedAt?: string;
+}
+
+export interface MediaFile {
+  id: string;
+  filename: string;
+  originalFilename: string;
+  mimeType: string;
+  size: number;
+  width?: number;
+  height?: number;
+  url: string;
+  thumbnailUrl?: string;
+  altTextKz?: string;
+  altTextRu?: string;
+  captionKz?: string;
+  captionRu?: string;
+  uploadedById?: string;
+  createdAt: string;
+}
+
+export interface Comment {
+  id: string;
+  articleId: string;
+  userId?: string;
+  parentId?: string;
+  content: string;
+  guestName?: string;
+  guestEmail?: string;
+  isApproved: boolean;
+  isDeleted: boolean;
+  likes: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -68,6 +166,7 @@ export interface AuthResponse {
   accessToken: string;
 }
 
+// Backward compatible DTO (maps to Kazakh fields)
 export interface CreateArticleDto {
   title: string;
   content: string;
@@ -78,6 +177,7 @@ export interface CreateArticleDto {
   published?: boolean;
 }
 
+// Backward compatible DTO
 export interface UpdateArticleDto {
   title?: string;
   content?: string;
@@ -86,4 +186,88 @@ export interface UpdateArticleDto {
   categoryId?: string;
   tagIds?: string[];
   published?: boolean;
+}
+
+// New bilingual DTOs
+export interface CreateBilingualArticleDto {
+  // Kazakh (required)
+  titleKz: string;
+  contentKz: string;
+  excerptKz?: string;
+
+  // Russian (optional)
+  titleRu?: string;
+  contentRu?: string;
+  excerptRu?: string;
+
+  // Common fields
+  coverImage?: string;
+  categoryId: string;
+  tagIds?: string[];
+  status?: ArticleStatus;
+  published?: boolean;
+
+  // Flags
+  isBreaking?: boolean;
+  isFeatured?: boolean;
+  isPinned?: boolean;
+  allowComments?: boolean;
+}
+
+export interface UpdateBilingualArticleDto {
+  // Kazakh
+  titleKz?: string;
+  contentKz?: string;
+  excerptKz?: string;
+
+  // Russian
+  titleRu?: string;
+  contentRu?: string;
+  excerptRu?: string;
+
+  // Common fields
+  coverImage?: string;
+  categoryId?: string;
+  tagIds?: string[];
+  status?: ArticleStatus;
+  published?: boolean;
+
+  // Flags
+  isBreaking?: boolean;
+  isFeatured?: boolean;
+  isPinned?: boolean;
+  allowComments?: boolean;
+}
+
+export interface CreateCategoryDto {
+  name: string;
+  description?: string;
+}
+
+export interface UpdateCategoryDto {
+  name?: string;
+  description?: string;
+}
+
+export interface CreateBilingualCategoryDto {
+  slug: string;
+  nameKz: string;
+  nameRu: string;
+  descriptionKz?: string;
+  descriptionRu?: string;
+  parentId?: string;
+  sortOrder?: number;
+}
+
+export interface CreateTagDto {
+  name: string;
+}
+
+export interface UpdateTagDto {
+  name?: string;
+}
+
+export interface CreateBilingualTagDto {
+  nameKz: string;
+  nameRu: string;
 }
