@@ -30,7 +30,11 @@ export function useAuth() {
   const logout = () => {
     clearAuth();
     queryClient.clear();
-    router.push('/login');
+    // Try to get current lang from pathname, default to 'kz'
+    const currentPath = window.location.pathname;
+    const langMatch = currentPath.match(/^\/(kz|ru)\//);
+    const lang = langMatch ? langMatch[1] : 'kz';
+    router.push(`/${lang}/login`);
   };
 
   const { data: currentUser, isLoading: isLoadingUser } = useQuery({

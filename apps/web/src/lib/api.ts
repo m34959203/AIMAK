@@ -61,7 +61,11 @@ api.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       localStorage.removeItem('accessToken');
-      window.location.href = '/login';
+      // Try to get current lang from pathname, default to 'kz'
+      const currentPath = window.location.pathname;
+      const langMatch = currentPath.match(/^\/(kz|ru)\//);
+      const lang = langMatch ? langMatch[1] : 'kz';
+      window.location.href = `/${lang}/login`;
     }
     return Promise.reject(error);
   }
