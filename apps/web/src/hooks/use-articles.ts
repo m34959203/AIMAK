@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { articlesApi } from '@/lib/api';
-import type { CreateArticleDto, UpdateArticleDto } from '@/types';
+import type { CreateBilingualArticleDto, UpdateBilingualArticleDto } from '@/types';
 
 export function useArticles(published?: boolean) {
   return useQuery({
@@ -38,7 +38,7 @@ export function useCreateArticle() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: CreateArticleDto) => articlesApi.create(data),
+    mutationFn: (data: CreateBilingualArticleDto) => articlesApi.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['articles'] });
     },
@@ -49,7 +49,7 @@ export function useUpdateArticle() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: UpdateArticleDto }) =>
+    mutationFn: ({ id, data }: { id: string; data: UpdateBilingualArticleDto }) =>
       articlesApi.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['articles'] });
