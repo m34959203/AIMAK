@@ -228,7 +228,7 @@ export default async function ArticlePage({
                 {params.lang === 'kz' ? 'Танымал' : 'Популярное'}
               </h3>
               <div className="space-y-4">
-                {relatedArticles.slice(0, 5).map((related, index) => (
+                {relatedArticles.slice(0, 5).map((related: any, index: number) => (
                   <div key={related.id} className="flex gap-3">
                     <div className="flex-shrink-0">
                       <span className="text-2xl font-bold text-gray-200">
