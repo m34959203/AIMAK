@@ -123,4 +123,28 @@ export const usersApi = {
   delete: (id: string) => api.delete(`/users/${id}`),
 };
 
+// Media API
+export const mediaApi = {
+  upload: (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    return api.post<{
+      id: string;
+      url: string;
+      filename: string;
+      originalFilename: string;
+      mimeType: string;
+      size: number;
+      width?: number;
+      height?: number;
+      createdAt: string;
+    }>('/media/upload', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+  },
+};
+
 export default api;
