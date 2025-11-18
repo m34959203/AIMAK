@@ -172,6 +172,34 @@ export class SetupController {
   }
 
   @Public()
+  @Post('reset-database')
+  @HttpCode(HttpStatus.OK)
+  async resetDatabase() {
+    try {
+      // Delete failed migration record
+      await this.prisma.$executeRawUnsafe(`
+        DELETE FROM _prisma_migrations WHERE migration_name = '20251118000000_init';
+      `);
+
+      // Drop and recreate schema
+      await this.prisma.$executeRawUnsafe(`DROP SCHEMA public CASCADE;`);
+      await this.prisma.$executeRawUnsafe(`CREATE SCHEMA public;`);
+      await this.prisma.$executeRawUnsafe(`GRANT ALL ON SCHEMA public TO postgres;`);
+      await this.prisma.$executeRawUnsafe(`GRANT ALL ON SCHEMA public TO public;`);
+
+      return {
+        success: true,
+        message: 'Database reset successfully. Please redeploy the application to apply migrations.',
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: error instanceof Error ? error.message : 'An unknown error occurred',
+      };
+    }
+  }
+
+  @Public()
   @Post('check')
   @HttpCode(HttpStatus.OK)
   async check() {
