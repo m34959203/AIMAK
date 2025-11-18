@@ -2,11 +2,13 @@ import { Controller, Post, HttpCode, HttpStatus } from '@nestjs/common';
 import { PrismaService } from '../common/prisma/prisma.service';
 import * as bcrypt from 'bcryptjs';
 import { ArticleStatus } from '@prisma/client';
+import { Public } from '../auth/decorators/public.decorator';
 
 @Controller('setup')
 export class SetupController {
   constructor(private prisma: PrismaService) {}
 
+  @Public()
   @Post('initialize')
   @HttpCode(HttpStatus.OK)
   async initialize() {
@@ -169,6 +171,7 @@ export class SetupController {
     }
   }
 
+  @Public()
   @Post('check')
   @HttpCode(HttpStatus.OK)
   async check() {
