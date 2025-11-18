@@ -2,17 +2,27 @@ import { TengriArticleCard } from '@/components/tengri-article-card';
 
 async function getCategoryArticles(categorySlug: string) {
   try {
+    // Ensure API URL has protocol
+    let apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+    if (!apiUrl.startsWith('http://') && !apiUrl.startsWith('https://')) {
+      apiUrl = `https://${apiUrl}`;
+    }
+
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/articles?published=true`,
+      `${apiUrl}/api/articles?published=true`,
       { cache: 'no-store' }
     );
 
     if (!res.ok) {
+      console.error(`Failed to fetch articles: ${res.status} ${res.statusText}`);
       return [];
     }
 
     const allArticles = await res.json();
-    return allArticles.filter((article: any) => article.category?.slug === categorySlug);
+    console.log(`Total articles fetched: ${allArticles.length}`);
+    const filtered = allArticles.filter((article: any) => article.category?.slug === categorySlug);
+    console.log(`Articles in category '${categorySlug}': ${filtered.length}`);
+    return filtered;
   } catch (error) {
     console.error('Failed to fetch articles:', error);
     return [];
@@ -67,12 +77,19 @@ const FALLBACK_CATEGORIES = [
 
 async function getCategory(categorySlug: string) {
   try {
+    // Ensure API URL has protocol
+    let apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+    if (!apiUrl.startsWith('http://') && !apiUrl.startsWith('https://')) {
+      apiUrl = `https://${apiUrl}`;
+    }
+
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/categories`,
+      `${apiUrl}/api/categories`,
       { cache: 'no-store' }
     );
 
     if (!res.ok) {
+      console.error(`Failed to fetch categories: ${res.status} ${res.statusText}`);
       // Use fallback categories if API fails
       return FALLBACK_CATEGORIES.find((cat) => cat.slug === categorySlug) || null;
     }
