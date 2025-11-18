@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useCategories } from '@/hooks/use-categories';
 import { useTags } from '@/hooks/use-tags';
 import { useUploadImage } from '@/hooks/use-media';
+import { RichTextEditor } from './rich-text-editor';
 import { ArticleStatus } from '@/types';
 import type { Article, CreateBilingualArticleDto, UpdateBilingualArticleDto } from '@/types';
 
@@ -188,13 +189,10 @@ export function ArticleForm({ article, onSubmit, isLoading }: ArticleFormProps) 
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Содержание (казахский) *
             </label>
-            <textarea
-              value={contentKz}
-              onChange={(e) => setContentKz(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-              rows={15}
-              placeholder="Мақала мазмұны"
-              required
+            <RichTextEditor
+              content={contentKz}
+              onChange={setContentKz}
+              placeholder="Мақала мазмұны... (Вы можете загружать изображения перетягиванием или через кнопку в панели инструментов)"
             />
           </div>
         </div>
@@ -233,12 +231,10 @@ export function ArticleForm({ article, onSubmit, isLoading }: ArticleFormProps) 
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Содержание (русский)
             </label>
-            <textarea
-              value={contentRu}
-              onChange={(e) => setContentRu(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-              rows={15}
-              placeholder="Содержание статьи"
+            <RichTextEditor
+              content={contentRu}
+              onChange={setContentRu}
+              placeholder="Содержание статьи... (Вы можете загружать изображения перетягиванием или через кнопку в панели инструментов)"
             />
           </div>
         </div>
