@@ -27,12 +27,23 @@ body {
 
 /* Resizable Image Styles */
 .ProseMirror .resizable-image-wrapper {
-  display: block;
   position: relative;
-  margin: 1rem 0;
   user-select: none;
-  max-width: fit-content;
-  clear: both;
+  max-width: 100%;
+}
+
+/* Default non-floating images get vertical margin */
+.ProseMirror .resizable-image-wrapper[data-float="none"] {
+  margin: 1rem 0;
+  width: 100%;
+}
+
+/* Inline display to allow images inside text flow */
+.ProseMirror .resizable-image-wrapper img {
+  display: block;
+  max-width: 100%;
+  border-radius: 0.5rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .ProseMirror .resizable-image-wrapper:hover {
@@ -52,12 +63,6 @@ body {
 .ProseMirror .resizable-image-wrapper[data-float="left"]:active,
 .ProseMirror .resizable-image-wrapper[data-float="right"]:active {
   cursor: default !important;
-}
-
-.ProseMirror .resizable-image-wrapper img {
-  display: block;
-  border-radius: 0.5rem;
-  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .ProseMirror .resizable-image-wrapper:hover img {

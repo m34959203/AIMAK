@@ -294,7 +294,6 @@ export function RichTextEditor({ content, onChange, placeholder }: RichTextEdito
       StarterKit,
       Underline,
       ResizableImage.configure({
-        inline: false,
         allowBase64: true,
       }),
       Placeholder.configure({

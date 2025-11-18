@@ -94,16 +94,22 @@ const ResizableImageComponent = ({ node, updateAttributes, selected }: NodeViewP
       styles.float = 'left';
       styles.marginRight = '1rem';
       styles.marginBottom = '0.5rem';
+      styles.display = 'block';
     } else if (float === 'right') {
       styles.float = 'right';
       styles.marginLeft = '1rem';
       styles.marginBottom = '0.5rem';
-    } else if (align === 'center') {
-      styles.marginLeft = 'auto';
-      styles.marginRight = 'auto';
-    } else if (align === 'right') {
-      styles.marginLeft = 'auto';
-      styles.marginRight = '0';
+      styles.display = 'block';
+    } else {
+      // For non-floating images, use text-align on wrapper for positioning
+      styles.display = 'block';
+      if (align === 'center') {
+        styles.textAlign = 'center';
+      } else if (align === 'right') {
+        styles.textAlign = 'right';
+      } else {
+        styles.textAlign = 'left';
+      }
     }
 
     return styles;
@@ -129,8 +135,6 @@ const ResizableImageComponent = ({ node, updateAttributes, selected }: NodeViewP
         style={{
           width: width ? `${width}px` : 'auto',
           height: height ? `${height}px` : 'auto',
-          maxWidth: '100%',
-          display: 'block',
         }}
       />
 
@@ -254,6 +258,10 @@ const ResizableImageComponent = ({ node, updateAttributes, selected }: NodeViewP
 
 export const ResizableImage = Image.extend({
   name: 'resizableImage',
+
+  inline: true,
+
+  group: 'inline',
 
   draggable: true,
 
