@@ -88,7 +88,7 @@ const ResizableImageComponent = ({ node, updateAttributes, selected }: NodeViewP
   const { src, alt, title, width, height } = node.attrs;
 
   return (
-    <NodeViewWrapper className="resizable-image-wrapper inline-block relative group my-4" data-drag-handle>
+    <NodeViewWrapper className="resizable-image-wrapper group" data-drag-handle>
       <img
         ref={imgRef}
         src={src}
@@ -107,12 +107,11 @@ const ResizableImageComponent = ({ node, updateAttributes, selected }: NodeViewP
         }}
       />
 
-      {/* Drag handle - always visible on hover */}
+      {/* Drag handle - visible on hover and when selected */}
       <div
-        className={`absolute top-2 left-2 bg-blue-500 text-white p-1.5 rounded shadow-lg cursor-move ${
+        className={`absolute top-2 left-2 bg-blue-500 text-white p-1.5 rounded shadow-lg cursor-move transition-opacity pointer-events-none ${
           selected ? 'opacity-100' : 'opacity-0 group-hover:opacity-80'
-        } transition-opacity`}
-        data-drag-handle
+        }`}
         title="Перетащите для перемещения изображения"
       >
         <FaArrowsAlt className="w-3 h-3" />
