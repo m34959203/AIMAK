@@ -51,14 +51,11 @@ export function TengriFooter({ lang = 'kz' }: FooterProps) {
   const text = t[lang];
 
   const socialLinks = [
-    { name: 'Instagram', icon: FaInstagram, url: 'https://instagram.com/aimakakshamy' },
-    { name: 'Telegram', icon: FaTelegram, url: 'https://t.me/aimakakshamy' },
-    { name: 'VK', icon: FaVk, url: 'https://vk.com/aimakakshamy' },
-    { name: 'Facebook', icon: FaFacebook, url: 'https://facebook.com/aimakakshamy' },
-    { name: 'Twitter', icon: FaTwitter, url: 'https://twitter.com/aimakakshamy' },
-    { name: 'YouTube', icon: FaYoutube, url: 'https://youtube.com/@aimakakshamy' },
-    { name: 'TikTok', icon: FaTiktok, url: 'https://tiktok.com/@aimakakshamy' },
-    { name: 'WhatsApp', icon: FaWhatsapp, url: 'https://wa.me/77005000500' },
+    { name: 'Instagram', icon: FaInstagram, url: 'https://www.instagram.com/aimaqaqshamy.kz?igsh=MTlnam1leGFocDE4Ng==' },
+    { name: 'Telegram', icon: FaTelegram, url: 'https://t.me/aimaqaqshamy' },
+    { name: 'YouTube', icon: FaYoutube, url: 'https://www.youtube.com/@AimaqAqshamy' },
+    { name: 'TikTok', icon: FaTiktok, url: 'https://tiktok.com/@aimaqaqshamy' },
+    { name: 'WhatsApp', icon: FaWhatsapp, url: 'https://wa.me/77773024679' },
   ];
 
   const categories = [
@@ -84,15 +81,15 @@ export function TengriFooter({ lang = 'kz' }: FooterProps) {
               <div>
                 <span className="font-semibold text-white">{text.editorial}:</span>
                 <br />
-                <a href="tel:+77212500500" className="hover:text-green-500">
-                  +7 (7212) 50-05-00
+                <a href="tel:+77773024679" className="hover:text-green-500">
+                  +7 (777) 302-46-79
                 </a>
               </div>
               <div>
                 <span className="font-semibold text-white">{text.adDepartment}:</span>
                 <br />
-                <a href="tel:+77212500501" className="hover:text-green-500">
-                  +7 (7212) 50-05-01
+                <a href="tel:+77773024679" className="hover:text-green-500">
+                  +7 (777) 302-46-79
                 </a>
               </div>
             </div>
