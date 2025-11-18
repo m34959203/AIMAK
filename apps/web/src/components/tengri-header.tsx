@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
+import { useCategories } from '@/hooks/use-categories';
 import { SearchBar } from './search-bar';
 
 interface HeaderProps {
@@ -16,7 +17,11 @@ export function TengriHeader({ lang = 'kz' }: HeaderProps) {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const pathname = usePathname();
 
-  const categories = [
+  // Fetch categories from API
+  const { data: categoriesData, isLoading: categoriesLoading } = useCategories();
+
+  // Fallback categories if API is loading or fails
+  const fallbackCategories = [
     { slug: 'zhanalyqtar', nameKz: 'ЖАҢАЛЫҚТАР', nameRu: 'НОВОСТИ' },
     { slug: 'ozekti', nameKz: 'ӨЗЕКТІ', nameRu: 'АКТУАЛЬНО' },
     { slug: 'sayasat', nameKz: 'САЯСАТ', nameRu: 'ПОЛИТИКА' },
@@ -24,6 +29,11 @@ export function TengriHeader({ lang = 'kz' }: HeaderProps) {
     { slug: 'qogam', nameKz: 'ҚОҒАМ', nameRu: 'ОБЩЕСТВО' },
     { slug: 'kazakhmys', nameKz: 'KAZAKHMYS NEWS', nameRu: 'KAZAKHMYS NEWS' },
   ];
+
+  // Use API categories if available, otherwise use fallback
+  const categories = categoriesData && categoriesData.length > 0
+    ? categoriesData.filter((cat: any) => cat.isActive).sort((a: any, b: any) => a.sortOrder - b.sortOrder)
+    : fallbackCategories;
 
   const t = {
     kz: {
