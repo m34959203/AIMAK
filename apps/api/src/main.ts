@@ -36,12 +36,19 @@ async function bootstrap() {
 
   const frontendUrl = getFrontendUrl();
 
+  // Enhanced CORS configuration to handle preflight requests
   app.enableCors({
-    origin: frontendUrl,
+    origin: [frontendUrl, 'https://aimak-web.onrender.com'],
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With'],
+    exposedHeaders: ['Content-Range', 'X-Content-Range'],
     credentials: true,
+    maxAge: 3600,
+    preflightContinue: false,
+    optionsSuccessStatus: 204,
   });
 
-  console.log(`CORS enabled for origin: ${frontendUrl}`);
+  console.log(`CORS enabled for origins: ${frontendUrl}, https://aimak-web.onrender.com`);
 
   app.useGlobalPipes(
     new ValidationPipe({
