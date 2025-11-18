@@ -32,9 +32,9 @@ services:
     runtime: node
     plan: free
     
-    buildCommand: cd apps/api && corepack enable pnpm && pnpm install --frozen-lockfile && pnpm prisma generate && pnpm build
-    
-    startCommand: cd apps/api && pnpm prisma migrate deploy && pnpm start:prod
+    buildCommand: cd apps/api && corepack enable pnpm && pnpm install --frozen-lockfile && pnpm prisma generate && pnpm migrate:deploy && pnpm build
+
+    startCommand: cd apps/api && pnpm start:prod
     
     healthCheckPath: /api/health
     
