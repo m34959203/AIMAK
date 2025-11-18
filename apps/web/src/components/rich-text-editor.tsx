@@ -288,6 +288,7 @@ const MenuBar = ({ editor }: { editor: Editor | null }) => {
 
 export function RichTextEditor({ content, onChange, placeholder }: RichTextEditorProps) {
   const uploadImage = useUploadImage();
+  const isUpdatingRef = useRef(false);
 
   const editor = useEditor({
     extensions: [
@@ -311,7 +312,9 @@ export function RichTextEditor({ content, onChange, placeholder }: RichTextEdito
     ],
     content,
     onUpdate: ({ editor }) => {
-      onChange(editor.getHTML());
+      if (!isUpdatingRef.current) {
+        onChange(editor.getHTML());
+      }
     },
     editorProps: {
       attributes: {
@@ -378,10 +381,33 @@ export function RichTextEditor({ content, onChange, placeholder }: RichTextEdito
     },
   });
 
-  // Update editor content when prop changes
+  // Update editor content when prop changes (e.g., loading article for editing)
   useEffect(() => {
-    if (editor && content !== editor.getHTML()) {
-      editor.commands.setContent(content);
+    if (!editor || !content) return;
+
+    const currentContent = editor.getHTML();
+
+    // Only update if content is different and not empty
+    if (content !== currentContent && content.trim() !== '') {
+      try {
+        isUpdatingRef.current = true;
+        // Use emitUpdate: false to prevent triggering onChange
+        editor.commands.setContent(content, false);
+      } catch (error) {
+        console.error('Failed to set editor content:', error);
+        // If setContent fails, try to clear and set again
+        try {
+          editor.commands.clearContent();
+          editor.commands.setContent(content, false);
+        } catch (retryError) {
+          console.error('Failed to set content on retry:', retryError);
+        }
+      } finally {
+        // Reset flag after a short delay to allow editor to settle
+        setTimeout(() => {
+          isUpdatingRef.current = false;
+        }, 100);
+      }
     }
   }, [content, editor]);
 
