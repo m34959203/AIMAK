@@ -1,16 +1,40 @@
--- CreateEnum
-CREATE TYPE "Role" AS ENUM ('USER', 'EDITOR', 'ADMIN');
+-- CreateEnum (only if not exists)
+DO $$ BEGIN
+    CREATE TYPE "Role" AS ENUM ('USER', 'EDITOR', 'ADMIN');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
--- CreateEnum
-CREATE TYPE "ArticleStatus" AS ENUM ('DRAFT', 'REVIEW', 'SCHEDULED', 'PUBLISHED', 'ARCHIVED');
+DO $$ BEGIN
+    CREATE TYPE "ArticleStatus" AS ENUM ('DRAFT', 'REVIEW', 'SCHEDULED', 'PUBLISHED', 'ARCHIVED');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
--- CreateEnum
-CREATE TYPE "AdPosition" AS ENUM ('HEADER', 'SIDEBAR_TOP', 'SIDEBAR_MIDDLE', 'IN_CONTENT', 'FOOTER', 'STICKY_BOTTOM');
+DO $$ BEGIN
+    CREATE TYPE "AdPosition" AS ENUM ('HEADER', 'SIDEBAR_TOP', 'SIDEBAR_MIDDLE', 'IN_CONTENT', 'FOOTER', 'STICKY_BOTTOM');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
--- CreateEnum
-CREATE TYPE "AdSize" AS ENUM ('BANNER_728x90', 'LARGE_BANNER_970x90', 'RECTANGLE_300x250', 'HALF_PAGE_300x600', 'MOBILE_BANNER_320x50', 'NATIVE');
+DO $$ BEGIN
+    CREATE TYPE "AdSize" AS ENUM ('BANNER_728x90', 'LARGE_BANNER_970x90', 'RECTANGLE_300x250', 'HALF_PAGE_300x600', 'MOBILE_BANNER_320x50', 'NATIVE');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
--- CreateTable
+-- Drop old tables if they exist (to recreate with proper schema)
+DROP TABLE IF EXISTS "_ArticleToTag" CASCADE;
+DROP TABLE IF EXISTS "comments" CASCADE;
+DROP TABLE IF EXISTS "media_files" CASCADE;
+DROP TABLE IF EXISTS "ad_units" CASCADE;
+DROP TABLE IF EXISTS "ai_generations" CASCADE;
+DROP TABLE IF EXISTS "articles" CASCADE;
+DROP TABLE IF EXISTS "categories" CASCADE;
+DROP TABLE IF EXISTS "tags" CASCADE;
+DROP TABLE IF EXISTS "users" CASCADE;
+
+-- CreateTable users
 CREATE TABLE "users" (
     "id" TEXT NOT NULL,
     "email" TEXT NOT NULL,
@@ -29,7 +53,7 @@ CREATE TABLE "users" (
     CONSTRAINT "users_pkey" PRIMARY KEY ("id")
 );
 
--- CreateTable
+-- CreateTable articles
 CREATE TABLE "articles" (
     "id" TEXT NOT NULL,
     "slug_kz" TEXT NOT NULL,
@@ -66,7 +90,7 @@ CREATE TABLE "articles" (
     CONSTRAINT "articles_pkey" PRIMARY KEY ("id")
 );
 
--- CreateTable
+-- CreateTable categories
 CREATE TABLE "categories" (
     "id" TEXT NOT NULL,
     "slug" TEXT NOT NULL,
@@ -83,7 +107,7 @@ CREATE TABLE "categories" (
     CONSTRAINT "categories_pkey" PRIMARY KEY ("id")
 );
 
--- CreateTable
+-- CreateTable tags
 CREATE TABLE "tags" (
     "id" TEXT NOT NULL,
     "slug" TEXT NOT NULL,
@@ -95,7 +119,7 @@ CREATE TABLE "tags" (
     CONSTRAINT "tags_pkey" PRIMARY KEY ("id")
 );
 
--- CreateTable
+-- CreateTable media_files
 CREATE TABLE "media_files" (
     "id" TEXT NOT NULL,
     "filename" TEXT NOT NULL,
@@ -116,7 +140,7 @@ CREATE TABLE "media_files" (
     CONSTRAINT "media_files_pkey" PRIMARY KEY ("id")
 );
 
--- CreateTable
+-- CreateTable comments
 CREATE TABLE "comments" (
     "id" TEXT NOT NULL,
     "article_id" TEXT NOT NULL,
@@ -134,7 +158,7 @@ CREATE TABLE "comments" (
     CONSTRAINT "comments_pkey" PRIMARY KEY ("id")
 );
 
--- CreateTable
+-- CreateTable ad_units
 CREATE TABLE "ad_units" (
     "id" TEXT NOT NULL,
     "code" TEXT NOT NULL,
@@ -152,7 +176,7 @@ CREATE TABLE "ad_units" (
     CONSTRAINT "ad_units_pkey" PRIMARY KEY ("id")
 );
 
--- CreateTable
+-- CreateTable ai_generations
 CREATE TABLE "ai_generations" (
     "id" TEXT NOT NULL,
     "user_id" TEXT NOT NULL,
@@ -171,7 +195,7 @@ CREATE TABLE "ai_generations" (
     CONSTRAINT "ai_generations_pkey" PRIMARY KEY ("id")
 );
 
--- CreateTable
+-- CreateTable _ArticleToTag
 CREATE TABLE "_ArticleToTag" (
     "A" TEXT NOT NULL,
     "B" TEXT NOT NULL
