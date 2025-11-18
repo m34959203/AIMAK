@@ -11,7 +11,8 @@
     "test": "jest",
     "db:migrate": "prisma migrate dev",
     "db:studio": "prisma studio",
-    "migrate:deploy": "node scripts/pre-migrate.js && prisma migrate deploy"
+    "migrate:deploy": "node scripts/pre-migrate.js && prisma migrate deploy",
+    "fix:media-urls": "node scripts/fix-media-urls.js"
   },
   "dependencies": {
     "@nestjs/common": "^10.3.0",
