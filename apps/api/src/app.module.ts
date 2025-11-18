@@ -9,6 +9,7 @@ import { CategoriesModule } from './categories/categories.module';
 import { TagsModule } from './tags/tags.module';
 import { HealthModule } from './health/health.module';
 import { SetupModule } from './setup/setup.module';
+import { MediaModule } from './media/media.module';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { BootstrapAdminService } from './bootstrap-admin.service';
 
@@ -25,6 +26,7 @@ import { BootstrapAdminService } from './bootstrap-admin.service';
     TagsModule,
     HealthModule,
     SetupModule,
+    MediaModule,
   ],
   providers: [
     {

@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useCategories } from '@/hooks/use-categories';
 import { useTags } from '@/hooks/use-tags';
+import { useUploadImage } from '@/hooks/use-media';
 import { ArticleStatus } from '@/types';
 import type { Article, CreateBilingualArticleDto, UpdateBilingualArticleDto } from '@/types';
 
@@ -16,6 +17,7 @@ type LanguageTab = 'kz' | 'ru';
 
 export function ArticleForm({ article, onSubmit, isLoading }: ArticleFormProps) {
   const [activeTab, setActiveTab] = useState<LanguageTab>('kz');
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Kazakh content
   const [titleKz, setTitleKz] = useState(article?.titleKz || '');
@@ -33,6 +35,7 @@ export function ArticleForm({ article, onSubmit, isLoading }: ArticleFormProps) 
   const [selectedTags, setSelectedTags] = useState<string[]>(
     article?.tags?.map((t) => t.id) || []
   );
+  const [uploadError, setUploadError] = useState('');
 
   // Status and flags
   const [status, setStatus] = useState<ArticleStatus>(article?.status || ArticleStatus.DRAFT);
@@ -43,6 +46,45 @@ export function ArticleForm({ article, onSubmit, isLoading }: ArticleFormProps) 
 
   const { data: categories } = useCategories();
   const { data: tags } = useTags();
+  const uploadImage = useUploadImage();
+
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      setUploadError('Пожалуйста, выберите файл изображения');
+      return;
+    }
+
+    // Validate file size (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setUploadError('Размер файла не должен превышать 5MB');
+      return;
+    }
+
+    setUploadError('');
+
+    try {
+      const response = await uploadImage.mutateAsync(file);
+      setCoverImage(response.data.url);
+    } catch (error) {
+      setUploadError('Ошибка при загрузке изображения. Попробуйте еще раз.');
+      console.error('Upload error:', error);
+    }
+  };
+
+  const handleBrowseClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleRemoveImage = () => {
+    setCoverImage('');
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -208,8 +250,73 @@ export function ArticleForm({ article, onSubmit, isLoading }: ArticleFormProps) 
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            URL изображения обложки
+            Изображение обложки
           </label>
+
+          {/* Image Preview */}
+          {coverImage && (
+            <div className="mb-4 relative">
+              <img
+                src={coverImage}
+                alt="Preview"
+                className="max-w-md w-full h-48 object-cover rounded-lg border border-gray-300"
+              />
+              <button
+                type="button"
+                onClick={handleRemoveImage}
+                className="absolute top-2 right-2 bg-red-600 hover:bg-red-700 text-white rounded-full p-2 shadow-lg"
+                title="Удалить изображение"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          )}
+
+          {/* Upload Error */}
+          {uploadError && (
+            <div className="mb-3 p-3 bg-red-100 border border-red-400 text-red-700 rounded text-sm">
+              {uploadError}
+            </div>
+          )}
+
+          {/* File Upload Button */}
+          <div className="flex gap-3 mb-3">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleFileSelect}
+              className="hidden"
+            />
+            <button
+              type="button"
+              onClick={handleBrowseClick}
+              disabled={uploadImage.isPending}
+              className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            >
+              {uploadImage.isPending ? (
+                <>
+                  <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Загрузка...
+                </>
+              ) : (
+                <>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  Загрузить файл
+                </>
+              )}
+            </button>
+          </div>
+
+          {/* URL Input */}
+          <div className="text-sm text-gray-500 mb-2">или укажите URL изображения:</div>
           <input
             type="url"
             value={coverImage}
@@ -217,6 +324,9 @@ export function ArticleForm({ article, onSubmit, isLoading }: ArticleFormProps) 
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
             placeholder="https://example.com/image.jpg"
           />
+          <p className="mt-1 text-xs text-gray-500">
+            Максимальный размер файла: 5MB. Поддерживаемые форматы: JPG, PNG, GIF, WebP
+          </p>
         </div>
 
         <div>
