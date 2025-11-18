@@ -2,6 +2,9 @@
 
 import { useArticles } from '@/hooks/use-articles';
 
+// Disable static generation for this debug page
+export const dynamic = 'force-dynamic';
+
 export default function DebugArticlesPage() {
   const { data: allArticles, isLoading: allLoading } = useArticles();
   const { data: publishedArticles, isLoading: publishedLoading } = useArticles(true);
