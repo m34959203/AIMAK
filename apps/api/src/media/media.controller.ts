@@ -10,7 +10,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiConsumes, ApiBody } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { MediaService } from './media.service';
-import { GetUser } from '../auth/decorators/get-user.decorator';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { User } from '@prisma/client';
 
 @ApiTags('media')
@@ -37,7 +37,7 @@ export class MediaController {
   })
   async uploadFile(
     @UploadedFile() file: Express.Multer.File,
-    @GetUser() user: User,
+    @CurrentUser() user: User,
   ) {
     if (!file) {
       throw new BadRequestException('No file uploaded');
