@@ -3,6 +3,7 @@ import { ReactNodeViewRenderer, NodeViewWrapper } from '@tiptap/react';
 import { Node as ProseMirrorNode } from '@tiptap/pm/model';
 import { NodeViewProps } from '@tiptap/core';
 import { useState, useRef, useEffect } from 'react';
+import { FaArrowsAlt } from 'react-icons/fa';
 
 const ResizableImageComponent = ({ node, updateAttributes, selected }: NodeViewProps) => {
   const [isResizing, setIsResizing] = useState(false);
@@ -87,7 +88,7 @@ const ResizableImageComponent = ({ node, updateAttributes, selected }: NodeViewP
   const { src, alt, title, width, height } = node.attrs;
 
   return (
-    <NodeViewWrapper className="resizable-image-wrapper inline-block relative group my-4">
+    <NodeViewWrapper className="resizable-image-wrapper inline-block relative group my-4" data-drag-handle>
       <img
         ref={imgRef}
         src={src}
@@ -105,6 +106,17 @@ const ResizableImageComponent = ({ node, updateAttributes, selected }: NodeViewP
           display: 'block',
         }}
       />
+
+      {/* Drag handle - always visible on hover */}
+      <div
+        className={`absolute top-2 left-2 bg-blue-500 text-white p-1.5 rounded shadow-lg cursor-move ${
+          selected ? 'opacity-100' : 'opacity-0 group-hover:opacity-80'
+        } transition-opacity`}
+        data-drag-handle
+        title="Перетащите для перемещения изображения"
+      >
+        <FaArrowsAlt className="w-3 h-3" />
+      </div>
 
       {selected && (
         <>
@@ -156,6 +168,8 @@ const ResizableImageComponent = ({ node, updateAttributes, selected }: NodeViewP
 
 export const ResizableImage = Image.extend({
   name: 'resizableImage',
+
+  draggable: true,
 
   addAttributes() {
     return {
