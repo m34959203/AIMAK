@@ -184,10 +184,7 @@ services:
         value: Aimak Akshamy
       
       - key: APP_URL
-        fromService:
-          name: aimak-api
-          type: web
-          property: host
+        value: https://aimak-api.onrender.com
       
       - key: RATE_LIMIT_PUBLIC
         value: 100
@@ -219,16 +216,10 @@ services:
         value: 3000
       
       - key: NEXT_PUBLIC_API_URL
-        fromService:
-          name: aimak-api
-          type: web
-          property: host
-      
+        value: https://aimak-api.onrender.com
+
       - key: API_URL
-        fromService:
-          name: aimak-api
-          type: web
-          property: host
+        value: https://aimak-api.onrender.com
       
       - key: NEXT_PUBLIC_APP_NAME
         value: Аймақ ақшамы
