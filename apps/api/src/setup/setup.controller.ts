@@ -1,6 +1,6 @@
 import { Controller, Post, HttpCode, HttpStatus } from '@nestjs/common';
 import { PrismaService } from '../common/prisma/prisma.service';
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 import { ArticleStatus } from '@prisma/client';
 
 @Controller('setup')
@@ -163,7 +163,7 @@ export class SetupController {
     } catch (error) {
       return {
         success: false,
-        message: error.message,
+        message: error instanceof Error ? error.message : 'An unknown error occurred',
         results,
       };
     }
@@ -190,7 +190,7 @@ export class SetupController {
     } catch (error) {
       return {
         database: 'error',
-        error: error.message,
+        error: error instanceof Error ? error.message : 'An unknown error occurred',
       };
     }
   }
