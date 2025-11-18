@@ -25,17 +25,22 @@ body {
   pointer-events: none;
 }
 
-.ProseMirror img {
-  max-width: 100%;
-  height: auto;
-  display: block;
+/* Resizable Image Styles */
+.ProseMirror .resizable-image-wrapper {
+  display: inline-block;
+  position: relative;
   margin: 1rem 0;
-  border-radius: 0.5rem;
+  user-select: none;
 }
 
-.ProseMirror img.ProseMirror-selectednode {
-  outline: 3px solid #68CEF8;
-  cursor: pointer;
+.ProseMirror .resizable-image-wrapper img {
+  display: block;
+  border-radius: 0.5rem;
+  transition: border-color 0.2s;
+}
+
+.ProseMirror .resizable-image-wrapper.ProseMirror-selectednode img {
+  border-color: #3b82f6 !important;
 }
 
 .ProseMirror blockquote {

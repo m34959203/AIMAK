@@ -2,13 +2,13 @@
 
 import { useEditor, EditorContent, Editor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
-import Image from '@tiptap/extension-image';
 import Placeholder from '@tiptap/extension-placeholder';
 import TextAlign from '@tiptap/extension-text-align';
 import Underline from '@tiptap/extension-underline';
 import Link from '@tiptap/extension-link';
 import { useCallback, useEffect, useRef } from 'react';
 import { useUploadImage } from '@/hooks/use-media';
+import { ResizableImage } from './extensions/resizable-image';
 import {
   FaBold,
   FaItalic,
@@ -293,12 +293,9 @@ export function RichTextEditor({ content, onChange, placeholder }: RichTextEdito
     extensions: [
       StarterKit,
       Underline,
-      Image.configure({
-        inline: true,
+      ResizableImage.configure({
+        inline: false,
         allowBase64: true,
-        HTMLAttributes: {
-          class: 'max-w-full h-auto rounded cursor-pointer hover:opacity-90',
-        },
       }),
       Placeholder.configure({
         placeholder: placeholder || 'Начните писать...',
@@ -336,7 +333,7 @@ export function RichTextEditor({ content, onChange, placeholder }: RichTextEdito
                 const coordinates = view.posAtCoords({ left: event.clientX, top: event.clientY });
 
                 if (coordinates) {
-                  const node = schema.nodes.image.create({ src: response.data.url });
+                  const node = schema.nodes.resizableImage.create({ src: response.data.url });
                   const transaction = view.state.tr.insert(coordinates.pos, node);
                   view.dispatch(transaction);
                 }
