@@ -387,13 +387,16 @@ export function RichTextEditor({ content, onChange, placeholder }: RichTextEdito
 
     const currentContent = editor.getHTML();
 
-    // Only update if content is different
-    // Allow empty content to enable clearing the editor
-    if (content !== currentContent) {
+    // Normalize empty content: TipTap returns <p></p> for empty editor
+    const normalizedContent = content?.trim() || '';
+    const normalizedCurrent = currentContent === '<p></p>' ? '' : currentContent;
+
+    // Only update if content is meaningfully different
+    if (normalizedContent !== normalizedCurrent) {
       try {
         isUpdatingRef.current = true;
         // Use emitUpdate: false to prevent triggering onChange
-        if (content) {
+        if (normalizedContent) {
           editor.commands.setContent(content, false);
         } else {
           editor.commands.clearContent(false);
@@ -403,7 +406,7 @@ export function RichTextEditor({ content, onChange, placeholder }: RichTextEdito
         // If setContent fails, try to clear and set again
         try {
           editor.commands.clearContent(false);
-          if (content) {
+          if (normalizedContent) {
             editor.commands.setContent(content, false);
           }
         } catch (retryError) {

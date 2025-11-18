@@ -190,6 +190,7 @@ export function ArticleForm({ article, onSubmit, isLoading }: ArticleFormProps) 
               Содержание (казахский) *
             </label>
             <RichTextEditor
+              key="editor-kz"
               content={contentKz}
               onChange={setContentKz}
               placeholder="Мақала мазмұны... (Вы можете загружать изображения перетягиванием или через кнопку в панели инструментов)"
@@ -232,6 +233,7 @@ export function ArticleForm({ article, onSubmit, isLoading }: ArticleFormProps) 
               Содержание (русский)
             </label>
             <RichTextEditor
+              key="editor-ru"
               content={contentRu}
               onChange={setContentRu}
               placeholder="Содержание статьи... (Вы можете загружать изображения перетягиванием или через кнопку в панели инструментов)"
