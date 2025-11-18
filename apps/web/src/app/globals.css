@@ -32,6 +32,7 @@ body {
   margin: 1rem 0;
   user-select: none;
   max-width: fit-content;
+  clear: both;
 }
 
 .ProseMirror .resizable-image-wrapper:hover {
@@ -40,6 +41,17 @@ body {
 
 .ProseMirror .resizable-image-wrapper:active {
   cursor: grabbing;
+}
+
+/* Float styling removes cursor grab */
+.ProseMirror .resizable-image-wrapper[data-float="left"],
+.ProseMirror .resizable-image-wrapper[data-float="right"] {
+  cursor: default !important;
+}
+
+.ProseMirror .resizable-image-wrapper[data-float="left"]:active,
+.ProseMirror .resizable-image-wrapper[data-float="right"]:active {
+  cursor: default !important;
 }
 
 .ProseMirror .resizable-image-wrapper img {

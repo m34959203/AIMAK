@@ -3,7 +3,7 @@ import { ReactNodeViewRenderer, NodeViewWrapper } from '@tiptap/react';
 import { Node as ProseMirrorNode } from '@tiptap/pm/model';
 import { NodeViewProps } from '@tiptap/core';
 import { useState, useRef, useEffect } from 'react';
-import { FaArrowsAlt } from 'react-icons/fa';
+import { FaArrowsAlt, FaAlignLeft, FaAlignCenter, FaAlignRight } from 'react-icons/fa';
 
 const ResizableImageComponent = ({ node, updateAttributes, selected }: NodeViewProps) => {
   const [isResizing, setIsResizing] = useState(false);
@@ -85,10 +85,37 @@ const ResizableImageComponent = ({ node, updateAttributes, selected }: NodeViewP
     };
   }, [isResizing, resizeDirection, updateAttributes]);
 
-  const { src, alt, title, width, height } = node.attrs;
+  const { src, alt, title, width, height, align = 'center', float = 'none' } = node.attrs;
+
+  const getWrapperStyle = () => {
+    const styles: React.CSSProperties = {};
+
+    if (float === 'left') {
+      styles.float = 'left';
+      styles.marginRight = '1rem';
+      styles.marginBottom = '0.5rem';
+    } else if (float === 'right') {
+      styles.float = 'right';
+      styles.marginLeft = '1rem';
+      styles.marginBottom = '0.5rem';
+    } else if (align === 'center') {
+      styles.marginLeft = 'auto';
+      styles.marginRight = 'auto';
+    } else if (align === 'right') {
+      styles.marginLeft = 'auto';
+      styles.marginRight = '0';
+    }
+
+    return styles;
+  };
 
   return (
-    <NodeViewWrapper className="resizable-image-wrapper group" data-drag-handle>
+    <NodeViewWrapper
+      className="resizable-image-wrapper group"
+      data-drag-handle
+      data-float={float}
+      style={getWrapperStyle()}
+    >
       <img
         ref={imgRef}
         src={src}
@@ -106,6 +133,64 @@ const ResizableImageComponent = ({ node, updateAttributes, selected }: NodeViewP
           display: 'block',
         }}
       />
+
+      {/* Alignment controls - visible when selected */}
+      {selected && (
+        <div className="absolute -top-12 left-1/2 -translate-x-1/2 bg-white border border-gray-300 rounded shadow-lg flex gap-1 p-1 z-20">
+          <button
+            onClick={() => updateAttributes({ align: 'left', float: 'none' })}
+            className={`p-2 rounded hover:bg-gray-100 ${
+              align === 'left' && float === 'none' ? 'bg-blue-100 text-blue-600' : ''
+            }`}
+            title="По левому краю"
+          >
+            <FaAlignLeft className="w-3 h-3" />
+          </button>
+          <button
+            onClick={() => updateAttributes({ align: 'center', float: 'none' })}
+            className={`p-2 rounded hover:bg-gray-100 ${
+              align === 'center' && float === 'none' ? 'bg-blue-100 text-blue-600' : ''
+            }`}
+            title="По центру"
+          >
+            <FaAlignCenter className="w-3 h-3" />
+          </button>
+          <button
+            onClick={() => updateAttributes({ align: 'right', float: 'none' })}
+            className={`p-2 rounded hover:bg-gray-100 ${
+              align === 'right' && float === 'none' ? 'bg-blue-100 text-blue-600' : ''
+            }`}
+            title="По правому краю"
+          >
+            <FaAlignRight className="w-3 h-3" />
+          </button>
+          <div className="w-px bg-gray-300 mx-1"></div>
+          <button
+            onClick={() => updateAttributes({ float: 'left', align: 'left' })}
+            className={`p-2 rounded hover:bg-gray-100 ${
+              float === 'left' ? 'bg-blue-100 text-blue-600' : ''
+            }`}
+            title="Обтекание справа"
+          >
+            <div className="flex items-center gap-1">
+              <FaAlignLeft className="w-3 h-3" />
+              <span className="text-xs">↷</span>
+            </div>
+          </button>
+          <button
+            onClick={() => updateAttributes({ float: 'right', align: 'right' })}
+            className={`p-2 rounded hover:bg-gray-100 ${
+              float === 'right' ? 'bg-blue-100 text-blue-600' : ''
+            }`}
+            title="Обтекание слева"
+          >
+            <div className="flex items-center gap-1">
+              <span className="text-xs">↶</span>
+              <FaAlignRight className="w-3 h-3" />
+            </div>
+          </button>
+        </div>
+      )}
 
       {/* Drag handle - visible on hover and when selected */}
       <div
@@ -155,10 +240,12 @@ const ResizableImageComponent = ({ node, updateAttributes, selected }: NodeViewP
             onMouseDown={(e) => handleMouseDown(e, 'e')}
           />
 
-          {/* Dimensions tooltip */}
-          <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
-            {width || 'auto'} × {height || 'auto'}
-          </div>
+          {/* Dimensions tooltip - only visible during resize */}
+          {isResizing && (
+            <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
+              {width || 'auto'} × {height || 'auto'}
+            </div>
+          )}
         </>
       )}
     </NodeViewWrapper>
@@ -189,6 +276,24 @@ export const ResizableImage = Image.extend({
             return {};
           }
           return { height: attributes.height };
+        },
+      },
+      align: {
+        default: 'center',
+        renderHTML: (attributes) => {
+          return { 'data-align': attributes.align };
+        },
+        parseHTML: (element) => {
+          return element.getAttribute('data-align') || 'center';
+        },
+      },
+      float: {
+        default: 'none',
+        renderHTML: (attributes) => {
+          return { 'data-float': attributes.float };
+        },
+        parseHTML: (element) => {
+          return element.getAttribute('data-float') || 'none';
         },
       },
     };
