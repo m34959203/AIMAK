@@ -156,91 +156,85 @@ export function ArticleForm({ article, onSubmit, isLoading }: ArticleFormProps) 
       </div>
 
       {/* Kazakh Content */}
-      {activeTab === 'kz' && (
-        <div className="space-y-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Заголовок (казахский) *
-            </label>
-            <input
-              type="text"
-              value={titleKz}
-              onChange={(e) => setTitleKz(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-              placeholder="Мақала тақырыбы"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Краткое описание (казахский)
-            </label>
-            <textarea
-              value={excerptKz}
-              onChange={(e) => setExcerptKz(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-              rows={3}
-              placeholder="Мақаланың қысқаша сипаттамасы"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Содержание (казахский) *
-            </label>
-            <RichTextEditor
-              key="editor-kz"
-              content={contentKz}
-              onChange={setContentKz}
-              placeholder="Мақала мазмұны... (Вы можете загружать изображения перетягиванием или через кнопку в панели инструментов)"
-            />
-          </div>
+      <div className={`space-y-6 ${activeTab !== 'kz' ? 'hidden' : ''}`}>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Заголовок (казахский) *
+          </label>
+          <input
+            type="text"
+            value={titleKz}
+            onChange={(e) => setTitleKz(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+            placeholder="Мақала тақырыбы"
+            required
+          />
         </div>
-      )}
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Краткое описание (казахский)
+          </label>
+          <textarea
+            value={excerptKz}
+            onChange={(e) => setExcerptKz(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+            rows={3}
+            placeholder="Мақаланың қысқаша сипаттамасы"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Содержание (казахский) *
+          </label>
+          <RichTextEditor
+            content={contentKz}
+            onChange={setContentKz}
+            placeholder="Мақала мазмұны... (Вы можете загружать изображения перетягиванием или через кнопку в панели инструментов)"
+          />
+        </div>
+      </div>
 
       {/* Russian Content */}
-      {activeTab === 'ru' && (
-        <div className="space-y-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Заголовок (русский)
-            </label>
-            <input
-              type="text"
-              value={titleRu}
-              onChange={(e) => setTitleRu(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-              placeholder="Заголовок статьи"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Краткое описание (русский)
-            </label>
-            <textarea
-              value={excerptRu}
-              onChange={(e) => setExcerptRu(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-              rows={3}
-              placeholder="Краткое описание статьи"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Содержание (русский)
-            </label>
-            <RichTextEditor
-              key="editor-ru"
-              content={contentRu}
-              onChange={setContentRu}
-              placeholder="Содержание статьи... (Вы можете загружать изображения перетягиванием или через кнопку в панели инструментов)"
-            />
-          </div>
+      <div className={`space-y-6 ${activeTab !== 'ru' ? 'hidden' : ''}`}>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Заголовок (русский)
+          </label>
+          <input
+            type="text"
+            value={titleRu}
+            onChange={(e) => setTitleRu(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+            placeholder="Заголовок статьи"
+          />
         </div>
-      )}
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Краткое описание (русский)
+          </label>
+          <textarea
+            value={excerptRu}
+            onChange={(e) => setExcerptRu(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+            rows={3}
+            placeholder="Краткое описание статьи"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Содержание (русский)
+          </label>
+          <RichTextEditor
+            content={contentRu}
+            onChange={setContentRu}
+            placeholder="Содержание статьи... (Вы можете загружать изображения перетягиванием или через кнопку в панели инструментов)"
+          />
+        </div>
+      </div>
 
       {/* Common Fields */}
       <div className="pt-6 border-t border-gray-200 space-y-6">

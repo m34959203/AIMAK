@@ -383,32 +383,22 @@ export function RichTextEditor({ content, onChange, placeholder }: RichTextEdito
 
   // Update editor content when prop changes (e.g., loading article for editing)
   useEffect(() => {
-    if (!editor) return;
+    if (!editor || !content) return;
 
     const currentContent = editor.getHTML();
 
-    // Normalize empty content: TipTap returns <p></p> for empty editor
-    const normalizedContent = content?.trim() || '';
-    const normalizedCurrent = currentContent === '<p></p>' ? '' : currentContent;
-
-    // Only update if content is meaningfully different
-    if (normalizedContent !== normalizedCurrent) {
+    // Only update if content is different and not empty
+    if (content !== currentContent && content.trim() !== '') {
       try {
         isUpdatingRef.current = true;
         // Use emitUpdate: false to prevent triggering onChange
-        if (normalizedContent) {
-          editor.commands.setContent(content, false);
-        } else {
-          editor.commands.clearContent(false);
-        }
+        editor.commands.setContent(content, false);
       } catch (error) {
         console.error('Failed to set editor content:', error);
         // If setContent fails, try to clear and set again
         try {
-          editor.commands.clearContent(false);
-          if (normalizedContent) {
-            editor.commands.setContent(content, false);
-          }
+          editor.commands.clearContent();
+          editor.commands.setContent(content, false);
         } catch (retryError) {
           console.error('Failed to set content on retry:', retryError);
         }
