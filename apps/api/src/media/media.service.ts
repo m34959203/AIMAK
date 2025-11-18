@@ -11,16 +11,24 @@ export class MediaService {
 
     // Construct full URL with protocol
     let baseUrl = process.env.APP_URL || 'http://localhost:4000';
+    console.log('[MediaService] Original APP_URL:', baseUrl);
 
     // Ensure baseUrl has protocol (Render provides hostname without https://)
     if (!baseUrl.startsWith('http://') && !baseUrl.startsWith('https://')) {
       baseUrl = `https://${baseUrl}`;
     }
 
+    // Ensure .onrender.com domain is present if running on Render
+    if (baseUrl.includes('aimak-api') && !baseUrl.includes('.onrender.com')) {
+      baseUrl = baseUrl.replace('aimak-api', 'aimak-api.onrender.com');
+      console.log('[MediaService] Added .onrender.com domain');
+    }
+
     // Remove trailing /api if present
     baseUrl = baseUrl.replace(/\/api\/?$/, '');
 
     const url = `${baseUrl}/uploads/${file.filename}`;
+    console.log('[MediaService] Final image URL:', url);
 
     // Get image dimensions if available
     let width: number | undefined;
