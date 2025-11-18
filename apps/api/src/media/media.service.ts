@@ -8,7 +8,18 @@ export class MediaService {
 
   async saveMediaFile(file: Express.Multer.File, userId: string) {
     const ext = extname(file.originalname);
-    const baseUrl = process.env.APP_URL || 'http://localhost:4000';
+
+    // Construct full URL with protocol
+    let baseUrl = process.env.APP_URL || 'http://localhost:4000';
+
+    // Ensure baseUrl has protocol (Render provides hostname without https://)
+    if (!baseUrl.startsWith('http://') && !baseUrl.startsWith('https://')) {
+      baseUrl = `https://${baseUrl}`;
+    }
+
+    // Remove trailing /api if present
+    baseUrl = baseUrl.replace(/\/api\/?$/, '');
+
     const url = `${baseUrl}/uploads/${file.filename}`;
 
     // Get image dimensions if available
