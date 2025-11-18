@@ -27,10 +27,14 @@ body {
 
 /* Resizable Image Styles */
 .ProseMirror .resizable-image-wrapper {
-  display: inline-block;
+  display: block;
   position: relative;
   margin: 1rem 0;
   user-select: none;
+  max-width: fit-content;
+}
+
+.ProseMirror .resizable-image-wrapper:hover {
   cursor: grab;
 }
 
@@ -51,11 +55,6 @@ body {
 .ProseMirror .resizable-image-wrapper.ProseMirror-selectednode img {
   border-color: #3b82f6 !important;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
-}
-
-/* Drag handle styling */
-.ProseMirror .resizable-image-wrapper [data-drag-handle] {
-  z-index: 10;
 }
 
 .ProseMirror blockquote {
