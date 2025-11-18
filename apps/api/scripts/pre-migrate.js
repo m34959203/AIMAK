@@ -10,38 +10,37 @@ const { promisify } = require('util');
 const execAsync = promisify(exec);
 
 async function preMigrate() {
-  console.log('🔍 Checking for failed migrations...');
+  console.log('🔍 Resolving failed migrations...');
 
+  // Try to mark the known failed migration as rolled back
   try {
-    // Check migration status
-    const { stdout, stderr } = await execAsync('npx prisma migrate status', {
+    console.log('⚠️  Attempting to resolve migration 20251118000000_init...');
+    await execAsync('npx prisma migrate resolve --rolled-back 20251118000000_init', {
       cwd: __dirname + '/..',
     });
+    console.log('✅ Migration marked as rolled back successfully');
+    return;
+  } catch (resolveError) {
+    console.log('⚠️  Prisma migrate resolve failed, trying direct database cleanup...');
+  }
 
-    const output = stdout + stderr;
-    console.log('Migration status:', output);
+  // If prisma migrate resolve fails, try direct SQL approach
+  if (!process.env.DATABASE_URL) {
+    console.log('⚠️  DATABASE_URL not found, skipping database cleanup');
+    console.log('ℹ️  Migration may still fail - manual intervention may be required');
+    return;
+  }
 
-    // Check if there are failed migrations
-    if (output.includes('failed') || output.includes('P3009')) {
-      console.log('⚠️  Failed migrations detected. Attempting to resolve...');
+  try {
+    // Use psql to directly delete the failed migration record
+    const deleteCommand = `psql "${process.env.DATABASE_URL}" -c "DELETE FROM _prisma_migrations WHERE migration_name = '20251118000000_init' AND finished_at IS NULL;"`;
 
-      // Try to mark the failed migration as rolled back
-      try {
-        await execAsync('npx prisma migrate resolve --rolled-back 20251118000000_init', {
-          cwd: __dirname + '/..',
-        });
-        console.log('✅ Failed migration marked as rolled back');
-      } catch (resolveError) {
-        console.log('ℹ️  Could not mark migration as rolled back (it may not exist)');
-      }
-
-      console.log('✅ Migration issues resolved, ready to deploy');
-    } else {
-      console.log('✅ No failed migrations found');
-    }
-  } catch (error) {
-    // If we can't check status, that's okay - just proceed
-    console.log('ℹ️  Could not check migration status, proceeding with deployment');
+    await execAsync(deleteCommand);
+    console.log('✅ Failed migration record removed from database');
+  } catch (dbError) {
+    console.log('⚠️  Could not clean failed migration from database');
+    console.log('ℹ️  Error:', dbError.message);
+    console.log('ℹ️  Deployment may fail - manual database cleanup may be required');
   }
 }
 
