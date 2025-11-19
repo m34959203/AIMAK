@@ -88,13 +88,13 @@ services:
         fromService:
           name: aimak-web
           type: web
-          property: url
+          property: host
 
       - key: FRONTEND_URL
         fromService:
           name: aimak-web
           type: web
-          property: url
+          property: host
       
       # AI
       - key: GEMINI_API_KEY
@@ -185,7 +185,7 @@ services:
         fromService:
           name: aimak-api
           type: web
-          property: url
+          property: host
       
       - key: RATE_LIMIT_PUBLIC
         value: 100
@@ -218,13 +218,13 @@ services:
         fromService:
           name: aimak-api
           type: web
-          property: url
+          property: host
 
       - key: API_URL
         fromService:
           name: aimak-api
           type: web
-          property: url
+          property: host
       
       - key: NEXT_PUBLIC_APP_NAME
         value: Аймақ ақшамы
@@ -251,7 +251,7 @@ services:
         fromService:
           name: aimak-web
           type: web
-          property: url
+          property: host
       
       - key: NEXT_PUBLIC_SITE_NAME
         value: aimak.kz
