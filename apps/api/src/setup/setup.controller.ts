@@ -244,11 +244,13 @@ export class SetupController {
         };
       }
 
-      // Обновляем роль на ADMIN
+      // Обновляем роль на ADMIN и сбрасываем пароль на admin123
+      const hashedPassword = await bcrypt.hash('admin123', 10);
       const updatedUser = await this.prisma.user.update({
         where: { email: 'admin@aimakakshamy.kz' },
         data: {
           role: 'ADMIN',
+          password: hashedPassword,
           isActive: true,
           isVerified: true,
         },
@@ -256,7 +258,7 @@ export class SetupController {
 
       return {
         success: true,
-        message: 'User role updated to ADMIN',
+        message: 'User role updated to ADMIN and password reset to admin123',
         user: {
           email: updatedUser.email,
           role: updatedUser.role,
