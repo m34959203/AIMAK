@@ -13,6 +13,7 @@
     "db:studio": "prisma studio",
     "db:seed": "ts-node prisma/seed.ts",
     "db:create-admin": "node scripts/create-admin.js",
+    "cleanup:wordpress": "node scripts/cleanup-wordpress-articles.js",
     "import:wordpress": "node scripts/import-from-wordpress.js",
     "migrate:deploy": "node scripts/pre-migrate.js && prisma migrate deploy",
     "fix:media-urls": "node scripts/fix-media-urls.js"
