@@ -1,5 +1,8 @@
 import { TengriArticleCard } from '@/components/tengri-article-card';
 
+// Force dynamic rendering to always fetch fresh data
+export const dynamic = 'force-dynamic';
+
 async function getArticles() {
   try {
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/articles?published=true`, {
