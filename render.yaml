@@ -33,7 +33,7 @@ services:
     plan: free
     rootDirectory: apps/api
 
-    buildCommand: corepack enable pnpm && pnpm install --frozen-lockfile && pnpm prisma generate && pnpm migrate:deploy && pnpm build
+    buildCommand: cd ../.. && pnpm install --frozen-lockfile && cd apps/api && pnpm prisma generate && pnpm migrate:deploy && pnpm build
 
     startCommand: pnpm start:prod
     
@@ -91,13 +91,13 @@ services:
         fromService:
           name: aimak-web
           type: web
-          property: host
-      
+          property: url
+
       - key: FRONTEND_URL
         fromService:
           name: aimak-web
           type: web
-          property: host
+          property: url
       
       # AI
       - key: GEMINI_API_KEY
@@ -183,9 +183,12 @@ services:
       # App
       - key: APP_NAME
         value: Aimak Akshamy
-      
+
       - key: APP_URL
-        value: https://aimak-api.onrender.com
+        fromService:
+          name: aimak-api
+          type: web
+          property: url
       
       - key: RATE_LIMIT_PUBLIC
         value: 100
@@ -202,7 +205,7 @@ services:
     plan: free
     rootDirectory: apps/web
 
-    buildCommand: corepack enable pnpm && pnpm install --frozen-lockfile && pnpm build
+    buildCommand: cd ../.. && pnpm install --frozen-lockfile && cd apps/web && pnpm build
 
     startCommand: pnpm start
     
@@ -216,12 +219,18 @@ services:
       
       - key: PORT
         value: 3000
-      
+
       - key: NEXT_PUBLIC_API_URL
-        value: https://aimak-api.onrender.com
+        fromService:
+          name: aimak-api
+          type: web
+          property: url
 
       - key: API_URL
-        value: https://aimak-api.onrender.com
+        fromService:
+          name: aimak-api
+          type: web
+          property: url
       
       - key: NEXT_PUBLIC_APP_NAME
         value: Аймақ ақшамы
@@ -248,7 +257,7 @@ services:
         fromService:
           name: aimak-web
           type: web
-          property: host
+          property: url
       
       - key: NEXT_PUBLIC_SITE_NAME
         value: aimak.kz
