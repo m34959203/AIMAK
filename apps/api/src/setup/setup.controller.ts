@@ -207,7 +207,7 @@ export class SetupController {
       const categoriesCount = await this.prisma.category.count();
       const usersCount = await this.prisma.user.count();
       const articlesCount = await this.prisma.article.count();
-      const adminExists = await this.prisma.user.findUnique({
+      const adminUser = await this.prisma.user.findUnique({
         where: { email: 'admin@aimakakshamy.kz' },
       });
 
@@ -216,12 +216,58 @@ export class SetupController {
         categories: categoriesCount,
         users: usersCount,
         articles: articlesCount,
-        adminExists: !!adminExists,
+        adminExists: !!adminUser,
+        adminRole: adminUser?.role || null,
       };
     } catch (error) {
       return {
         database: 'error',
         error: error instanceof Error ? error.message : 'An unknown error occurred',
+      };
+    }
+  }
+
+  @Public()
+  @Post('make-admin')
+  @HttpCode(HttpStatus.OK)
+  async makeAdmin() {
+    try {
+      // Находим пользователя admin@aimakakshamy.kz
+      const user = await this.prisma.user.findUnique({
+        where: { email: 'admin@aimakakshamy.kz' },
+      });
+
+      if (!user) {
+        return {
+          success: false,
+          message: 'User admin@aimakakshamy.kz not found',
+        };
+      }
+
+      // Обновляем роль на ADMIN
+      const updatedUser = await this.prisma.user.update({
+        where: { email: 'admin@aimakakshamy.kz' },
+        data: {
+          role: 'ADMIN',
+          isActive: true,
+          isVerified: true,
+        },
+      });
+
+      return {
+        success: true,
+        message: 'User role updated to ADMIN',
+        user: {
+          email: updatedUser.email,
+          role: updatedUser.role,
+          firstName: updatedUser.firstName,
+          lastName: updatedUser.lastName,
+        },
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: error instanceof Error ? error.message : 'An unknown error occurred',
       };
     }
   }
