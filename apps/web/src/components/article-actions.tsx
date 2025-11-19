@@ -46,18 +46,18 @@ export function ArticleActions({ articleId, authorId, lang }: ArticleActionsProp
   };
 
   return (
-    <div className="flex gap-3 mt-6 pt-6 border-t">
+    <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t">
       <Link
         href={`/admin/articles/${articleId}`}
-        className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+        className="px-3 py-1.5 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors"
       >
-        {lang === 'kz' ? '✏️ Өңдеу' : '✏️ Редактировать'}
+        ✏️ {lang === 'kz' ? 'Өңдеу' : 'Редактировать'}
       </Link>
       <button
         onClick={handleDelete}
-        className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
+        className="px-3 py-1.5 bg-red-600 text-white text-sm rounded hover:bg-red-700 transition-colors"
       >
-        {lang === 'kz' ? '🗑️ Өшіру' : '🗑️ Удалить'}
+        🗑️ {lang === 'kz' ? 'Өшіру' : 'Удалить'}
       </button>
     </div>
   );
