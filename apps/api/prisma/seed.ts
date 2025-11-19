@@ -16,16 +16,17 @@ async function main() {
     return;
   }
 
-  // Создаём админа
-  const adminPassword = process.env.ADMIN_PASSWORD || 'admin123456';
+  // Создаём админа с железобетонными credentials
+  const adminEmail = 'admin@aimakakshamy.kz';
+  const adminPassword = 'admin123';
   const hashedPassword = await bcrypt.hash(adminPassword, 10);
 
   const admin = await prisma.user.create({
     data: {
-      email: 'admin@aimak.kz',
+      email: adminEmail,
       password: hashedPassword,
       firstName: 'Admin',
-      lastName: 'Aimak',
+      lastName: 'Aimak Akshamy',
       role: Role.ADMIN,
       isActive: true,
       isVerified: true,
