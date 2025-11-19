@@ -36,7 +36,8 @@ try {
     $imported = 0
     foreach ($wpPost in $wpPosts) {
         $title = $wpPost.title.rendered -replace '<[^>]+>', ''
-        $slug = $title.ToLower() -replace '[^a-z0-9]', '-' + "-wp$($wpPost.id)"
+        $cleanTitle = $title.ToLower() -replace '[^a-z0-9]', '-'
+        $slug = "$cleanTitle-wp$($wpPost.id)"
 
         $article = @{
             titleKz = $title
