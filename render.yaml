@@ -31,7 +31,7 @@ services:
     name: aimak-api
     runtime: node
     plan: free
-    buildCommand: pnpm install --frozen-lockfile && cd apps/api && pnpm prisma generate && pnpm migrate:deploy && pnpm build
+    buildCommand: pnpm install --frozen-lockfile && cd apps/api && pnpm prisma generate && pnpm migrate:deploy && pnpm db:seed && pnpm build
     startCommand: cd apps/api && pnpm start:prod
     
     healthCheckPath: /api/health
@@ -82,7 +82,11 @@ services:
       
       - key: JWT_REFRESH_EXPIRES_IN
         value: 7d
-      
+
+      # Admin
+      - key: ADMIN_PASSWORD
+        sync: false
+
       # CORS
       - key: CORS_ORIGIN
         fromService:
