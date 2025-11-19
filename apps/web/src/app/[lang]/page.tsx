@@ -9,7 +9,13 @@ export const dynamic = 'force-dynamic';
 
 async function getArticles() {
   try {
-    const apiUrl = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+    let apiUrl = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+
+    // Add https:// if missing (Render returns only hostname)
+    if (apiUrl && !apiUrl.startsWith('http')) {
+      apiUrl = `https://${apiUrl}`;
+    }
+
     console.log('Fetching articles from:', apiUrl);
 
     const res = await fetch(`${apiUrl}/api/articles?published=true`, {
@@ -38,7 +44,15 @@ async function getArticles() {
 
 async function getCategories() {
   try {
-    const apiUrl = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+    let apiUrl = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+
+    // Add https:// if missing (Render returns only hostname)
+    if (apiUrl && !apiUrl.startsWith('http')) {
+      apiUrl = `https://${apiUrl}`;
+    }
+
+    console.log('Fetching categories from:', apiUrl);
+
     const res = await fetch(`${apiUrl}/api/categories`, {
       cache: 'no-store',
     });
