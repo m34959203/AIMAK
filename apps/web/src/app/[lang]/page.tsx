@@ -1,3 +1,7 @@
+import { BreakingNewsBanner } from '@/components/breaking-news-banner';
+import { MagazineHero } from '@/components/magazine-hero';
+import { TrendingSection } from '@/components/trending-section';
+import { CategoryTabs } from '@/components/category-tabs';
 import { TengriArticleCard } from '@/components/tengri-article-card';
 
 // Force dynamic rendering to always fetch fresh data
@@ -68,159 +72,182 @@ export default async function HomePage({
     getCategories(),
   ]);
 
-  const heroArticle = articles[0];
-  const sidebarArticles = articles.slice(1, 6);
-  const mainArticles = articles.slice(6, 16);
-  const trendingArticles = articles.slice(16, 21);
+  // Find breaking news (можно добавить поле isBreaking в будущем)
+  const breakingArticle = articles.find((a: any) => a.isBreaking) || articles[0];
+
+  // Articles for hero section
+  const heroMainArticle = articles[0];
+  const heroSideArticles = articles.slice(1, 3);
+
+  // Articles for main feed
+  const mainArticles = articles.slice(3, 13);
+
+  // Trending articles (сортировка по просмотрам)
+  const trendingArticles = [...articles]
+    .sort((a: any, b: any) => (b.views || 0) - (a.views || 0))
+    .slice(0, 5);
 
   return (
-    <div className="bg-gray-50">
-      {/* Hero Section */}
-      {heroArticle && (
-        <div className="bg-white border-b">
-          <div className="container mx-auto px-4 py-8">
-            <TengriArticleCard
-              article={heroArticle}
-              lang={params.lang}
-              variant="hero"
-            />
-          </div>
-        </div>
+    <div className="bg-gray-50 min-h-screen">
+      {/* Breaking News Banner */}
+      {breakingArticle && (
+        <BreakingNewsBanner
+          lang={params.lang}
+          article={breakingArticle}
+        />
+      )}
+
+      {/* Magazine Hero Section */}
+      {heroMainArticle && (
+        <MagazineHero
+          mainArticle={heroMainArticle}
+          sideArticles={heroSideArticles}
+          lang={params.lang}
+        />
       )}
 
       {/* Main Content */}
       <div className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* Main Column - 8 cols */}
-          <div className="lg:col-span-8">
-            {/* Latest News */}
-            <div className="bg-white rounded-lg p-6 mb-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold">
-                  {params.lang === 'kz' ? 'Соңғы жаңалықтар' : 'Последние новости'}
-                </h2>
+          <div className="lg:col-span-8 space-y-8">
+            {/* Latest News Section */}
+            <div className="bg-white rounded-xl shadow-lg p-6">
+              <div className="flex items-center justify-between mb-6 pb-4 border-b-2 border-green-500">
+                <div className="flex items-center gap-3">
+                  <div className="w-1 h-8 bg-gradient-to-b from-green-500 to-green-600 rounded-full"></div>
+                  <h2 className="text-3xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
+                    {params.lang === 'kz' ? 'Соңғы жаңалықтар' : 'Последние новости'}
+                  </h2>
+                </div>
                 <a
                   href={`/${params.lang}/zhanalyqtar`}
-                  className="text-green-600 hover:text-green-700 font-medium text-sm"
+                  className="group flex items-center gap-2 text-green-600 hover:text-green-700 font-semibold text-sm transition-all"
                 >
-                  {params.lang === 'kz' ? 'Барлығы' : 'Все'} →
+                  {params.lang === 'kz' ? 'Барлығы' : 'Все'}
+                  <span className="transform group-hover:translate-x-1 transition-transform">→</span>
                 </a>
               </div>
 
-              <div className="space-y-4">
+              <div className="space-y-6">
                 {mainArticles.map((article: any) => (
-                  <TengriArticleCard
+                  <div
                     key={article.id}
-                    article={article}
-                    lang={params.lang}
-                    variant="horizontal"
-                  />
+                    className="transform transition-all duration-300 hover:translate-x-2"
+                  >
+                    <TengriArticleCard
+                      article={article}
+                      lang={params.lang}
+                      variant="horizontal"
+                    />
+                  </div>
                 ))}
               </div>
             </div>
 
-            {/* Categories Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {categories.slice(0, 4).map((category: any) => (
-                <div key={category.id} className="bg-white rounded-lg p-6">
-                  <h3 className="text-xl font-bold mb-4">
-                    {params.lang === 'kz' ? category.nameKz : category.nameRu}
-                  </h3>
-                  <div className="space-y-3">
-                    {articles
-                      .filter((a: any) => a.categoryId === category.id)
-                      .slice(0, 3)
-                      .map((article: any) => (
-                        <div key={article.id}>
-                          <a
-                            href={`/${params.lang}/${category.slug}/${
-                              params.lang === 'kz' ? article.slugKz : article.slugRu || article.slugKz
-                            }`}
-                            className="text-sm font-medium hover:text-green-600 line-clamp-2"
-                          >
-                            {params.lang === 'kz' ? article.titleKz : article.titleRu || article.titleKz}
-                          </a>
-                        </div>
-                      ))}
-                  </div>
-                </div>
-              ))}
-            </div>
+            {/* Category Tabs */}
+            {categories.length > 0 && (
+              <CategoryTabs
+                categories={categories}
+                articles={articles}
+                lang={params.lang}
+              />
+            )}
           </div>
 
           {/* Sidebar - 4 cols */}
-          <aside className="lg:col-span-4">
-            {/* Popular */}
-            <div className="bg-white rounded-lg p-6 mb-6 sticky top-20">
-              <h3 className="text-xl font-bold mb-4 border-b pb-3">
-                {params.lang === 'kz' ? 'Танымал' : 'Популярное'}
-              </h3>
-              <div className="space-y-4">
-                {sidebarArticles.map((article: any, index: number) => (
-                  <div key={article.id} className="flex gap-3">
-                    <div className="flex-shrink-0">
-                      <span className="text-3xl font-bold text-gray-200">
-                        {index + 1}
-                      </span>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <a
-                        href={`/${params.lang}/${article.category?.slug}/${
-                          params.lang === 'kz' ? article.slugKz : article.slugRu || article.slugKz
-                        }`}
-                        className="font-medium text-sm hover:text-green-600 line-clamp-3"
-                      >
-                        {params.lang === 'kz' ? article.titleKz : article.titleRu || article.titleKz}
-                      </a>
-                      <div className="text-xs text-gray-500 mt-1">
-                        {article.views ? `👁️ ${article.views.toLocaleString()}` : ''}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+          <aside className="lg:col-span-4 space-y-6">
+            {/* Trending Section */}
+            {trendingArticles.length > 0 && (
+              <TrendingSection
+                articles={trendingArticles}
+                lang={params.lang}
+              />
+            )}
 
             {/* Ad Space */}
-            <div className="bg-gray-200 rounded-lg p-6 mb-6 flex items-center justify-center h-64">
-              <span className="text-gray-400">
-                {params.lang === 'kz' ? 'Жарнама' : 'Реклама'} 300x600
-              </span>
+            <div className="bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl shadow-lg p-8 flex items-center justify-center h-64 border-2 border-dashed border-gray-300">
+              <div className="text-center">
+                <div className="text-4xl mb-2">📢</div>
+                <span className="text-gray-500 font-medium">
+                  {params.lang === 'kz' ? 'Жарнама' : 'Реклама'}
+                </span>
+                <p className="text-xs text-gray-400 mt-1">300x600</p>
+              </div>
             </div>
 
-            {/* Trending */}
-            {trendingArticles.length > 0 && (
-              <div className="bg-white rounded-lg p-6">
-                <h3 className="text-xl font-bold mb-4 border-b pb-3">
-                  🔥 {params.lang === 'kz' ? 'Тренд' : 'В тренде'}
-                </h3>
-                <div className="space-y-3">
-                  {trendingArticles.map((article: any) => (
-                    <div key={article.id}>
-                      <a
-                        href={`/${params.lang}/${article.category?.slug}/${
-                          params.lang === 'kz' ? article.slugKz : article.slugRu || article.slugKz
-                        }`}
-                        className="text-sm font-medium hover:text-green-600 line-clamp-2"
-                      >
-                        {params.lang === 'kz' ? article.titleKz : article.titleRu || article.titleKz}
-                      </a>
-                    </div>
-                  ))}
-                </div>
+            {/* Social Media Links */}
+            <div className="bg-white rounded-xl shadow-lg p-6">
+              <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+                <span>🌐</span>
+                {params.lang === 'kz' ? 'Әлеуметтік желілер' : 'Соцсети'}
+              </h3>
+              <div className="space-y-3">
+                <a
+                  href="#"
+                  className="flex items-center gap-3 p-3 rounded-lg hover:bg-blue-50 transition-colors group"
+                >
+                  <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center text-white">
+                    📘
+                  </div>
+                  <span className="font-medium group-hover:text-blue-600">Facebook</span>
+                </a>
+                <a
+                  href="#"
+                  className="flex items-center gap-3 p-3 rounded-lg hover:bg-blue-50 transition-colors group"
+                >
+                  <div className="w-10 h-10 bg-sky-500 rounded-lg flex items-center justify-center text-white">
+                    🐦
+                  </div>
+                  <span className="font-medium group-hover:text-sky-600">Twitter</span>
+                </a>
+                <a
+                  href="#"
+                  className="flex items-center gap-3 p-3 rounded-lg hover:bg-purple-50 transition-colors group"
+                >
+                  <div className="w-10 h-10 bg-purple-500 rounded-lg flex items-center justify-center text-white">
+                    📷
+                  </div>
+                  <span className="font-medium group-hover:text-purple-600">Instagram</span>
+                </a>
+                <a
+                  href="#"
+                  className="flex items-center gap-3 p-3 rounded-lg hover:bg-blue-50 transition-colors group"
+                >
+                  <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center text-white">
+                    ✈️
+                  </div>
+                  <span className="font-medium group-hover:text-blue-600">Telegram</span>
+                </a>
               </div>
-            )}
+            </div>
           </aside>
         </div>
       </div>
 
-      {/* Bottom Ad */}
-      <div className="bg-white border-t border-b py-6">
+      {/* Newsletter Section */}
+      <div className="bg-gradient-to-r from-green-600 to-blue-600 py-12">
         <div className="container mx-auto px-4">
-          <div className="bg-gray-200 rounded-lg p-6 flex items-center justify-center h-24">
-            <span className="text-gray-400">
-              {params.lang === 'kz' ? 'Жарнама' : 'Реклама'} 970x90
-            </span>
+          <div className="max-w-2xl mx-auto text-center text-white">
+            <h3 className="text-3xl font-bold mb-4">
+              {params.lang === 'kz' ? 'Жаңалықтарға жазылу' : 'Подписка на новости'}
+            </h3>
+            <p className="mb-6 text-lg opacity-90">
+              {params.lang === 'kz'
+                ? 'Маңызды жаңалықтарды алғашқылардан болып біліңіз'
+                : 'Будьте в курсе самых важных новостей'
+              }
+            </p>
+            <div className="flex gap-3 max-w-md mx-auto">
+              <input
+                type="email"
+                placeholder={params.lang === 'kz' ? 'Email мекенжайыңыз' : 'Ваш email'}
+                className="flex-1 px-4 py-3 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-white"
+              />
+              <button className="bg-white text-green-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors shadow-lg">
+                {params.lang === 'kz' ? 'Жазылу' : 'Подписаться'}
+              </button>
+            </div>
           </div>
         </div>
       </div>
