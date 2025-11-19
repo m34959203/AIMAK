@@ -1,12 +1,11 @@
 import { TengriArticleCard } from '@/components/tengri-article-card';
 
+// Force dynamic rendering to always fetch fresh data
+export const dynamic = 'force-dynamic';
+
 async function getCategoryArticles(categorySlug: string) {
   try {
-    // Ensure API URL has protocol
-    let apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
-    if (!apiUrl.startsWith('http://') && !apiUrl.startsWith('https://')) {
-      apiUrl = `https://${apiUrl}`;
-    }
+    const apiUrl = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
     const res = await fetch(
       `${apiUrl}/api/articles?published=true`,
@@ -19,6 +18,12 @@ async function getCategoryArticles(categorySlug: string) {
     }
 
     const allArticles = await res.json();
+
+    if (!Array.isArray(allArticles)) {
+      console.error('Invalid articles response format:', allArticles);
+      return [];
+    }
+
     console.log(`Total articles fetched: ${allArticles.length}`);
     const filtered = allArticles.filter((article: any) => article.category?.slug === categorySlug);
     console.log(`Articles in category '${categorySlug}': ${filtered.length}`);
@@ -77,11 +82,7 @@ const FALLBACK_CATEGORIES = [
 
 async function getCategory(categorySlug: string) {
   try {
-    // Ensure API URL has protocol
-    let apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
-    if (!apiUrl.startsWith('http://') && !apiUrl.startsWith('https://')) {
-      apiUrl = `https://${apiUrl}`;
-    }
+    const apiUrl = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
     const res = await fetch(
       `${apiUrl}/api/categories`,
@@ -95,6 +96,12 @@ async function getCategory(categorySlug: string) {
     }
 
     const categories = await res.json();
+
+    if (!Array.isArray(categories)) {
+      console.error('Invalid categories response format:', categories);
+      return FALLBACK_CATEGORIES.find((cat) => cat.slug === categorySlug) || null;
+    }
+
     return categories.find((cat: any) => cat.slug === categorySlug);
   } catch (error) {
     console.error('Failed to fetch category:', error);

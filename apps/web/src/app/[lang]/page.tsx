@@ -6,6 +6,8 @@ export const dynamic = 'force-dynamic';
 async function getArticles() {
   try {
     const apiUrl = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+    console.log('Fetching articles from:', apiUrl);
+
     const res = await fetch(`${apiUrl}/api/articles?published=true`, {
       cache: 'no-store',
     });
@@ -15,7 +17,15 @@ async function getArticles() {
       return [];
     }
 
-    return res.json();
+    const data = await res.json();
+
+    if (!Array.isArray(data)) {
+      console.error('Invalid articles response format:', data);
+      return [];
+    }
+
+    console.log(`Successfully fetched ${data.length} articles`);
+    return data;
   } catch (error) {
     console.error('Failed to fetch articles:', error);
     return [];
@@ -34,7 +44,14 @@ async function getCategories() {
       return [];
     }
 
-    return res.json();
+    const data = await res.json();
+
+    if (!Array.isArray(data)) {
+      console.error('Invalid categories response format:', data);
+      return [];
+    }
+
+    return data;
   } catch (error) {
     console.error('Failed to fetch categories:', error);
     return [];
