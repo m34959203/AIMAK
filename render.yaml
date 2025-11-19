@@ -31,7 +31,7 @@ services:
     name: aimak-api
     runtime: node
     plan: free
-    buildCommand: pnpm install --frozen-lockfile && cd apps/api && pnpm prisma generate && pnpm migrate:deploy && pnpm build
+    buildCommand: pnpm install --frozen-lockfile && cd apps/api && pnpm prisma generate && pnpm migrate:deploy && pnpm db:seed && pnpm build
     startCommand: cd apps/api && pnpm start:prod
     
     healthCheckPath: /api/health
@@ -82,19 +82,19 @@ services:
       
       - key: JWT_REFRESH_EXPIRES_IN
         value: 7d
-      
+
       # CORS
       - key: CORS_ORIGIN
         fromService:
           name: aimak-web
           type: web
-          property: url
+          property: host
 
       - key: FRONTEND_URL
         fromService:
           name: aimak-web
           type: web
-          property: url
+          property: host
       
       # AI
       - key: GEMINI_API_KEY
@@ -185,7 +185,7 @@ services:
         fromService:
           name: aimak-api
           type: web
-          property: url
+          property: host
       
       - key: RATE_LIMIT_PUBLIC
         value: 100
@@ -215,10 +215,18 @@ services:
         value: 3000
 
       - key: NEXT_PUBLIC_API_URL
-        value: https://aimak-api-w8ps.onrender.com
+
+        fromService:
+          name: aimak-api
+          type: web
+          property: host
 
       - key: API_URL
-        value: https://aimak-api-w8ps.onrender.com
+        fromService:
+          name: aimak-api
+          type: web
+          property: host
+
       
       - key: NEXT_PUBLIC_APP_NAME
         value: Аймақ ақшамы
@@ -245,7 +253,7 @@ services:
         fromService:
           name: aimak-web
           type: web
-          property: url
+          property: host
       
       - key: NEXT_PUBLIC_SITE_NAME
         value: aimak.kz

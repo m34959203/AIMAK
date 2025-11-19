@@ -109,8 +109,8 @@ export function TengriArticleCard({
                 </span>
               )}
             </div>
-            <h2 className="text-4xl font-bold mb-3 group-hover:text-green-400 transition">
-              {title}
+            <h2 className="text-4xl font-bold mb-3 group-hover:text-green-400 transition line-clamp-3">
+              {title.length > 120 ? title.substring(0, 120) + '...' : title}
             </h2>
             {excerpt && (
               <p className="text-lg text-gray-200 mb-4 line-clamp-2">{excerpt}</p>

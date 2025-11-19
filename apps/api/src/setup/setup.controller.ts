@@ -207,7 +207,7 @@ export class SetupController {
       const categoriesCount = await this.prisma.category.count();
       const usersCount = await this.prisma.user.count();
       const articlesCount = await this.prisma.article.count();
-      const adminExists = await this.prisma.user.findUnique({
+      const adminUser = await this.prisma.user.findUnique({
         where: { email: 'admin@aimakakshamy.kz' },
       });
 
@@ -216,12 +216,215 @@ export class SetupController {
         categories: categoriesCount,
         users: usersCount,
         articles: articlesCount,
-        adminExists: !!adminExists,
+        adminExists: !!adminUser,
+        adminRole: adminUser?.role || null,
       };
     } catch (error) {
       return {
         database: 'error',
         error: error instanceof Error ? error.message : 'An unknown error occurred',
+      };
+    }
+  }
+
+  @Public()
+  @Post('make-admin')
+  @HttpCode(HttpStatus.OK)
+  async makeAdmin() {
+    try {
+      // Находим пользователя admin@aimakakshamy.kz
+      const user = await this.prisma.user.findUnique({
+        where: { email: 'admin@aimakakshamy.kz' },
+      });
+
+      if (!user) {
+        return {
+          success: false,
+          message: 'User admin@aimakakshamy.kz not found',
+        };
+      }
+
+      // Обновляем роль на ADMIN и сбрасываем пароль на admin123
+      const hashedPassword = await bcrypt.hash('admin123', 10);
+      const updatedUser = await this.prisma.user.update({
+        where: { email: 'admin@aimakakshamy.kz' },
+        data: {
+          role: 'ADMIN',
+          password: hashedPassword,
+          isActive: true,
+          isVerified: true,
+        },
+      });
+
+      return {
+        success: true,
+        message: 'User role updated to ADMIN and password reset to admin123',
+        user: {
+          email: updatedUser.email,
+          role: updatedUser.role,
+          firstName: updatedUser.firstName,
+          lastName: updatedUser.lastName,
+        },
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: error instanceof Error ? error.message : 'An unknown error occurred',
+      };
+    }
+  }
+
+  @Public()
+  @Post('cleanup-wordpress')
+  @HttpCode(HttpStatus.OK)
+  async cleanupWordPress() {
+    try {
+      // Find and delete articles with slugs ending in -wpXXXXX (WordPress imports)
+      const wpArticles = await this.prisma.article.findMany({
+        where: {
+          slugKz: {
+            contains: '-wp',
+          },
+        },
+      });
+
+      // Filter to only those ending with -wp followed by digits
+      const toDelete = wpArticles.filter(article =>
+        /\-wp\d+$/.test(article.slugKz)
+      );
+
+      const deletedIds = [];
+      for (const article of toDelete) {
+        await this.prisma.article.delete({
+          where: { id: article.id },
+        });
+        deletedIds.push(article.id);
+      }
+
+      return {
+        success: true,
+        message: `Deleted ${deletedIds.length} WordPress articles with broken encoding`,
+        deletedCount: deletedIds.length,
+        deletedIds,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: error instanceof Error ? error.message : 'An unknown error occurred',
+      };
+    }
+  }
+
+  @Public()
+  @Post('diagnose-articles')
+  @HttpCode(HttpStatus.OK)
+  async diagnoseArticles() {
+    try {
+      const totalArticles = await this.prisma.article.count();
+      const publishedTrue = await this.prisma.article.count({ where: { published: true } });
+      const publishedFalse = await this.prisma.article.count({ where: { published: false } });
+
+      const statusPublished = await this.prisma.article.count({ where: { status: 'PUBLISHED' } });
+      const statusDraft = await this.prisma.article.count({ where: { status: 'DRAFT' } });
+
+      // Рассинхронизированные записи
+      const desyncPublishedStatus = await this.prisma.article.count({
+        where: {
+          status: 'PUBLISHED',
+          published: false,
+        },
+      });
+
+      const desyncDraftStatus = await this.prisma.article.count({
+        where: {
+          status: 'DRAFT',
+          published: true,
+        },
+      });
+
+      // Примеры статей
+      const sampleArticles = await this.prisma.article.findMany({
+        take: 5,
+        select: {
+          id: true,
+          titleKz: true,
+          status: true,
+          published: true,
+          publishedAt: true,
+        },
+        orderBy: { createdAt: 'desc' },
+      });
+
+      return {
+        success: true,
+        diagnosis: {
+          total: totalArticles,
+          byPublishedField: {
+            true: publishedTrue,
+            false: publishedFalse,
+          },
+          byStatusField: {
+            PUBLISHED: statusPublished,
+            DRAFT: statusDraft,
+          },
+          desynchronized: {
+            publishedStatusButNotPublished: desyncPublishedStatus,
+            draftStatusButPublished: desyncDraftStatus,
+          },
+          needsSync: desyncPublishedStatus > 0 || desyncDraftStatus > 0,
+        },
+        sampleArticles,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: error instanceof Error ? error.message : 'An unknown error occurred',
+      };
+    }
+  }
+
+  @Public()
+  @Post('fix-articles-sync')
+  @HttpCode(HttpStatus.OK)
+  async fixArticlesSync() {
+    try {
+      // Синхронизировать поле published с полем status
+      const result1 = await this.prisma.article.updateMany({
+        where: {
+          status: 'PUBLISHED',
+          published: false,
+        },
+        data: {
+          published: true,
+          publishedAt: new Date(),
+        },
+      });
+
+      const result2 = await this.prisma.article.updateMany({
+        where: {
+          status: {
+            not: 'PUBLISHED',
+          },
+          published: true,
+        },
+        data: {
+          published: false,
+          publishedAt: null,
+        },
+      });
+
+      return {
+        success: true,
+        message: 'Articles synchronized successfully',
+        fixed: {
+          setToPublished: result1.count,
+          setToDraft: result2.count,
+        },
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: error instanceof Error ? error.message : 'An unknown error occurred',
       };
     }
   }
