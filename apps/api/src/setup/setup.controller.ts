@@ -314,4 +314,118 @@ export class SetupController {
       };
     }
   }
+
+  @Public()
+  @Post('diagnose-articles')
+  @HttpCode(HttpStatus.OK)
+  async diagnoseArticles() {
+    try {
+      const totalArticles = await this.prisma.article.count();
+      const publishedTrue = await this.prisma.article.count({ where: { published: true } });
+      const publishedFalse = await this.prisma.article.count({ where: { published: false } });
+
+      const statusPublished = await this.prisma.article.count({ where: { status: 'PUBLISHED' } });
+      const statusDraft = await this.prisma.article.count({ where: { status: 'DRAFT' } });
+
+      // Рассинхронизированные записи
+      const desyncPublishedStatus = await this.prisma.article.count({
+        where: {
+          status: 'PUBLISHED',
+          published: false,
+        },
+      });
+
+      const desyncDraftStatus = await this.prisma.article.count({
+        where: {
+          status: 'DRAFT',
+          published: true,
+        },
+      });
+
+      // Примеры статей
+      const sampleArticles = await this.prisma.article.findMany({
+        take: 5,
+        select: {
+          id: true,
+          titleKz: true,
+          status: true,
+          published: true,
+          publishedAt: true,
+        },
+        orderBy: { createdAt: 'desc' },
+      });
+
+      return {
+        success: true,
+        diagnosis: {
+          total: totalArticles,
+          byPublishedField: {
+            true: publishedTrue,
+            false: publishedFalse,
+          },
+          byStatusField: {
+            PUBLISHED: statusPublished,
+            DRAFT: statusDraft,
+          },
+          desynchronized: {
+            publishedStatusButNotPublished: desyncPublishedStatus,
+            draftStatusButPublished: desyncDraftStatus,
+          },
+          needsSync: desyncPublishedStatus > 0 || desyncDraftStatus > 0,
+        },
+        sampleArticles,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: error instanceof Error ? error.message : 'An unknown error occurred',
+      };
+    }
+  }
+
+  @Public()
+  @Post('fix-articles-sync')
+  @HttpCode(HttpStatus.OK)
+  async fixArticlesSync() {
+    try {
+      // Синхронизировать поле published с полем status
+      const result1 = await this.prisma.article.updateMany({
+        where: {
+          status: 'PUBLISHED',
+          published: false,
+        },
+        data: {
+          published: true,
+          publishedAt: new Date(),
+        },
+      });
+
+      const result2 = await this.prisma.article.updateMany({
+        where: {
+          status: {
+            not: 'PUBLISHED',
+          },
+          published: true,
+        },
+        data: {
+          published: false,
+          publishedAt: null,
+        },
+      });
+
+      return {
+        success: true,
+        message: 'Articles synchronized successfully',
+        fixed: {
+          setToPublished: result1.count,
+          setToDraft: result2.count,
+        },
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: error instanceof Error ? error.message : 'An unknown error occurred',
+      };
+    }
+  }
 }
