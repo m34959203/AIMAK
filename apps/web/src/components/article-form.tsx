@@ -39,7 +39,7 @@ export function ArticleForm({ article, onSubmit, isLoading }: ArticleFormProps) 
   const [uploadError, setUploadError] = useState('');
 
   // Status and flags
-  const [status, setStatus] = useState<ArticleStatus>(article?.status || ArticleStatus.DRAFT);
+  const [status, setStatus] = useState<ArticleStatus>(article?.status || ArticleStatus.PUBLISHED);
   const [isBreaking, setIsBreaking] = useState(article?.isBreaking || false);
   const [isFeatured, setIsFeatured] = useState(article?.isFeatured || false);
   const [isPinned, setIsPinned] = useState(article?.isPinned || false);
