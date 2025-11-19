@@ -273,4 +273,45 @@ export class SetupController {
       };
     }
   }
+
+  @Public()
+  @Post('cleanup-wordpress')
+  @HttpCode(HttpStatus.OK)
+  async cleanupWordPress() {
+    try {
+      // Find and delete articles with slugs ending in -wpXXXXX (WordPress imports)
+      const wpArticles = await this.prisma.article.findMany({
+        where: {
+          slugKz: {
+            contains: '-wp',
+          },
+        },
+      });
+
+      // Filter to only those ending with -wp followed by digits
+      const toDelete = wpArticles.filter(article =>
+        /\-wp\d+$/.test(article.slugKz)
+      );
+
+      const deletedIds = [];
+      for (const article of toDelete) {
+        await this.prisma.article.delete({
+          where: { id: article.id },
+        });
+        deletedIds.push(article.id);
+      }
+
+      return {
+        success: true,
+        message: `Deleted ${deletedIds.length} WordPress articles with broken encoding`,
+        deletedCount: deletedIds.length,
+        deletedIds,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: error instanceof Error ? error.message : 'An unknown error occurred',
+      };
+    }
+  }
 }
