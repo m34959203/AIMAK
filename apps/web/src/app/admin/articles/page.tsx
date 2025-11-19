@@ -70,9 +70,11 @@ export default function AdminArticlesPage() {
             <tbody className="bg-white divide-y divide-gray-200">
               {articles.map((article) => (
                 <tr key={article.id}>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">
-                      {article.titleKz}
+                  <td className="px-6 py-4">
+                    <div className="text-sm font-medium text-gray-900 max-w-md truncate">
+                      {article.titleKz.length > 80
+                        ? article.titleKz.substring(0, 80) + '...'
+                        : article.titleKz}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
