@@ -2,6 +2,7 @@ import Image from 'next/image';
 import { format } from 'date-fns';
 import { kk, ru } from 'date-fns/locale';
 import { TengriArticleCard } from '@/components/tengri-article-card';
+import { ArticleActions } from '@/components/article-actions';
 
 async function getArticleBySlug(slug: string) {
   try {
@@ -131,6 +132,13 @@ export default async function ArticlePage({
                 </span>
               )}
             </div>
+
+            {/* Admin Actions */}
+            <ArticleActions
+              articleId={article.id}
+              authorId={article.author?.id}
+              lang={params.lang}
+            />
           </div>
         </div>
       </div>

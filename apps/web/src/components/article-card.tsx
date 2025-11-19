@@ -35,8 +35,8 @@ export function ArticleCard({ article, lang = 'kz' }: ArticleCardProps) {
           </span>
         </div>
         <Link href={`/${lang}/${article.category.slug}/${slug}`}>
-          <h3 className="text-xl font-bold mb-2 hover:text-blue-600">
-            {title}
+          <h3 className="text-xl font-bold mb-2 hover:text-blue-600 line-clamp-2">
+            {title.length > 100 ? title.substring(0, 100) + '...' : title}
           </h3>
         </Link>
         {excerpt && (
