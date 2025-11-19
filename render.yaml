@@ -83,10 +83,6 @@ services:
       - key: JWT_REFRESH_EXPIRES_IN
         value: 7d
 
-      # Admin
-      - key: ADMIN_PASSWORD
-        sync: false
-
       # CORS
       - key: CORS_ORIGIN
         fromService:
