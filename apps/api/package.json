@@ -15,6 +15,7 @@
     "db:create-admin": "node scripts/create-admin.js",
     "cleanup:wordpress": "node scripts/cleanup-wordpress-articles.js",
     "import:wordpress": "node scripts/import-from-wordpress.js",
+    "import:wordpress:images": "node scripts/import-with-images.js",
     "migrate:deploy": "node scripts/pre-migrate.js && prisma migrate deploy",
     "fix:media-urls": "node scripts/fix-media-urls.js"
   },
