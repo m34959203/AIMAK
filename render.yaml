@@ -215,6 +215,7 @@ services:
         value: 3000
 
       - key: NEXT_PUBLIC_API_URL
+
         fromService:
           name: aimak-api
           type: web
@@ -225,6 +226,7 @@ services:
           name: aimak-api
           type: web
           property: host
+
       
       - key: NEXT_PUBLIC_APP_NAME
         value: Аймақ ақшамы

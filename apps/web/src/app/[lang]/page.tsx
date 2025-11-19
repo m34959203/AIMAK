@@ -9,12 +9,7 @@ export const dynamic = 'force-dynamic';
 
 async function getArticles() {
   try {
-    let apiUrl = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
-
-    // Add https:// if missing (Render returns only hostname)
-    if (apiUrl && !apiUrl.startsWith('http')) {
-      apiUrl = `https://${apiUrl}`;
-    }
+    const apiUrl = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
     console.log('Fetching articles from:', apiUrl);
 
@@ -44,12 +39,7 @@ async function getArticles() {
 
 async function getCategories() {
   try {
-    let apiUrl = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
-
-    // Add https:// if missing (Render returns only hostname)
-    if (apiUrl && !apiUrl.startsWith('http')) {
-      apiUrl = `https://${apiUrl}`;
-    }
+    const apiUrl = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
     console.log('Fetching categories from:', apiUrl);
 
