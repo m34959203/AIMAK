@@ -4,6 +4,10 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { formatDistanceToNow } from 'date-fns';
 import { kk, ru } from 'date-fns/locale';
+import { IoEye } from 'react-icons/io5';
+import { BiTime } from 'react-icons/bi';
+import { FaPen } from 'react-icons/fa';
+import { HiNewspaper } from 'react-icons/hi2';
 
 interface Article {
   id: string;
@@ -75,7 +79,7 @@ export function MagazineHero({ mainArticle, sideArticles, lang }: MagazineHeroPr
             />
           ) : (
             <div className="w-full h-full bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center">
-              <span className="text-6xl opacity-30">📰</span>
+              <HiNewspaper className="text-7xl text-white opacity-20" />
             </div>
           )}
 
@@ -102,17 +106,20 @@ export function MagazineHero({ mainArticle, sideArticles, lang }: MagazineHeroPr
             )}
 
             <div className="flex items-center gap-4 text-sm text-gray-300">
-              <span className="flex items-center gap-1">
-                🕒 {timeAgo}
+              <span className="flex items-center gap-1.5">
+                <BiTime className="text-base" />
+                {timeAgo}
               </span>
               {article.views && (
-                <span className="flex items-center gap-1">
-                  👁️ {article.views.toLocaleString()}
+                <span className="flex items-center gap-1.5">
+                  <IoEye className="text-base" />
+                  {article.views.toLocaleString()}
                 </span>
               )}
               {article.author && (
-                <span className="hidden md:block">
-                  ✍️ {article.author.firstName} {article.author.lastName}
+                <span className="hidden md:flex items-center gap-1.5">
+                  <FaPen className="text-sm" />
+                  {article.author.firstName} {article.author.lastName}
                 </span>
               )}
             </div>

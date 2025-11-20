@@ -4,6 +4,9 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { formatDistanceToNow } from 'date-fns';
 import { kk, ru } from 'date-fns/locale';
+import { HiFire } from 'react-icons/hi';
+import { IoEye } from 'react-icons/io5';
+import { BiTime } from 'react-icons/bi';
 
 interface TrendingArticle {
   id: string;
@@ -41,7 +44,7 @@ export function TrendingSection({ articles, lang }: TrendingSectionProps) {
       {/* Header */}
       <div className="flex items-center gap-3 mb-6 pb-4 border-b-2 border-red-500">
         <div className="relative">
-          <span className="text-3xl animate-pulse">🔥</span>
+          <HiFire className="text-4xl text-red-500 animate-pulse" />
           <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-ping"></span>
         </div>
         <h3 className="text-2xl font-bold bg-gradient-to-r from-red-600 to-orange-600 bg-clip-text text-transparent">
@@ -96,12 +99,12 @@ export function TrendingSection({ articles, lang }: TrendingSectionProps) {
                   <div className="flex items-center gap-3 text-xs text-gray-500">
                     {article.views && (
                       <span className="flex items-center gap-1 font-medium">
-                        <span className="text-red-500">👁️</span>
+                        <IoEye className="text-sm text-red-500" />
                         {article.views.toLocaleString()}
                       </span>
                     )}
                     <span className="flex items-center gap-1">
-                      <span>🕒</span>
+                      <BiTime className="text-sm" />
                       {timeAgo}
                     </span>
                   </div>
