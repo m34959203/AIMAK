@@ -14,6 +14,10 @@ const nextConfig = {
       },
       {
         protocol: 'https',
+        hostname: 'aimak-api-*.onrender.com',
+      },
+      {
+        protocol: 'https',
         hostname: '**.onrender.com',
       },
     ],

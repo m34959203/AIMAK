@@ -19,8 +19,12 @@ export class MediaService {
     }
 
     // Ensure .onrender.com domain is present if running on Render
+    // The APP_URL from Render can be like: aimak-api-w8ps, aimak-api-w8ps.onrender.com, etc.
     if (baseUrl.includes('aimak-api') && !baseUrl.includes('.onrender.com')) {
-      baseUrl = baseUrl.replace('aimak-api', 'aimak-api.onrender.com');
+      // Simply append .onrender.com if it's not already there
+      baseUrl = baseUrl.replace(/^(https?:\/\/)?(.+?)(\/?$)/, (match, protocol, domain, slash) => {
+        return `${protocol || 'https://'}${domain}.onrender.com${slash}`;
+      });
       console.log('[MediaService] Added .onrender.com domain');
     }
 
