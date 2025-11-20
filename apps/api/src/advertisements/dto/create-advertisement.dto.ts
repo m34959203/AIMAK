@@ -5,27 +5,27 @@ import { AdType, AdPosition, AdSize } from '@prisma/client';
 export class CreateAdvertisementDto {
   @ApiProperty()
   @IsString()
-  code: string;
+  code!: string;
 
   @ApiProperty()
   @IsString()
-  nameKz: string;
+  nameKz!: string;
 
   @ApiProperty()
   @IsString()
-  nameRu: string;
+  nameRu!: string;
 
   @ApiProperty({ enum: AdType })
   @IsEnum(AdType)
-  type: AdType;
+  type!: AdType;
 
   @ApiProperty({ enum: AdPosition })
   @IsEnum(AdPosition)
-  position: AdPosition;
+  position!: AdPosition;
 
   @ApiProperty({ enum: AdSize })
   @IsEnum(AdSize)
-  size: AdSize;
+  size!: AdSize;
 
   @ApiPropertyOptional()
   @IsOptional()
