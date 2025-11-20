@@ -5,6 +5,7 @@ import { TengriArticleCard } from '@/components/tengri-article-card';
 import { ArticleActions } from '@/components/article-actions';
 import { ShareButtons } from '@/components/share-buttons';
 import { Advertisement } from '@/components/advertisement';
+import { CommentsSection } from '@/components/comments-section';
 import { getApiEndpoint } from '@/lib/api-url';
 import { getImageUrl } from '@/lib/image-url';
 
@@ -156,10 +157,10 @@ export default async function ArticlePage({
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Main Content - 8 cols */}
           <article className="lg:col-span-8">
-            <div className="bg-white rounded-lg p-8 mb-6">
+            <div className="bg-white rounded-lg shadow-sm overflow-hidden">
               {/* Featured Image */}
               {coverImageUrl && (
-                <div className="relative w-full h-96 mb-8 rounded-lg overflow-hidden">
+                <div className="relative w-full h-96 mb-0">
                   <Image
                     src={coverImageUrl}
                     alt={title}
@@ -170,36 +171,43 @@ export default async function ArticlePage({
               )}
 
               {/* Content */}
-              <div className="prose prose-lg max-w-none">
-                <div
-                  dangerouslySetInnerHTML={{ __html: content }}
-                  className="article-content"
-                />
-              </div>
-
-              {/* Tags */}
-              {article.tags && article.tags.length > 0 && (
-                <div className="mt-8 pt-6 border-t">
-                  <div className="flex flex-wrap gap-2">
-                    {article.tags.map((tag: any) => (
-                      <a
-                        key={tag.id}
-                        href={`/${params.lang}/tag/${tag.slug}`}
-                        className="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm rounded-full"
-                      >
-                        #{params.lang === 'kz' ? tag.nameKz : tag.nameRu}
-                      </a>
-                    ))}
-                  </div>
+              <div className="p-8">
+                <div className="prose prose-lg max-w-none">
+                  <div
+                    dangerouslySetInnerHTML={{ __html: content }}
+                    className="article-content"
+                  />
                 </div>
-              )}
 
-              {/* Share Buttons */}
-              <ShareButtons
-                url={`/${params.lang}/${params.category}/${params.slug}`}
-                title={title}
-                lang={params.lang}
-              />
+                {/* Tags */}
+                {article.tags && article.tags.length > 0 && (
+                  <div className="mt-8 pt-6 border-t border-gray-200">
+                    <h3 className="text-sm font-semibold text-gray-700 mb-3">
+                      {params.lang === 'kz' ? 'Тегтер:' : 'Теги:'}
+                    </h3>
+                    <div className="flex flex-wrap gap-2">
+                      {article.tags.map((tag: any) => (
+                        <a
+                          key={tag.id}
+                          href={`/${params.lang}/tag/${tag.slug}`}
+                          className="px-3 py-1.5 bg-green-50 hover:bg-green-100 text-green-700 text-sm font-medium rounded-full transition-colors"
+                        >
+                          #{params.lang === 'kz' ? tag.nameKz : tag.nameRu}
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Share Buttons */}
+                <div className="mt-6 pt-6 border-t border-gray-200">
+                  <ShareButtons
+                    url={`/${params.lang}/${params.category}/${params.slug}`}
+                    title={title}
+                    lang={params.lang}
+                  />
+                </div>
+              </div>
             </div>
 
             {/* Related Articles */}
@@ -219,6 +227,11 @@ export default async function ArticlePage({
                   ))}
                 </div>
               </div>
+            )}
+
+            {/* Comments Section */}
+            {article.allowComments && (
+              <CommentsSection articleId={article.id} lang={params.lang} />
             )}
           </article>
 
