@@ -1,16 +1,14 @@
 import { TengriArticleCard } from '@/components/tengri-article-card';
+import { getApiEndpoint } from '@/lib/api-url';
 
 // Force dynamic rendering to always fetch fresh data
 export const dynamic = 'force-dynamic';
 
 async function getCategoryArticles(categorySlug: string) {
   try {
-    const apiUrl = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+    const apiEndpoint = getApiEndpoint('/articles', { published: true });
 
-    const res = await fetch(
-      `${apiUrl}/api/articles?published=true`,
-      { cache: 'no-store' }
-    );
+    const res = await fetch(apiEndpoint, { cache: 'no-store' });
 
     if (!res.ok) {
       console.error(`Failed to fetch articles: ${res.status} ${res.statusText}`);
@@ -82,12 +80,9 @@ const FALLBACK_CATEGORIES = [
 
 async function getCategory(categorySlug: string) {
   try {
-    const apiUrl = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+    const apiEndpoint = getApiEndpoint('/categories');
 
-    const res = await fetch(
-      `${apiUrl}/api/categories`,
-      { cache: 'no-store' }
-    );
+    const res = await fetch(apiEndpoint, { cache: 'no-store' });
 
     if (!res.ok) {
       console.error(`Failed to fetch categories: ${res.status} ${res.statusText}`);
