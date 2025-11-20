@@ -198,12 +198,19 @@ model Comment {
 
 // Рекламные блоки
 enum AdPosition {
-  HEADER
-  SIDEBAR_TOP
-  SIDEBAR_MIDDLE
-  IN_CONTENT
-  FOOTER
-  STICKY_BOTTOM
+  HOME_TOP          // Верх главной страницы
+  HOME_SIDEBAR      // Боковая панель главной
+  ARTICLE_TOP       // Верх страницы статьи
+  ARTICLE_SIDEBAR   // Боковая панель статьи
+  IN_CONTENT        // Внутри контента
+  FOOTER            // Подвал
+  STICKY_BOTTOM     // Прилипающий баннер внизу
+}
+
+enum AdType {
+  CUSTOM            // Собственная реклама (HTML/изображение)
+  YANDEX_DIRECT     // Яндекс.Директ
+  GOOGLE_ADSENSE    // Google AdSense
 }
 
 enum AdSize {
@@ -213,25 +220,49 @@ enum AdSize {
   HALF_PAGE_300x600
   MOBILE_BANNER_320x50
   NATIVE
+  CUSTOM            // Произвольный размер
 }
 
-model AdUnit {
+model Advertisement {
   id               String     @id @default(uuid())
   code             String     @unique
-  name             String
+
+  // Название и описание
+  nameKz           String     @map("name_kz")
+  nameRu           String     @map("name_ru")
+
+  // Тип и позиция
+  type             AdType
   position         AdPosition
   size             AdSize
-  htmlContent      String?    @map("html_content")
+
+  // Для собственной рекламы
+  customHtml       String?    @map("custom_html")
+  imageUrl         String?    @map("image_url")
   clickUrl         String?    @map("click_url")
+
+  // Для внешних рекламных сетей
+  yandexBlockId    String?    @map("yandex_block_id")      // ID блока Яндекс.Директ
+  googleAdSlot     String?    @map("google_ad_slot")       // Google AdSense slot ID
+  googleAdClient   String?    @map("google_ad_client")     // Google AdSense client ID
+
+  // Настройки показа
   isActive         Boolean    @default(true) @map("is_active")
   priority         Int        @default(0)
+  startDate        DateTime?  @map("start_date")
+  endDate          DateTime?  @map("end_date")
+
+  // Статистика
   totalImpressions Int        @default(0) @map("total_impressions")
   totalClicks      Int        @default(0) @map("total_clicks")
-  createdAt        DateTime   @default(now()) @map("created_at")
 
-  @@map("ad_units")
+  createdAt        DateTime   @default(now()) @map("created_at")
+  updatedAt        DateTime   @updatedAt @map("updated_at")
+
+  @@map("advertisements")
   @@index([position])
   @@index([isActive])
+  @@index([type])
 }
 
 // AI генерации

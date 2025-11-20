@@ -4,7 +4,9 @@ import { kk, ru } from 'date-fns/locale';
 import { TengriArticleCard } from '@/components/tengri-article-card';
 import { ArticleActions } from '@/components/article-actions';
 import { ShareButtons } from '@/components/share-buttons';
+import { Advertisement } from '@/components/advertisement';
 import { getApiEndpoint } from '@/lib/api-url';
+import { getImageUrl } from '@/lib/image-url';
 
 async function getArticleBySlug(slug: string) {
   try {
@@ -76,6 +78,8 @@ export default async function ArticlePage({
         locale: params.lang === 'kz' ? kk : ru,
       })
     : '';
+
+  const coverImageUrl = getImageUrl(article.coverImage);
 
   return (
     <div className="bg-gray-50">
@@ -154,10 +158,10 @@ export default async function ArticlePage({
           <article className="lg:col-span-8">
             <div className="bg-white rounded-lg p-8 mb-6">
               {/* Featured Image */}
-              {article.coverImage && (
+              {coverImageUrl && (
                 <div className="relative w-full h-96 mb-8 rounded-lg overflow-hidden">
                   <Image
-                    src={article.coverImage}
+                    src={coverImageUrl}
                     alt={title}
                     fill
                     className="object-cover"
@@ -249,11 +253,10 @@ export default async function ArticlePage({
             </div>
 
             {/* Ad Space */}
-            <div className="bg-gray-200 rounded-lg p-6 flex items-center justify-center h-64">
-              <span className="text-gray-400">
-                {params.lang === 'kz' ? 'Жарнама' : 'Реклама'} 300x600
-              </span>
-            </div>
+            <Advertisement
+              position="ARTICLE_SIDEBAR"
+              className="w-full h-96 bg-gray-100 rounded-lg overflow-hidden"
+            />
           </aside>
         </div>
       </div>

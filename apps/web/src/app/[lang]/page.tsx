@@ -3,6 +3,7 @@ import { MagazineHero } from '@/components/magazine-hero';
 import { TrendingSection } from '@/components/trending-section';
 import { CategoryTabs } from '@/components/category-tabs';
 import { TengriArticleCard } from '@/components/tengri-article-card';
+import { Advertisement } from '@/components/advertisement';
 import { getApiEndpoint } from '@/lib/api-url';
 
 // Force dynamic rendering to always fetch fresh data
@@ -111,6 +112,14 @@ export default async function HomePage({
         />
       )}
 
+      {/* Top Advertisement */}
+      <div className="container mx-auto px-4 py-4">
+        <Advertisement
+          position="HOME_TOP"
+          className="w-full h-24 bg-gray-100 rounded-lg overflow-hidden"
+        />
+      </div>
+
       {/* Main Content */}
       <div className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -118,20 +127,13 @@ export default async function HomePage({
           <div className="lg:col-span-8 space-y-8">
             {/* Latest News Section */}
             <div className="bg-white rounded-xl shadow-lg p-6">
-              <div className="flex items-center justify-between mb-6 pb-4 border-b-2 border-green-500">
+              <div className="flex items-center mb-6 pb-4 border-b-2 border-green-500">
                 <div className="flex items-center gap-3">
                   <div className="w-1 h-8 bg-gradient-to-b from-green-500 to-green-600 rounded-full"></div>
                   <h2 className="text-3xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
                     {params.lang === 'kz' ? 'Соңғы жаңалықтар' : 'Последние новости'}
                   </h2>
                 </div>
-                <a
-                  href={`/${params.lang}/zhanalyqtar`}
-                  className="group flex items-center gap-2 text-green-600 hover:text-green-700 font-semibold text-sm transition-all"
-                >
-                  {params.lang === 'kz' ? 'Барлығы' : 'Все'}
-                  <span className="transform group-hover:translate-x-1 transition-transform">→</span>
-                </a>
               </div>
 
               <div className="space-y-6">
@@ -171,15 +173,10 @@ export default async function HomePage({
             )}
 
             {/* Ad Space */}
-            <div className="bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl shadow-lg p-8 flex items-center justify-center h-64 border-2 border-dashed border-gray-300">
-              <div className="text-center">
-                <div className="text-4xl mb-2">📢</div>
-                <span className="text-gray-500 font-medium">
-                  {params.lang === 'kz' ? 'Жарнама' : 'Реклама'}
-                </span>
-                <p className="text-xs text-gray-400 mt-1">300x600</p>
-              </div>
-            </div>
+            <Advertisement
+              position="HOME_SIDEBAR"
+              className="w-full h-96 bg-gray-100 rounded-xl overflow-hidden"
+            />
 
             {/* Social Media Links */}
             <div className="bg-white rounded-xl shadow-lg p-6">

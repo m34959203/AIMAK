@@ -6,6 +6,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { kk, ru } from 'date-fns/locale';
 import { IoEye } from 'react-icons/io5';
 import { HiNewspaper } from 'react-icons/hi2';
+import { getImageUrl } from '@/lib/image-url';
 
 interface Article {
   id: string;
@@ -72,15 +73,17 @@ export function TengriArticleCard({
   };
 
   if (variant === 'hero') {
+    const imageUrl = getImageUrl(article.coverImage);
+
     return (
       <Link
         href={`/${lang}/${article.category?.slug}/${slug}`}
         className="group block relative overflow-hidden rounded-lg bg-white shadow-lg hover:shadow-xl transition-shadow"
       >
         <div className="relative h-[500px]">
-          {article.coverImage ? (
+          {imageUrl ? (
             <Image
-              src={article.coverImage}
+              src={imageUrl}
               alt={title}
               fill
               className="object-cover group-hover:scale-105 transition-transform duration-300"
@@ -133,15 +136,17 @@ export function TengriArticleCard({
   }
 
   if (variant === 'vertical') {
+    const imageUrl = getImageUrl(article.coverImage);
+
     return (
       <Link
         href={`/${lang}/${article.category?.slug}/${slug}`}
         className="group block bg-white rounded-lg overflow-hidden hover:shadow-lg transition-shadow border"
       >
         <div className="relative h-48">
-          {article.coverImage ? (
+          {imageUrl ? (
             <Image
-              src={article.coverImage}
+              src={imageUrl}
               alt={title}
               fill
               className="object-cover group-hover:scale-105 transition-transform duration-300"
@@ -185,6 +190,8 @@ export function TengriArticleCard({
   }
 
   // Horizontal (default - Tengrinews style)
+  const imageUrl = getImageUrl(article.coverImage);
+
   return (
     <Link
       href={`/${lang}/${article.category?.slug}/${slug}`}
@@ -192,9 +199,9 @@ export function TengriArticleCard({
     >
       {/* Image */}
       <div className="relative w-32 h-24 flex-shrink-0 rounded overflow-hidden">
-        {article.coverImage ? (
+        {imageUrl ? (
           <Image
-            src={article.coverImage}
+            src={imageUrl}
             alt={title}
             fill
             className="object-cover group-hover:scale-105 transition-transform duration-300"
