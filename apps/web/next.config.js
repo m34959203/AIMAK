@@ -9,19 +9,36 @@ const nextConfig = {
         hostname: 'localhost',
       },
       {
+        protocol: 'http',
+        hostname: '127.0.0.1',
+      },
+      {
         protocol: 'https',
         hostname: 'aimak-api.onrender.com',
       },
       {
         protocol: 'https',
-        hostname: 'aimak-api-*.onrender.com',
+        hostname: 'aimak-api-w8ps.onrender.com',
       },
       {
         protocol: 'https',
         hostname: '**.onrender.com',
       },
+      {
+        protocol: 'https',
+        hostname: 'example.com',
+      },
+      {
+        protocol: 'https',
+        hostname: '**.cloudinary.com',
+      },
+      {
+        protocol: 'https',
+        hostname: '**.amazonaws.com',
+      },
     ],
-    unoptimized: process.env.NODE_ENV === 'development',
+    // Включаем unoptimized для всех сред, чтобы избежать проблем с изображениями
+    unoptimized: true,
   },
 }
 
