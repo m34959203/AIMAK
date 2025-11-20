@@ -14,9 +14,20 @@ export const getImageUrl = (imageUrl?: string | null): string | null => {
     return null;
   }
 
-  // If it's already a full URL (starts with http:// or https://), return as is
+  // If it's already a full URL (starts with http:// or https://), fix malformed URLs
   if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
-    return imageUrl;
+    // Fix malformed URLs like: https://aimak-api.onrender.com-w8ps/uploads/...
+    // Should be: https://aimak-api-w8ps.onrender.com/uploads/...
+    let fixedUrl = imageUrl;
+
+    // Check if the URL has the malformed pattern: .onrender.com-XXXX
+    const malformedPattern = /^(https?:\/\/)(aimak-api)(\.onrender\.com)(-.+?)(\/.+)$/;
+    if (malformedPattern.test(fixedUrl)) {
+      // Move the suffix before .onrender.com
+      fixedUrl = fixedUrl.replace(malformedPattern, '$1$2$4$3$5');
+    }
+
+    return fixedUrl;
   }
 
   // If it's a relative URL, prepend the API base URL (without /api)
