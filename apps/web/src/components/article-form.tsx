@@ -7,6 +7,7 @@ import { useUploadImage } from '@/hooks/use-media';
 import { RichTextEditor } from './rich-text-editor';
 import { ArticleStatus } from '@/types';
 import type { Article, CreateBilingualArticleDto, UpdateBilingualArticleDto } from '@/types';
+import { AiFillStar, AiOutlineComment, AiOutlinePushpin } from 'react-icons/ai';
 
 interface ArticleFormProps {
   article?: Article;
@@ -404,8 +405,9 @@ export function ArticleForm({ article, onSubmit, isLoading }: ArticleFormProps) 
               onChange={(e) => setIsFeatured(e.target.checked)}
               className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
             />
-            <label htmlFor="isFeatured" className="ml-2 block text-sm text-gray-900">
-              ⭐ Избранное (Featured)
+            <label htmlFor="isFeatured" className="ml-2 flex items-center gap-1.5 text-sm text-gray-900">
+              <AiFillStar className="text-yellow-500" />
+              Избранное (Featured)
             </label>
           </div>
 
@@ -417,8 +419,9 @@ export function ArticleForm({ article, onSubmit, isLoading }: ArticleFormProps) 
               onChange={(e) => setIsPinned(e.target.checked)}
               className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
             />
-            <label htmlFor="isPinned" className="ml-2 block text-sm text-gray-900">
-              📌 Закрепленная статья
+            <label htmlFor="isPinned" className="ml-2 flex items-center gap-1.5 text-sm text-gray-900">
+              <AiOutlinePushpin className="text-blue-600" />
+              Закрепленная статья
             </label>
           </div>
 
@@ -430,8 +433,9 @@ export function ArticleForm({ article, onSubmit, isLoading }: ArticleFormProps) 
               onChange={(e) => setAllowComments(e.target.checked)}
               className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
             />
-            <label htmlFor="allowComments" className="ml-2 block text-sm text-gray-900">
-              💬 Разрешить комментарии
+            <label htmlFor="allowComments" className="ml-2 flex items-center gap-1.5 text-sm text-gray-900">
+              <AiOutlineComment className="text-green-600" />
+              Разрешить комментарии
             </label>
           </div>
         </div>

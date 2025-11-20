@@ -3,6 +3,7 @@ import { format } from 'date-fns';
 import { kk, ru } from 'date-fns/locale';
 import { TengriArticleCard } from '@/components/tengri-article-card';
 import { ArticleActions } from '@/components/article-actions';
+import { ShareButtons } from '@/components/share-buttons';
 import { getApiEndpoint } from '@/lib/api-url';
 
 async function getArticleBySlug(slug: string) {
@@ -126,8 +127,12 @@ export default async function ArticlePage({
               </div>
               <span>{publishDate}</span>
               {article.views && (
-                <span className="flex items-center gap-1">
-                  👁️ {article.views.toLocaleString()}
+                <span className="flex items-center gap-1.5">
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
+                  {article.views.toLocaleString()}
                 </span>
               )}
             </div>
@@ -186,25 +191,11 @@ export default async function ArticlePage({
               )}
 
               {/* Share Buttons */}
-              <div className="mt-8 pt-6 border-t">
-                <h3 className="text-lg font-semibold mb-4">
-                  {params.lang === 'kz' ? 'Бөлісу' : 'Поделиться'}
-                </h3>
-                <div className="flex gap-3">
-                  <button className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-                    Facebook
-                  </button>
-                  <button className="px-4 py-2 bg-sky-500 text-white rounded hover:bg-sky-600">
-                    Twitter
-                  </button>
-                  <button className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
-                    Telegram
-                  </button>
-                  <button className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
-                    WhatsApp
-                  </button>
-                </div>
-              </div>
+              <ShareButtons
+                url={`/${params.lang}/${params.category}/${params.slug}`}
+                title={title}
+                lang={params.lang}
+              />
             </div>
 
             {/* Related Articles */}
