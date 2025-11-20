@@ -383,60 +383,80 @@ export function ArticleForm({ article, onSubmit, isLoading }: ArticleFormProps) 
           </select>
         </div>
 
-        <div className="space-y-3">
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="isBreaking"
-              checked={isBreaking}
-              onChange={(e) => setIsBreaking(e.target.checked)}
-              className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded"
-            />
-            <label htmlFor="isBreaking" className="ml-2 block text-sm text-gray-900">
-              🚨 Срочная новость (Breaking News)
-            </label>
+        <div className="space-y-4">
+          <div className="border border-gray-200 rounded-lg p-4 hover:border-red-300 transition">
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id="isBreaking"
+                checked={isBreaking}
+                onChange={(e) => setIsBreaking(e.target.checked)}
+                className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded"
+              />
+              <label htmlFor="isBreaking" className="ml-2 block text-sm font-medium text-gray-900">
+                🚨 Срочная новость (Breaking News)
+              </label>
+            </div>
+            <p className="mt-1 ml-6 text-xs text-gray-500">
+              Статья будет отображаться в красной бегущей строке наверху сайта
+            </p>
           </div>
 
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="isFeatured"
-              checked={isFeatured}
-              onChange={(e) => setIsFeatured(e.target.checked)}
-              className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
-            />
-            <label htmlFor="isFeatured" className="ml-2 flex items-center gap-1.5 text-sm text-gray-900">
-              <AiFillStar className="text-yellow-500" />
-              Избранное (Featured)
-            </label>
+          <div className="border border-gray-200 rounded-lg p-4 hover:border-yellow-300 transition">
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id="isFeatured"
+                checked={isFeatured}
+                onChange={(e) => setIsFeatured(e.target.checked)}
+                className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+              />
+              <label htmlFor="isFeatured" className="ml-2 flex items-center gap-1.5 text-sm font-medium text-gray-900">
+                <AiFillStar className="text-yellow-500" />
+                Избранное (Featured)
+              </label>
+            </div>
+            <p className="mt-1 ml-6 text-xs text-gray-500">
+              Статья будет выделена на главной странице и в категориях как рекомендованная
+            </p>
           </div>
 
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="isPinned"
-              checked={isPinned}
-              onChange={(e) => setIsPinned(e.target.checked)}
-              className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
-            />
-            <label htmlFor="isPinned" className="ml-2 flex items-center gap-1.5 text-sm text-gray-900">
-              <AiOutlinePushpin className="text-blue-600" />
-              Закрепленная статья
-            </label>
+          <div className="border border-gray-200 rounded-lg p-4 hover:border-blue-300 transition">
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id="isPinned"
+                checked={isPinned}
+                onChange={(e) => setIsPinned(e.target.checked)}
+                className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+              />
+              <label htmlFor="isPinned" className="ml-2 flex items-center gap-1.5 text-sm font-medium text-gray-900">
+                <AiOutlinePushpin className="text-blue-600" />
+                Закрепленная статья
+              </label>
+            </div>
+            <p className="mt-1 ml-6 text-xs text-gray-500">
+              Статья всегда будет отображаться вверху списка независимо от даты публикации
+            </p>
           </div>
 
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="allowComments"
-              checked={allowComments}
-              onChange={(e) => setAllowComments(e.target.checked)}
-              className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
-            />
-            <label htmlFor="allowComments" className="ml-2 flex items-center gap-1.5 text-sm text-gray-900">
-              <AiOutlineComment className="text-green-600" />
-              Разрешить комментарии
-            </label>
+          <div className="border border-gray-200 rounded-lg p-4 hover:border-green-300 transition">
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id="allowComments"
+                checked={allowComments}
+                onChange={(e) => setAllowComments(e.target.checked)}
+                className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+              />
+              <label htmlFor="allowComments" className="ml-2 flex items-center gap-1.5 text-sm font-medium text-gray-900">
+                <AiOutlineComment className="text-green-600" />
+                Разрешить комментарии
+              </label>
+            </div>
+            <p className="mt-1 ml-6 text-xs text-gray-500">
+              Читатели смогут оставлять комментарии под этой статьей
+            </p>
           </div>
         </div>
       </div>
