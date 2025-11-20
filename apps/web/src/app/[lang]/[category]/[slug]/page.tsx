@@ -3,13 +3,13 @@ import { format } from 'date-fns';
 import { kk, ru } from 'date-fns/locale';
 import { TengriArticleCard } from '@/components/tengri-article-card';
 import { ArticleActions } from '@/components/article-actions';
+import { getApiEndpoint } from '@/lib/api-url';
 
 async function getArticleBySlug(slug: string) {
   try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/articles/slug/${slug}`,
-      { cache: 'no-store' }
-    );
+    const apiEndpoint = getApiEndpoint(`/articles/slug/${slug}`);
+
+    const res = await fetch(apiEndpoint, { cache: 'no-store' });
 
     if (!res.ok) {
       return null;
@@ -24,10 +24,9 @@ async function getArticleBySlug(slug: string) {
 
 async function getRelatedArticles(categoryId: string, currentArticleId: string) {
   try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/articles?published=true`,
-      { cache: 'no-store' }
-    );
+    const apiEndpoint = getApiEndpoint('/articles', { published: true });
+
+    const res = await fetch(apiEndpoint, { cache: 'no-store' });
 
     if (!res.ok) {
       return [];

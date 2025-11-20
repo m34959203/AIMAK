@@ -3,17 +3,18 @@ import { MagazineHero } from '@/components/magazine-hero';
 import { TrendingSection } from '@/components/trending-section';
 import { CategoryTabs } from '@/components/category-tabs';
 import { TengriArticleCard } from '@/components/tengri-article-card';
+import { getApiEndpoint } from '@/lib/api-url';
 
 // Force dynamic rendering to always fetch fresh data
 export const dynamic = 'force-dynamic';
 
 async function getArticles() {
   try {
-    const apiUrl = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+    const apiEndpoint = getApiEndpoint('/articles', { published: true });
 
-    console.log('Fetching articles from:', apiUrl);
+    console.log('Fetching articles from:', apiEndpoint);
 
-    const res = await fetch(`${apiUrl}/api/articles?published=true`, {
+    const res = await fetch(apiEndpoint, {
       cache: 'no-store',
     });
 
@@ -39,11 +40,11 @@ async function getArticles() {
 
 async function getCategories() {
   try {
-    const apiUrl = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+    const apiEndpoint = getApiEndpoint('/categories');
 
-    console.log('Fetching categories from:', apiUrl);
+    console.log('Fetching categories from:', apiEndpoint);
 
-    const res = await fetch(`${apiUrl}/api/categories`, {
+    const res = await fetch(apiEndpoint, {
       cache: 'no-store',
     });
 
