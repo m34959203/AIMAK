@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
 import { useCategories } from '@/hooks/use-categories';
@@ -15,7 +15,85 @@ export function TengriHeader({ lang = 'kz' }: HeaderProps) {
   const { user, isAuthenticated, logout } = useAuth();
   const [showSearch, setShowSearch] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [currentTime, setCurrentTime] = useState('');
+  const [weather, setWeather] = useState({ temp: '+15', icon: '🌤️' });
+  const [currency, setCurrency] = useState({ usd: '450', eur: '520' });
   const pathname = usePathname();
+
+  // Update time every second
+  useEffect(() => {
+    const updateTime = () => {
+      const now = new Date();
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      setCurrentTime(`${hours}:${minutes}`);
+    };
+
+    updateTime();
+    const interval = setInterval(updateTime, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Fetch weather data
+  useEffect(() => {
+    const fetchWeather = async () => {
+      try {
+        // Using OpenWeatherMap API for Satpaev, Kazakhstan
+        const response = await fetch(
+          `https://api.openweathermap.org/data/2.5/weather?q=Satpaev,KZ&units=metric&appid=YOUR_API_KEY`
+        );
+
+        if (response.ok) {
+          const data = await response.json();
+          const temp = Math.round(data.main.temp);
+          const weatherCode = data.weather[0].id;
+
+          // Map weather codes to emojis
+          let icon = '🌤️';
+          if (weatherCode >= 200 && weatherCode < 300) icon = '⛈️';
+          else if (weatherCode >= 300 && weatherCode < 600) icon = '🌧️';
+          else if (weatherCode >= 600 && weatherCode < 700) icon = '❄️';
+          else if (weatherCode === 800) icon = '☀️';
+          else if (weatherCode > 800) icon = '☁️';
+
+          setWeather({ temp: temp > 0 ? `+${temp}` : `${temp}`, icon });
+        }
+      } catch (error) {
+        console.error('Failed to fetch weather:', error);
+      }
+    };
+
+    fetchWeather();
+    const interval = setInterval(fetchWeather, 600000); // Update every 10 minutes
+    return () => clearInterval(interval);
+  }, []);
+
+  // Fetch currency rates
+  useEffect(() => {
+    const fetchCurrency = async () => {
+      try {
+        // Using NBK (National Bank of Kazakhstan) API or alternative
+        const response = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
+
+        if (response.ok) {
+          const data = await response.json();
+          const kztRate = data.rates.KZT;
+          const eurToUsd = data.rates.EUR;
+
+          setCurrency({
+            usd: Math.round(kztRate).toString(),
+            eur: Math.round(kztRate / eurToUsd).toString()
+          });
+        }
+      } catch (error) {
+        console.error('Failed to fetch currency:', error);
+      }
+    };
+
+    fetchCurrency();
+    const interval = setInterval(fetchCurrency, 3600000); // Update every hour
+    return () => clearInterval(interval);
+  }, []);
 
   // Fetch categories from API
   const { data: categoriesData, isLoading: categoriesLoading } = useCategories();
@@ -75,14 +153,12 @@ export function TengriHeader({ lang = 'kz' }: HeaderProps) {
           <div className="flex items-center justify-between text-sm">
             <div className="flex items-center gap-6 text-gray-600">
               <span className="font-medium">Сатпаев</span>
-              <span>🌤️ +15°C</span>
-              <span>USD: 450₸</span>
-              <span>EUR: 520₸</span>
+              {currentTime && <span className="font-semibold">{currentTime}</span>}
+              <span>{weather.icon} {weather.temp}°C</span>
+              <span>USD: {currency.usd}₸</span>
+              <span>EUR: {currency.eur}₸</span>
             </div>
             <div className="flex items-center gap-4">
-              <a href="tel:+77005000500" className="text-gray-600 hover:text-green-600">
-                +7 700 500 05 00
-              </a>
               {/* Language Switcher */}
               <div className="flex gap-1 border rounded">
                 <button

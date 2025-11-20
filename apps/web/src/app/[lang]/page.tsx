@@ -1,7 +1,6 @@
 import { BreakingNewsBanner } from '@/components/breaking-news-banner';
 import { MagazineHero } from '@/components/magazine-hero';
 import { TrendingSection } from '@/components/trending-section';
-import { CategoryTabs } from '@/components/category-tabs';
 import { TengriArticleCard } from '@/components/tengri-article-card';
 import { Advertisement } from '@/components/advertisement';
 import { getApiEndpoint } from '@/lib/api-url';
@@ -39,44 +38,13 @@ async function getArticles() {
   }
 }
 
-async function getCategories() {
-  try {
-    const apiEndpoint = getApiEndpoint('/categories');
-
-    console.log('Fetching categories from:', apiEndpoint);
-
-    const res = await fetch(apiEndpoint, {
-      cache: 'no-store',
-    });
-
-    if (!res.ok) {
-      console.error('Failed to fetch categories:', res.status, res.statusText);
-      return [];
-    }
-
-    const data = await res.json();
-
-    if (!Array.isArray(data)) {
-      console.error('Invalid categories response format:', data);
-      return [];
-    }
-
-    return data;
-  } catch (error) {
-    console.error('Failed to fetch categories:', error);
-    return [];
-  }
-}
 
 export default async function HomePage({
   params,
 }: {
   params: { lang: 'kz' | 'ru' };
 }) {
-  const [articles, categories] = await Promise.all([
-    getArticles(),
-    getCategories(),
-  ]);
+  const articles = await getArticles();
 
   // Find breaking news (можно добавить поле isBreaking в будущем)
   const breakingArticle = articles.find((a: any) => a.isBreaking) || articles[0];
@@ -151,15 +119,6 @@ export default async function HomePage({
                 ))}
               </div>
             </div>
-
-            {/* Category Tabs */}
-            {categories.length > 0 && (
-              <CategoryTabs
-                categories={categories}
-                articles={articles}
-                lang={params.lang}
-              />
-            )}
           </div>
 
           {/* Sidebar - 4 cols */}
