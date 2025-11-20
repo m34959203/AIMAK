@@ -11,6 +11,7 @@ export function AdminNav() {
     { href: '/admin/articles', label: 'Статьи' },
     { href: '/admin/categories', label: 'Категории' },
     { href: '/admin/tags', label: 'Теги' },
+    { href: '/admin/advertisements', label: 'Реклама' },
   ];
 
   return (

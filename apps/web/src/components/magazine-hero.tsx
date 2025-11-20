@@ -8,6 +8,7 @@ import { IoEye } from 'react-icons/io5';
 import { BiTime } from 'react-icons/bi';
 import { FaPen } from 'react-icons/fa';
 import { HiNewspaper } from 'react-icons/hi2';
+import { getImageUrl } from '@/lib/image-url';
 
 interface Article {
   id: string;
@@ -63,6 +64,8 @@ export function MagazineHero({ mainArticle, sideArticles, lang }: MagazineHeroPr
       return colors[categorySlug] || 'bg-gray-600';
     };
 
+    const imageUrl = getImageUrl(article.coverImage);
+
     return (
       <Link
         href={`/${lang}/${article.category.slug}/${slug}`}
@@ -70,9 +73,9 @@ export function MagazineHero({ mainArticle, sideArticles, lang }: MagazineHeroPr
       >
         {/* Image */}
         <div className={`relative ${isMain ? 'h-[500px]' : 'h-[240px]'} overflow-hidden`}>
-          {article.coverImage ? (
+          {imageUrl ? (
             <Image
-              src={article.coverImage}
+              src={imageUrl}
               alt={title}
               fill
               className="object-cover group-hover:scale-110 transition-transform duration-700"

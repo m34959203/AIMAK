@@ -111,22 +111,13 @@ export function CategoryTabs({ categories, articles, lang }: CategoryTabsProps) 
       {/* Content */}
       <div className="p-6">
         {/* Category Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900">
-              {lang === 'kz' ? activeTab?.nameKz : activeTab?.nameRu}
-            </h2>
-            <p className="text-sm text-gray-500 mt-1">
-              {filteredArticles.length} {lang === 'kz' ? 'мақала' : 'статей'}
-            </p>
-          </div>
-          <Link
-            href={`/${lang}/${activeTab?.slug}`}
-            className="text-sm font-medium text-green-600 hover:text-green-700 hover:underline transition-colors flex items-center gap-2"
-          >
-            {lang === 'kz' ? 'Барлығын көру' : 'Смотреть все'}
-            <span className="text-lg">→</span>
-          </Link>
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold text-gray-900">
+            {lang === 'kz' ? activeTab?.nameKz : activeTab?.nameRu}
+          </h2>
+          <p className="text-sm text-gray-500 mt-1">
+            {filteredArticles.length} {lang === 'kz' ? 'мақала' : 'статей'}
+          </p>
         </div>
 
         {/* Articles Grid */}
