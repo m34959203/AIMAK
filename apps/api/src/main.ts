@@ -5,22 +5,38 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
 import { AppModule } from './app.module';
 
-// Функция для правильного формирования Frontend URL
-function getFrontendUrl(): string {
-  const frontendUrl = process.env.CORS_ORIGIN || process.env.FRONTEND_URL || 'http://localhost:3000';
-  let url = frontendUrl.trim();
+// Функция для получения разрешенных origins
+function getAllowedOrigins(): string[] {
+  const corsOrigin = process.env.CORS_ORIGIN || process.env.FRONTEND_URL || '';
 
-  // Если это только имя сервиса (без точек), добавляем .onrender.com
-  if (!url.includes('.') && !url.startsWith('http') && !url.includes('localhost')) {
-    url = `${url}.onrender.com`;
-  }
+  // Поддержка нескольких origins через запятую
+  const origins = corsOrigin.split(',').map(url => {
+    let trimmedUrl = url.trim();
 
-  // Если URL не начинается с http, добавляем https://
-  if (!url.startsWith('http')) {
-    url = `https://${url}`;
-  }
+    // Если это только имя сервиса (без точек), добавляем .onrender.com
+    if (trimmedUrl && !trimmedUrl.includes('.') && !trimmedUrl.startsWith('http') && !trimmedUrl.includes('localhost')) {
+      trimmedUrl = `${trimmedUrl}.onrender.com`;
+    }
 
-  return url;
+    // Если URL не начинается с http, добавляем https://
+    if (trimmedUrl && !trimmedUrl.startsWith('http')) {
+      trimmedUrl = `https://${trimmedUrl}`;
+    }
+
+    return trimmedUrl;
+  }).filter(url => url);
+
+  // Добавляем известные домены для production
+  const knownOrigins = [
+    'https://aimak-web-rvep.onrender.com',
+    'http://localhost:3000',
+    'http://localhost:3001',
+  ];
+
+  // Объединяем и убираем дубликаты
+  const allOrigins = [...new Set([...origins, ...knownOrigins])];
+
+  return allOrigins;
 }
 
 async function bootstrap() {
@@ -34,14 +50,28 @@ async function bootstrap() {
 
   console.log(`Serving static files from: ${uploadsPath}`);
 
-  const frontendUrl = getFrontendUrl();
+  const allowedOrigins = getAllowedOrigins();
 
   app.enableCors({
-    origin: frontendUrl,
+    origin: (origin, callback) => {
+      // Разрешаем запросы без origin (например, мобильные приложения, Postman)
+      if (!origin) {
+        return callback(null, true);
+      }
+
+      if (allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        console.warn(`CORS blocked origin: ${origin}`);
+        callback(null, false);
+      }
+    },
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
   });
 
-  console.log(`CORS enabled for origin: ${frontendUrl}`);
+  console.log(`CORS enabled for origins: ${allowedOrigins.join(', ')}`);
 
   app.useGlobalPipes(
     new ValidationPipe({
