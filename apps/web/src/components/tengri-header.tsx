@@ -40,7 +40,7 @@ export function TengriHeader({ lang = 'kz' }: HeaderProps) {
       try {
         // Using OpenWeatherMap API for Satpaev, Kazakhstan
         const response = await fetch(
-          `https://api.openweathermap.org/data/2.5/weather?q=Satpaev,KZ&units=metric&appid=YOUR_API_KEY`
+          `https://api.openweathermap.org/data/2.5/weather?q=Satpaev,KZ&units=metric&appid=aa8b515e87f73801f11cf922205790fd`
         );
 
         if (response.ok) {
