@@ -187,162 +187,297 @@ export default function AdminAdvertisementsPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Код *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Код *
+                  <span className="ml-2 text-xs text-gray-500 font-normal">
+                    Уникальный идентификатор рекламы (например: banner-home-1)
+                  </span>
+                </label>
                 <input
                   type="text"
                   value={code}
                   onChange={(e) => setCode(e.target.value)}
                   className="w-full px-3 py-2 border rounded-md"
+                  placeholder="banner-home-1"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Тип *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Тип *
+                  <span className="ml-2 text-xs text-gray-500 font-normal">
+                    Выберите тип рекламного блока
+                  </span>
+                </label>
                 <select
                   value={type}
                   onChange={(e) => setType(e.target.value as any)}
                   className="w-full px-3 py-2 border rounded-md"
                 >
-                  <option value="CUSTOM">Собственная реклама</option>
+                  <option value="CUSTOM">Собственная реклама (HTML/изображение)</option>
                   <option value="YANDEX_DIRECT">Яндекс.Директ</option>
                   <option value="GOOGLE_ADSENSE">Google AdSense</option>
                 </select>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Название (KZ) *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Название (KZ) *
+                  <span className="ml-2 text-xs text-gray-500 font-normal">
+                    Внутреннее название на казахском языке для идентификации
+                  </span>
+                </label>
                 <input
                   type="text"
                   value={nameKz}
                   onChange={(e) => setNameKz(e.target.value)}
                   className="w-full px-3 py-2 border rounded-md"
+                  placeholder="Басты бет баннері"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Название (RU) *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Название (RU) *
+                  <span className="ml-2 text-xs text-gray-500 font-normal">
+                    Внутреннее название на русском языке для идентификации
+                  </span>
+                </label>
                 <input
                   type="text"
                   value={nameRu}
                   onChange={(e) => setNameRu(e.target.value)}
                   className="w-full px-3 py-2 border rounded-md"
+                  placeholder="Баннер на главной странице"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Позиция *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Позиция *
+                  <span className="ml-2 text-xs text-gray-500 font-normal">
+                    Место размещения рекламы на сайте
+                  </span>
+                </label>
                 <select
                   value={position}
                   onChange={(e) => setPosition(e.target.value)}
                   className="w-full px-3 py-2 border rounded-md"
                 >
-                  <option value="HOME_TOP">Верх главной страницы</option>
-                  <option value="HOME_SIDEBAR">Боковая панель главной</option>
-                  <option value="ARTICLE_TOP">Верх страницы статьи</option>
-                  <option value="ARTICLE_SIDEBAR">Боковая панель статьи</option>
+                  <option value="HOME_TOP">Верх главной страницы (горизонтальный баннер)</option>
+                  <option value="HOME_SIDEBAR">Боковая панель главной (вертикальный блок)</option>
+                  <option value="ARTICLE_TOP">Верх страницы статьи (над текстом)</option>
+                  <option value="ARTICLE_SIDEBAR">Боковая панель статьи (справа от текста)</option>
                 </select>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Размер *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Размер *
+                  <span className="ml-2 text-xs text-gray-500 font-normal">
+                    Размер рекламного блока в пикселях
+                  </span>
+                </label>
                 <select
                   value={size}
                   onChange={(e) => setSize(e.target.value)}
                   className="w-full px-3 py-2 border rounded-md"
                 >
-                  <option value="BANNER_728x90">728x90</option>
-                  <option value="LARGE_BANNER_970x90">970x90</option>
-                  <option value="RECTANGLE_300x250">300x250</option>
-                  <option value="HALF_PAGE_300x600">300x600</option>
-                  <option value="MOBILE_BANNER_320x50">320x50</option>
+                  <option value="BANNER_728x90">728x90 - Стандартный баннер (десктоп)</option>
+                  <option value="LARGE_BANNER_970x90">970x90 - Большой баннер (десктоп)</option>
+                  <option value="RECTANGLE_300x250">300x250 - Средний прямоугольник</option>
+                  <option value="HALF_PAGE_300x600">300x600 - Половина страницы (скайскрейпер)</option>
+                  <option value="MOBILE_BANNER_320x50">320x50 - Мобильный баннер</option>
                 </select>
               </div>
             </div>
 
             {type === 'CUSTOM' && (
               <>
+                <div className="bg-blue-50 border border-blue-200 rounded-md p-4 mb-4">
+                  <h3 className="text-sm font-semibold text-blue-900 mb-2">Настройки собственной рекламы</h3>
+                  <p className="text-xs text-blue-700">
+                    Вы можете использовать либо HTML-код, либо изображение со ссылкой.
+                    Если указан HTML-код, он будет использован. Иначе будет показано изображение.
+                  </p>
+                </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">HTML код</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    HTML код
+                    <span className="ml-2 text-xs text-gray-500 font-normal">
+                      (Опционально) Произвольный HTML-код для рекламного блока
+                    </span>
+                  </label>
                   <textarea
                     value={customHtml}
                     onChange={(e) => setCustomHtml(e.target.value)}
-                    className="w-full px-3 py-2 border rounded-md"
+                    className="w-full px-3 py-2 border rounded-md font-mono text-sm"
                     rows={4}
-                    placeholder="<div>...</div>"
+                    placeholder='<div style="background: #f0f0f0; padding: 20px; text-align: center;">
+  <h2>Ваша реклама</h2>
+  <p>Описание</p>
+</div>'
                   />
+                  <p className="mt-1 text-xs text-gray-500">
+                    Используйте для вставки кастомного HTML, JavaScript или виджетов сторонних сервисов
+                  </p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">URL изображения</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    URL изображения
+                    <span className="ml-2 text-xs text-gray-500 font-normal">
+                      (Опционально) Ссылка на изображение баннера
+                    </span>
+                  </label>
                   <input
-                    type="text"
+                    type="url"
                     value={imageUrl}
                     onChange={(e) => setImageUrl(e.target.value)}
                     className="w-full px-3 py-2 border rounded-md"
+                    placeholder="https://example.com/banner.jpg"
                   />
+                  <p className="mt-1 text-xs text-gray-500">
+                    Укажите полный URL изображения. Рекомендуется использовать изображение нужного размера
+                  </p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">URL ссылки</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    URL ссылки
+                    <span className="ml-2 text-xs text-gray-500 font-normal">
+                      (Опционально) Адрес, на который ведет баннер при клике
+                    </span>
+                  </label>
                   <input
-                    type="text"
+                    type="url"
                     value={clickUrl}
                     onChange={(e) => setClickUrl(e.target.value)}
                     className="w-full px-3 py-2 border rounded-md"
+                    placeholder="https://example.com/landing-page"
                   />
+                  <p className="mt-1 text-xs text-gray-500">
+                    Укажите URL страницы, на которую будут переходить пользователи при клике на изображение
+                  </p>
                 </div>
               </>
             )}
 
             {type === 'YANDEX_DIRECT' && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Yandex Block ID *</label>
-                <input
-                  type="text"
-                  value={yandexBlockId}
-                  onChange={(e) => setYandexBlockId(e.target.value)}
-                  className="w-full px-3 py-2 border rounded-md"
-                  required
-                />
-              </div>
-            )}
-
-            {type === 'GOOGLE_ADSENSE' && (
               <>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Google Ad Client *</label>
-                  <input
-                    type="text"
-                    value={googleAdClient}
-                    onChange={(e) => setGoogleAdClient(e.target.value)}
-                    className="w-full px-3 py-2 border rounded-md"
-                    placeholder="ca-pub-XXXXXXXXXXXXXXXX"
-                    required
-                  />
+                <div className="bg-red-50 border border-red-200 rounded-md p-4 mb-4">
+                  <h3 className="text-sm font-semibold text-red-900 mb-2">Настройки Яндекс.Директ</h3>
+                  <p className="text-xs text-red-700 mb-2">
+                    Для использования Яндекс.Директ необходимо иметь аккаунт в Яндекс.Директ и созданный рекламный блок.
+                  </p>
+                  <a
+                    href="https://direct.yandex.ru"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-red-600 underline hover:text-red-800"
+                  >
+                    Перейти в Яндекс.Директ →
+                  </a>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Google Ad Slot *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Yandex Block ID *
+                    <span className="ml-2 text-xs text-gray-500 font-normal">
+                      ID рекламного блока из личного кабинета Яндекс.Директ
+                    </span>
+                  </label>
                   <input
                     type="text"
-                    value={googleAdSlot}
-                    onChange={(e) => setGoogleAdSlot(e.target.value)}
-                    className="w-full px-3 py-2 border rounded-md"
-                    placeholder="XXXXXXXXXX"
+                    value={yandexBlockId}
+                    onChange={(e) => setYandexBlockId(e.target.value)}
+                    className="w-full px-3 py-2 border rounded-md font-mono"
+                    placeholder="R-A-123456-1"
                     required
                   />
+                  <p className="mt-1 text-xs text-gray-500">
+                    Найдите ID блока в разделе "Площадки" → "Код для вставки на сайт"
+                  </p>
                 </div>
               </>
             )}
 
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                checked={isActive}
-                onChange={(e) => setIsActive(e.target.checked)}
-                className="mr-2"
-              />
-              <label className="text-sm font-medium text-gray-700">Активна</label>
+            {type === 'GOOGLE_ADSENSE' && (
+              <>
+                <div className="bg-green-50 border border-green-200 rounded-md p-4 mb-4">
+                  <h3 className="text-sm font-semibold text-green-900 mb-2">Настройки Google AdSense</h3>
+                  <p className="text-xs text-green-700 mb-2">
+                    Для использования Google AdSense необходимо иметь одобренный аккаунт в Google AdSense и созданный рекламный блок.
+                  </p>
+                  <a
+                    href="https://www.google.com/adsense"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-green-600 underline hover:text-green-800"
+                  >
+                    Перейти в Google AdSense →
+                  </a>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Google Ad Client *
+                    <span className="ml-2 text-xs text-gray-500 font-normal">
+                      Идентификатор издателя (Publisher ID)
+                    </span>
+                  </label>
+                  <input
+                    type="text"
+                    value={googleAdClient}
+                    onChange={(e) => setGoogleAdClient(e.target.value)}
+                    className="w-full px-3 py-2 border rounded-md font-mono"
+                    placeholder="ca-pub-1234567890123456"
+                    required
+                  />
+                  <p className="mt-1 text-xs text-gray-500">
+                    Начинается с "ca-pub-". Найдите в разделе AdSense → "Аккаунт" → "Информация об аккаунте"
+                  </p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Google Ad Slot *
+                    <span className="ml-2 text-xs text-gray-500 font-normal">
+                      Идентификатор рекламного блока (Ad unit ID)
+                    </span>
+                  </label>
+                  <input
+                    type="text"
+                    value={googleAdSlot}
+                    onChange={(e) => setGoogleAdSlot(e.target.value)}
+                    className="w-full px-3 py-2 border rounded-md font-mono"
+                    placeholder="1234567890"
+                    required
+                  />
+                  <p className="mt-1 text-xs text-gray-500">
+                    Найдите в разделе "Реклама" → "Рекламные блоки" → выберите блок → скопируйте data-ad-slot
+                  </p>
+                </div>
+              </>
+            )}
+
+            <div className="border-t pt-4">
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="isActive"
+                  checked={isActive}
+                  onChange={(e) => setIsActive(e.target.checked)}
+                  className="mr-2 h-4 w-4"
+                />
+                <label htmlFor="isActive" className="text-sm font-medium text-gray-700">
+                  Активна
+                  <span className="ml-2 text-xs text-gray-500 font-normal">
+                    Если отключено, реклама не будет показываться на сайте
+                  </span>
+                </label>
+              </div>
+              <p className="mt-2 text-xs text-gray-500 ml-6">
+                Используйте эту настройку для временного отключения рекламы без удаления
+              </p>
             </div>
 
             <button
