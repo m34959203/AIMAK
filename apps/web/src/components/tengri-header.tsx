@@ -118,7 +118,7 @@ export function TengriHeader({ lang = 'kz' }: HeaderProps) {
     kz: {
       home: 'Басты бет',
       multimedia: 'Мультимедиа',
-      archive: 'Архив',
+      issues: 'Шығарылымдар',
       about: 'Біз туралы',
       contacts: 'Байланыс',
       login: 'Кіру',
@@ -129,7 +129,7 @@ export function TengriHeader({ lang = 'kz' }: HeaderProps) {
     ru: {
       home: 'Главная',
       multimedia: 'Мультимедиа',
-      archive: 'Архив',
+      issues: 'Выпуски',
       about: 'О нас',
       contacts: 'Контакты',
       login: 'Вход',
@@ -307,10 +307,10 @@ export function TengriHeader({ lang = 'kz' }: HeaderProps) {
                 {text.multimedia}
               </Link>
               <Link
-                href={`/${lang}/archive`}
+                href={`/${lang}/issues`}
                 className="px-4 py-3 hover:bg-gray-800 transition font-medium text-sm uppercase"
               >
-                {text.archive}
+                {text.issues}
               </Link>
             </div>
           </nav>
@@ -336,11 +336,11 @@ export function TengriHeader({ lang = 'kz' }: HeaderProps) {
                 {text.multimedia}
               </Link>
               <Link
-                href={`/${lang}/archive`}
+                href={`/${lang}/issues`}
                 className="block px-4 py-2 hover:bg-gray-800 transition"
                 onClick={() => setShowMobileMenu(false)}
               >
-                {text.archive}
+                {text.issues}
               </Link>
             </div>
           )}
