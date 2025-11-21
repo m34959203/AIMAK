@@ -21,6 +21,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { Public } from '../auth/decorators/public.decorator';
 import { Role } from '@prisma/client';
 
 @ApiTags('Magazine Issues')
@@ -70,6 +71,7 @@ export class MagazineIssuesController {
   }
 
   @Get()
+  @Public()
   @ApiOperation({ summary: 'Получить все выпуски журнала' })
   @ApiQuery({ name: 'published', required: false, type: Boolean, description: 'Фильтр по статусу публикации' })
   findAll(@Query('published') published?: string) {
@@ -78,6 +80,7 @@ export class MagazineIssuesController {
   }
 
   @Get(':id')
+  @Public()
   @ApiOperation({ summary: 'Получить выпуск по ID' })
   findOne(@Param('id') id: string) {
     return this.magazineIssuesService.findOne(id);
@@ -102,12 +105,14 @@ export class MagazineIssuesController {
   }
 
   @Post(':id/view')
+  @Public()
   @ApiOperation({ summary: 'Увеличить счетчик просмотров' })
   incrementViews(@Param('id') id: string) {
     return this.magazineIssuesService.incrementViews(id);
   }
 
   @Post(':id/download')
+  @Public()
   @ApiOperation({ summary: 'Увеличить счетчик скачиваний' })
   incrementDownloads(@Param('id') id: string) {
     return this.magazineIssuesService.incrementDownloads(id);
