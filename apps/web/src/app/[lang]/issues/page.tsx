@@ -1,9 +1,15 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import dynamic from 'next/dynamic';
 import { useMagazineIssues, useIncrementViews, useIncrementDownloads } from '@/hooks/use-magazine-issues';
-import { PDFViewer } from '@/components/pdf-viewer';
 import type { MagazineIssue } from '@/types';
+
+// Динамический импорт PDFViewer только на клиенте
+const PDFViewer = dynamic(
+  () => import('@/components/pdf-viewer').then((mod) => mod.PDFViewer),
+  { ssr: false, loading: () => <div className="text-center py-8">Загрузка PDF...</div> }
+);
 
 interface Props {
   params: Promise<{ lang: 'kz' | 'ru' }>;
