@@ -3,8 +3,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { useCategories } from '@/hooks/use-categories';
 import { useTags, useGenerateTags } from '@/hooks/use-tags';
+import { useAnalyzeArticle } from '@/hooks/use-articles';
 import { useUploadImage } from '@/hooks/use-media';
 import { RichTextEditor } from './rich-text-editor';
+import { AISuggestionsPanel } from './ai-suggestions-panel';
 import { ArticleStatus } from '@/types';
 import type { Article, CreateBilingualArticleDto, UpdateBilingualArticleDto } from '@/types';
 import { AiFillStar, AiOutlineComment, AiOutlinePushpin } from 'react-icons/ai';
@@ -50,11 +52,29 @@ export function ArticleForm({ article, onSubmit, isLoading }: ArticleFormProps) 
   const { data: tags } = useTags();
   const uploadImage = useUploadImage();
   const generateTags = useGenerateTags();
+  const analyzeArticle = useAnalyzeArticle();
 
   const [showSuggestedTags, setShowSuggestedTags] = useState(false);
   const [suggestedTags, setSuggestedTags] = useState<{
     existing: Array<{ nameKz: string; nameRu: string }>;
     suggested: Array<{ nameKz: string; nameRu: string }>;
+  } | null>(null);
+
+  const [showAIAnalysis, setShowAIAnalysis] = useState(false);
+  const [aiAnalysis, setAIAnalysis] = useState<{
+    score: number;
+    summary: string;
+    suggestions: Array<{
+      category: string;
+      severity: 'low' | 'medium' | 'high';
+      title: string;
+      description: string;
+    }>;
+    strengths: string[];
+    improvements: {
+      title?: string;
+      excerpt?: string;
+    };
   } | null>(null);
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -171,8 +191,57 @@ export function ArticleForm({ article, onSubmit, isLoading }: ArticleFormProps) 
     }
   };
 
+  const handleAnalyzeArticle = async () => {
+    if (!titleKz || !contentKz) {
+      alert('Пожалуйста, заполните как минимум заголовок и содержание на казахском языке');
+      return;
+    }
+
+    try {
+      const response = await analyzeArticle.mutateAsync({
+        titleKz,
+        contentKz,
+        excerptKz: excerptKz || undefined,
+        titleRu: titleRu || undefined,
+        contentRu: contentRu || undefined,
+        excerptRu: excerptRu || undefined,
+      });
+
+      setAIAnalysis(response.data);
+      setShowAIAnalysis(true);
+    } catch (error) {
+      console.error('Error analyzing article:', error);
+      alert('Ошибка при анализе статьи. Пожалуйста, попробуйте еще раз.');
+    }
+  };
+
+  const handleApplyImprovement = (field: 'title' | 'excerpt', value: string) => {
+    if (activeTab === 'kz') {
+      if (field === 'title') {
+        setTitleKz(value);
+      } else {
+        setExcerptKz(value);
+      }
+    } else {
+      if (field === 'title') {
+        setTitleRu(value);
+      } else {
+        setExcerptRu(value);
+      }
+    }
+  };
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <>
+      {showAIAnalysis && aiAnalysis && (
+        <AISuggestionsPanel
+          analysis={aiAnalysis}
+          onClose={() => setShowAIAnalysis(false)}
+          onApplyImprovement={handleApplyImprovement}
+        />
+      )}
+
+      <form onSubmit={handleSubmit} className="space-y-6">
       {/* Language Tabs */}
       <div className="border-b border-gray-200">
         <nav className="-mb-px flex space-x-8">
@@ -589,6 +658,29 @@ export function ArticleForm({ article, onSubmit, isLoading }: ArticleFormProps) 
 
       <div className="flex gap-4 pt-6 border-t border-gray-200">
         <button
+          type="button"
+          onClick={handleAnalyzeArticle}
+          disabled={analyzeArticle.isPending || !titleKz || !contentKz}
+          className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-bold py-2 px-6 rounded disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+        >
+          {analyzeArticle.isPending ? (
+            <>
+              <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Анализ...
+            </>
+          ) : (
+            <>
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+              </svg>
+              AI-редактор
+            </>
+          )}
+        </button>
+        <button
           type="submit"
           disabled={isLoading}
           className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded disabled:opacity-50 disabled:cursor-not-allowed"
@@ -597,5 +689,6 @@ export function ArticleForm({ article, onSubmit, isLoading }: ArticleFormProps) 
         </button>
       </div>
     </form>
+    </>
   );
 }

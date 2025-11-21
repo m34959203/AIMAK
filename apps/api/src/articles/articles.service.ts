@@ -2,6 +2,8 @@ import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/commo
 import { PrismaService } from '../common/prisma/prisma.service';
 import { CreateArticleDto, ArticleStatus } from './dto/create-article.dto';
 import { UpdateArticleDto } from './dto/update-article.dto';
+import { AnalyzeArticleDto } from './dto/analyze-article.dto';
+import axios from 'axios';
 
 @Injectable()
 export class ArticlesService {
@@ -340,5 +342,135 @@ export class ArticlesService {
     });
 
     return { message: 'Article deleted successfully' };
+  }
+
+  async analyzeArticle(dto: AnalyzeArticleDto) {
+    const apiKey = process.env.OPENROUTER_API_KEY;
+
+    if (!apiKey) {
+      throw new Error('OpenRouter API key is not configured');
+    }
+
+    // Prepare content for analysis
+    const kazakh = {
+      title: dto.titleKz,
+      excerpt: dto.excerptKz || '',
+      content: dto.contentKz,
+    };
+
+    const russian = dto.titleRu && dto.contentRu
+      ? {
+          title: dto.titleRu,
+          excerpt: dto.excerptRu || '',
+          content: dto.contentRu,
+        }
+      : null;
+
+    const prompt = `You are an expert content editor for a bilingual news website (Kazakh/Russian). Analyze the following article and provide constructive suggestions for improvement.
+
+ARTICLE (Kazakh):
+Title: ${kazakh.title}
+${kazakh.excerpt ? `Excerpt: ${kazakh.excerpt}` : ''}
+Content: ${kazakh.content}
+
+${russian ? `ARTICLE (Russian):
+Title: ${russian.title}
+${russian.excerpt ? `Excerpt: ${russian.excerpt}` : ''}
+Content: ${russian.content}` : ''}
+
+Please analyze and provide suggestions in the following categories:
+
+1. STRUCTURE (Структура):
+   - Is the article well-organized?
+   - Does it have a clear introduction, body, and conclusion?
+   - Are paragraphs logically structured?
+
+2. CONTENT QUALITY (Качество контента):
+   - Is the information clear and comprehensive?
+   - Are there any gaps in the story?
+   - Is the tone appropriate for news content?
+
+3. TITLE & EXCERPT (Заголовок и описание):
+   - Is the title attention-grabbing yet accurate?
+   - Does the excerpt effectively summarize the article?
+   - Suggest improvements if needed
+
+4. LANGUAGE & STYLE (Язык и стиль):
+   - Check for clarity and readability
+   - Are there any grammar or style issues?
+   - Is the language professional and engaging?
+
+5. BILINGUAL CONSISTENCY (Двуязычная согласованность):
+   ${russian ? '- Are the Kazakh and Russian versions consistent?\n   - Do both versions convey the same message?' : '- Russian version is missing. Recommend adding it for wider reach.'}
+
+6. SEO & READABILITY (SEO и читабельность):
+   - Is the content optimized for search engines?
+   - Are there keywords that should be emphasized?
+   - Is the text easy to read and scan?
+
+Return your analysis as a JSON object with this EXACT structure (respond in Russian):
+{
+  "score": 85,
+  "summary": "Краткое общее резюме анализа",
+  "suggestions": [
+    {
+      "category": "Структура",
+      "severity": "medium",
+      "title": "Короткое название проблемы",
+      "description": "Детальное описание и рекомендации"
+    }
+  ],
+  "strengths": [
+    "Сильная сторона 1",
+    "Сильная сторона 2"
+  ],
+  "improvements": {
+    "title": "Улучшенный вариант заголовка (опционально)",
+    "excerpt": "Улучшенный вариант описания (опционально)"
+  }
+}
+
+severity levels: "low", "medium", "high"
+categories: "Структура", "Контент", "Заголовок", "Язык", "SEO", "Двуязычность"
+
+Return ONLY the JSON object, no additional text.`;
+
+    try {
+      const response = await axios.post(
+        'https://openrouter.ai/api/v1/chat/completions',
+        {
+          model: 'google/gemma-2-27b-it',
+          messages: [
+            {
+              role: 'user',
+              content: prompt,
+            },
+          ],
+        },
+        {
+          headers: {
+            'Authorization': `Bearer ${apiKey}`,
+            'Content-Type': 'application/json',
+            'HTTP-Referer': process.env.FRONTEND_URL || 'http://localhost:3000',
+            'X-Title': 'AIMAK News',
+          },
+        },
+      );
+
+      const aiResponse = response.data.choices[0].message.content;
+
+      // Extract JSON from the response
+      const jsonMatch = aiResponse.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) {
+        throw new Error('Failed to parse AI response');
+      }
+
+      const analysis = JSON.parse(jsonMatch[0]);
+
+      return analysis;
+    } catch (error) {
+      console.error('Error analyzing article:', error);
+      throw new Error('Failed to analyze article. Please try again.');
+    }
   }
 }

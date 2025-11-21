@@ -13,6 +13,7 @@ import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger'
 import { ArticlesService } from './articles.service';
 import { CreateArticleDto } from './dto/create-article.dto';
 import { UpdateArticleDto } from './dto/update-article.dto';
+import { AnalyzeArticleDto } from './dto/analyze-article.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -97,5 +98,14 @@ export class ArticlesController {
   @ApiOperation({ summary: 'Delete article (Editor/Admin only)' })
   remove(@Param('id') id: string, @CurrentUser() user: any) {
     return this.articlesService.remove(id, user.id, user.role);
+  }
+
+  @Post('analyze')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.EDITOR, Role.ADMIN)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Analyze article with AI editor (Editor/Admin only)' })
+  analyzeArticle(@Body() dto: AnalyzeArticleDto) {
+    return this.articlesService.analyzeArticle(dto);
   }
 }
