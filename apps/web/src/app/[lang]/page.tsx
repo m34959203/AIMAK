@@ -166,53 +166,6 @@ export default async function HomePage({
               className="w-full h-96 bg-gray-100 rounded-xl overflow-hidden"
             />
 
-            {/* Social Media Links */}
-            <div className="bg-white rounded-xl shadow-lg p-6">
-              <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-                <svg className="w-6 h-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
-                </svg>
-                {params.lang === 'kz' ? 'Әлеуметтік желілер' : 'Соцсети'}
-              </h3>
-              <div className="space-y-3">
-                <a
-                  href="#"
-                  className="flex items-center gap-3 p-3 rounded-lg hover:bg-blue-50 transition-colors group"
-                >
-                  <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center text-white">
-                    📘
-                  </div>
-                  <span className="font-medium group-hover:text-blue-600">Facebook</span>
-                </a>
-                <a
-                  href="#"
-                  className="flex items-center gap-3 p-3 rounded-lg hover:bg-blue-50 transition-colors group"
-                >
-                  <div className="w-10 h-10 bg-sky-500 rounded-lg flex items-center justify-center text-white">
-                    🐦
-                  </div>
-                  <span className="font-medium group-hover:text-sky-600">Twitter</span>
-                </a>
-                <a
-                  href="#"
-                  className="flex items-center gap-3 p-3 rounded-lg hover:bg-purple-50 transition-colors group"
-                >
-                  <div className="w-10 h-10 bg-purple-500 rounded-lg flex items-center justify-center text-white">
-                    📷
-                  </div>
-                  <span className="font-medium group-hover:text-purple-600">Instagram</span>
-                </a>
-                <a
-                  href="#"
-                  className="flex items-center gap-3 p-3 rounded-lg hover:bg-blue-50 transition-colors group"
-                >
-                  <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center text-white">
-                    ✈️
-                  </div>
-                  <span className="font-medium group-hover:text-blue-600">Telegram</span>
-                </a>
-              </div>
-            </div>
           </aside>
         </div>
       </div>
