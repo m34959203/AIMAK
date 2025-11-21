@@ -10,7 +10,7 @@
 
 ### Брендовые цвета
 ```css
---brand-primary: #1A7F7E;      /* Тёмно-бирюзовый - основной цвет бренда */
+--brand-primary: #16a34a;      /* Зелёный - основной цвет бренда */
 --brand-secondary: #22A699;    /* Бирюзовый - акценты, hover */
 --brand-accent: #2ECC71;       /* Зелёный - call-to-action */
 ```
@@ -80,7 +80,7 @@
 - **Основной header**: `bg-white` с `border-neutral-200`
 - **Навигация**: `bg-neutral-900` (#303133 как вы просили)
 - **Логотип**:
-  - "АЙМАҚ" - `text-brand-primary` (#1A7F7E)
+  - "АЙМАҚ" - `text-brand-primary` (#16a34a)
   - "АҚШАМЫ" - `text-neutral-700`
 
 ### Кнопки и интерактивные элементы

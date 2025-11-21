@@ -166,7 +166,7 @@ export function TengriHeader({ lang = 'kz' }: HeaderProps) {
                   onClick={() => switchLang('kz')}
                   className={`px-3 py-1 text-xs font-medium transition-colors ${
                     lang === 'kz'
-                      ? 'bg-[#1A7F7E] text-white'
+                      ? 'bg-[#16a34a] text-white'
                       : 'text-gray-600 hover:bg-gray-100'
                   }`}
                 >
@@ -176,7 +176,7 @@ export function TengriHeader({ lang = 'kz' }: HeaderProps) {
                   onClick={() => switchLang('ru')}
                   className={`px-3 py-1 text-xs font-medium transition-colors ${
                     lang === 'ru'
-                      ? 'bg-[#1A7F7E] text-white'
+                      ? 'bg-[#16a34a] text-white'
                       : 'text-gray-600 hover:bg-gray-100'
                   }`}
                 >
@@ -194,7 +194,7 @@ export function TengriHeader({ lang = 'kz' }: HeaderProps) {
           {/* Logo */}
           <Link href={`/${lang}`} className="flex items-center">
             <div className="text-3xl font-bold tracking-tight">
-              <span className="text-[#1A7F7E]">АЙМАҚ</span>{' '}
+              <span className="text-[#16a34a]">АЙМАҚ</span>{' '}
               <span className="text-gray-700">АҚШАМЫ</span>
             </div>
           </Link>
@@ -233,7 +233,7 @@ export function TengriHeader({ lang = 'kz' }: HeaderProps) {
                   </Link>
                 )}
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-[#1A7F7E] text-white flex items-center justify-center text-sm font-semibold">
+                  <div className="w-8 h-8 rounded-full bg-[#16a34a] text-white flex items-center justify-center text-sm font-semibold">
                     {user.firstName[0]}{user.lastName[0]}
                   </div>
                   <button
@@ -247,7 +247,7 @@ export function TengriHeader({ lang = 'kz' }: HeaderProps) {
             ) : (
               <Link
                 href={`/${lang}/login`}
-                className="px-4 py-2 bg-[#1A7F7E] text-white rounded hover:bg-[#22A699] transition font-medium text-sm"
+                className="px-4 py-2 bg-[#16a34a] text-white rounded hover:bg-[#22A699] transition font-medium text-sm"
               >
                 {text.login}
               </Link>
