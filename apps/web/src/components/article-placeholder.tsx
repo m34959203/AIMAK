@@ -17,17 +17,17 @@ export function ArticlePlaceholder({
   categorySlug,
   variant = 'horizontal',
 }: ArticlePlaceholderProps) {
-  // Category-specific gradient colors
+  // Category-specific gradient colors (softer, less saturated)
   const getCategoryGradient = (slug?: string): string => {
     const gradients: Record<string, string> = {
-      zhanalyqtar: 'from-blue-500 via-blue-600 to-indigo-600',
-      ozekti: 'from-red-500 via-red-600 to-rose-600',
-      sayasat: 'from-purple-500 via-purple-600 to-indigo-600',
-      madeniyet: 'from-pink-500 via-pink-600 to-rose-600',
-      qogam: 'from-green-500 via-green-600 to-emerald-600',
-      kazakhmys: 'from-orange-500 via-orange-600 to-amber-600',
+      zhanalyqtar: 'from-blue-400 via-blue-500 to-indigo-500',
+      ozekti: 'from-red-400 via-red-500 to-rose-500',
+      sayasat: 'from-purple-400 via-purple-500 to-indigo-500',
+      madeniyet: 'from-pink-400 via-pink-500 to-rose-500',
+      qogam: 'from-green-400 via-green-500 to-emerald-500',
+      kazakhmys: 'from-orange-400 via-orange-500 to-amber-500',
     };
-    return gradients[slug || ''] || 'from-slate-500 via-slate-600 to-gray-600';
+    return gradients[slug || ''] || 'from-slate-400 via-slate-500 to-gray-500';
   };
 
   // Get first letter or word for display
@@ -44,10 +44,10 @@ export function ArticlePlaceholder({
 
   return (
     <div
-      className={`relative w-full h-full bg-gradient-to-br ${gradient} flex items-center justify-center overflow-hidden`}
+      className={`relative w-full h-full bg-gradient-to-br ${gradient} flex items-center justify-center overflow-hidden opacity-90`}
     >
       {/* Animated background pattern */}
-      <div className="absolute inset-0 opacity-10">
+      <div className="absolute inset-0 opacity-5">
         <div className="absolute inset-0" style={{
           backgroundImage: `repeating-linear-gradient(
             45deg,
@@ -62,19 +62,19 @@ export function ArticlePlaceholder({
       {/* Content */}
       <div className="relative z-10 flex flex-col items-center justify-center gap-4 text-white">
         {/* Large initial letter */}
-        <div className={`font-bold opacity-20 ${textSize} leading-none select-none`}>
+        <div className={`font-bold opacity-15 ${textSize} leading-none select-none`}>
           {initial}
         </div>
 
         {/* Icon */}
-        <div className={`${iconSize} opacity-80`}>
+        <div className={`${iconSize} opacity-60`}>
           <HiNewspaper />
         </div>
       </div>
 
       {/* Decorative circles */}
-      <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
-      <div className="absolute bottom-0 left-0 w-40 h-40 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2" />
+      <div className="absolute top-0 right-0 w-32 h-32 bg-white/3 rounded-full -translate-y-1/2 translate-x-1/2" />
+      <div className="absolute bottom-0 left-0 w-40 h-40 bg-white/3 rounded-full translate-y-1/2 -translate-x-1/2" />
     </div>
   );
 }
