@@ -44,19 +44,15 @@ export class MagazineIssuesController {
           description: 'PDF файл выпуска журнала',
         },
         issueNumber: { type: 'number', example: 1 },
-        year: { type: 'number', example: 2025 },
-        month: { type: 'number', example: 1 },
         publishDate: { type: 'string', example: '2025-01-15T00:00:00Z' },
         titleKz: { type: 'string', example: 'Қаңтар айының шығарылымы' },
         titleRu: { type: 'string', example: 'Январский выпуск' },
-        descriptionKz: { type: 'string', example: 'Қысқа сипаттама' },
-        descriptionRu: { type: 'string', example: 'Краткое описание' },
         pagesCount: { type: 'number', example: 120 },
         coverImageUrl: { type: 'string', example: 'https://example.com/cover.jpg' },
         isPublished: { type: 'boolean', example: true },
         isPinned: { type: 'boolean', example: false },
       },
-      required: ['file', 'issueNumber', 'year', 'month', 'publishDate', 'titleKz', 'titleRu'],
+      required: ['file', 'issueNumber', 'publishDate', 'titleKz', 'titleRu'],
     },
   })
   @UseInterceptors(FileInterceptor('file'))
@@ -73,8 +69,6 @@ export class MagazineIssuesController {
     const dto = {
       ...createMagazineIssueDto,
       issueNumber: Number(createMagazineIssueDto.issueNumber),
-      year: Number(createMagazineIssueDto.year),
-      month: Number(createMagazineIssueDto.month),
       pagesCount: createMagazineIssueDto.pagesCount ? Number(createMagazineIssueDto.pagesCount) : undefined,
       isPublished: (createMagazineIssueDto.isPublished as any) === 'true' || createMagazineIssueDto.isPublished === true,
       isPinned: (createMagazineIssueDto.isPinned as any) === 'true' || createMagazineIssueDto.isPinned === true,
@@ -89,12 +83,6 @@ export class MagazineIssuesController {
   findAll(@Query('published') published?: string) {
     const publishedBool = published === 'true' ? true : published === 'false' ? false : undefined;
     return this.magazineIssuesService.findAll(publishedBool);
-  }
-
-  @Get('year/:year')
-  @ApiOperation({ summary: 'Получить выпуски по году' })
-  findByYear(@Param('year') year: string) {
-    return this.magazineIssuesService.findByYear(Number(year));
   }
 
   @Get(':id')
