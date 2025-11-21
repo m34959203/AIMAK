@@ -38,9 +38,14 @@ export class ArticlesController {
   @Public()
   @ApiOperation({ summary: 'Get all articles' })
   @ApiQuery({ name: 'published', required: false, type: Boolean })
-  findAll(@Query('published') published?: string) {
+  @ApiQuery({ name: 'isBreaking', required: false, type: Boolean })
+  findAll(
+    @Query('published') published?: string,
+    @Query('isBreaking') isBreaking?: string,
+  ) {
     const publishedFilter = published === 'true' ? true : published === 'false' ? false : undefined;
-    return this.articlesService.findAll(publishedFilter);
+    const isBreakingFilter = isBreaking === 'true' ? true : isBreaking === 'false' ? false : undefined;
+    return this.articlesService.findAll(publishedFilter, isBreakingFilter);
   }
 
   @Get('slug/:slug')

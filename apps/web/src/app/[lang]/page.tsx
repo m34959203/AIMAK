@@ -38,6 +38,35 @@ async function getArticles() {
   }
 }
 
+async function getBreakingNews() {
+  try {
+    const apiEndpoint = getApiEndpoint('/articles', { published: true, isBreaking: true });
+
+    console.log('Fetching breaking news from:', apiEndpoint);
+
+    const res = await fetch(apiEndpoint, {
+      cache: 'no-store',
+    });
+
+    if (!res.ok) {
+      console.error('Failed to fetch breaking news:', res.status, res.statusText);
+      return null;
+    }
+
+    const data = await res.json();
+
+    if (!Array.isArray(data) || data.length === 0) {
+      return null;
+    }
+
+    // Return the most recent breaking news
+    return data[0];
+  } catch (error) {
+    console.error('Failed to fetch breaking news:', error);
+    return null;
+  }
+}
+
 
 export default async function HomePage({
   params,
@@ -46,8 +75,8 @@ export default async function HomePage({
 }) {
   const articles = await getArticles();
 
-  // Find breaking news (можно добавить поле isBreaking в будущем)
-  const breakingArticle = articles.find((a: any) => a.isBreaking) || articles[0];
+  // Get breaking news from separate API call
+  const breakingArticle = await getBreakingNews();
 
   // Articles for hero section
   const heroMainArticle = articles[0];

@@ -76,9 +76,19 @@ export class ArticlesService {
     return article;
   }
 
-  async findAll(published?: boolean) {
+  async findAll(published?: boolean, isBreaking?: boolean) {
+    const where: any = {};
+
+    if (published !== undefined) {
+      where.published = published;
+    }
+
+    if (isBreaking !== undefined) {
+      where.isBreaking = isBreaking;
+    }
+
     return this.prisma.article.findMany({
-      where: published !== undefined ? { published } : undefined,
+      where: Object.keys(where).length > 0 ? where : undefined,
       include: {
         author: {
           select: {
