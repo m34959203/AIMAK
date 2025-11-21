@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
 import { useCategories } from '@/hooks/use-categories';
 import { SearchBar } from './search-bar';
+import { WeatherWidget } from './weather-widget';
 
 interface HeaderProps {
   lang?: 'kz' | 'ru';
@@ -154,9 +155,9 @@ export function TengriHeader({ lang = 'kz' }: HeaderProps) {
             <div className="flex items-center gap-6 text-gray-600">
               <span className="font-medium">Сатпаев</span>
               {currentTime && <span className="font-semibold">{currentTime}</span>}
-              <span>{weather.icon} {weather.temp}°C</span>
-              <span>USD: {currency.usd}₸</span>
-              <span>EUR: {currency.eur}₸</span>
+              <WeatherWidget />
+              <span>$ {currency.usd}₸</span>
+              <span>€ {currency.eur}₸</span>
             </div>
             <div className="flex items-center gap-4">
               {/* Language Switcher */}
