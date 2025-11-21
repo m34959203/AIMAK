@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { IoCloudOutline, IoLocationOutline, IoChevronDown } from 'react-icons/io5';
 import { WiHumidity, WiBarometer, WiStrongWind } from 'react-icons/wi';
 
@@ -64,12 +64,48 @@ export function WeatherWidget() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Fetch weather data
+  // Fetch weather data function
+  const fetchWeather = useCallback(async (city: string) => {
+    setLoading(true);
+    try {
+      const response = await fetch(
+        `https://api.openweathermap.org/data/2.5/weather?q=${city},KZ&units=metric&appid=aa8b515e87f73801f11cf922205790fd&lang=ru`
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch weather data');
+      }
+
+      const data = await response.json();
+
+      setWeather({
+        temp: Math.round(data.main.temp),
+        description: data.weather[0].description,
+        humidity: data.main.humidity,
+        pressure: data.main.pressure,
+        windSpeed: Math.round(data.wind.speed),
+        city: city,
+      });
+    } catch (error) {
+      console.error('Failed to fetch weather:', error);
+      // Fallback to mock data if API fails
+      setWeather({
+        temp: 0,
+        description: 'Не удалось загрузить данные',
+        humidity: 0,
+        pressure: 0,
+        windSpeed: 0,
+        city: city,
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Fetch weather data on city change
   useEffect(() => {
     fetchWeather(selectedCity);
-  }, [selectedCity]);
-
-
+  }, [selectedCity, fetchWeather]);
 
   const handleCitySelect = (city: string) => {
     setSelectedCity(city);
