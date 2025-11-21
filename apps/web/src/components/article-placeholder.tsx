@@ -17,17 +17,17 @@ export function ArticlePlaceholder({
   categorySlug,
   variant = 'horizontal',
 }: ArticlePlaceholderProps) {
-  // Category-specific gradient colors (softer, less saturated)
+  // Category-specific gradient colors (very soft, professional)
   const getCategoryGradient = (slug?: string): string => {
     const gradients: Record<string, string> = {
-      zhanalyqtar: 'from-blue-400 via-blue-500 to-indigo-500',
-      ozekti: 'from-red-400 via-red-500 to-rose-500',
-      sayasat: 'from-purple-400 via-purple-500 to-indigo-500',
-      madeniyet: 'from-pink-400 via-pink-500 to-rose-500',
-      qogam: 'from-green-400 via-green-500 to-emerald-500',
-      kazakhmys: 'from-orange-400 via-orange-500 to-amber-500',
+      zhanalyqtar: 'from-blue-300 via-blue-400 to-indigo-400',
+      ozekti: 'from-red-300 via-red-400 to-rose-400',
+      sayasat: 'from-purple-300 via-purple-400 to-indigo-400',
+      madeniyet: 'from-pink-300 via-pink-400 to-rose-400',
+      qogam: 'from-green-300 via-green-400 to-emerald-400',
+      kazakhmys: 'from-orange-300 via-orange-400 to-amber-400',
     };
-    return gradients[slug || ''] || 'from-slate-400 via-slate-500 to-gray-500';
+    return gradients[slug || ''] || 'from-slate-300 via-slate-400 to-gray-400';
   };
 
   // Get first letter or word for display
@@ -44,7 +44,7 @@ export function ArticlePlaceholder({
 
   return (
     <div
-      className={`relative w-full h-full bg-gradient-to-br ${gradient} flex items-center justify-center overflow-hidden opacity-90`}
+      className={`relative w-full h-full bg-gradient-to-br ${gradient} flex items-center justify-center overflow-hidden opacity-85`}
     >
       {/* Animated background pattern */}
       <div className="absolute inset-0 opacity-5">
