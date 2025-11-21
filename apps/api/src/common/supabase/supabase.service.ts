@@ -5,7 +5,7 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 @Injectable()
 export class SupabaseService {
   private readonly logger = new Logger(SupabaseService.name);
-  private supabase: SupabaseClient;
+  private supabase: SupabaseClient | null = null;
   private bucketName: string;
 
   constructor(private configService: ConfigService) {
