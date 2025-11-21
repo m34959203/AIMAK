@@ -188,7 +188,7 @@ Return only the JSON array, no explanations or additional text.`;
       const response = await axios.post(
         'https://openrouter.ai/api/v1/chat/completions',
         {
-          model: 'anthropic/claude-3.5-sonnet',
+          model: 'google/gemma-2-27b-it',
           messages: [
             {
               role: 'user',
