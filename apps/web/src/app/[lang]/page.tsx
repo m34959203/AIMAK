@@ -217,32 +217,6 @@ export default async function HomePage({
         </div>
       </div>
 
-      {/* Newsletter Section */}
-      <div className="bg-gradient-to-r from-green-600 to-blue-600 py-12">
-        <div className="container mx-auto px-4">
-          <div className="max-w-2xl mx-auto text-center text-white">
-            <h3 className="text-3xl font-bold mb-4">
-              {params.lang === 'kz' ? 'Жаңалықтарға жазылу' : 'Подписка на новости'}
-            </h3>
-            <p className="mb-6 text-lg opacity-90">
-              {params.lang === 'kz'
-                ? 'Маңызды жаңалықтарды алғашқылардан болып біліңіз'
-                : 'Будьте в курсе самых важных новостей'
-              }
-            </p>
-            <div className="flex gap-3 max-w-md mx-auto">
-              <input
-                type="email"
-                placeholder={params.lang === 'kz' ? 'Email мекенжайыңыз' : 'Ваш email'}
-                className="flex-1 px-4 py-3 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-white"
-              />
-              <button className="bg-white text-green-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors shadow-lg">
-                {params.lang === 'kz' ? 'Жазылу' : 'Подписаться'}
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }
