@@ -207,16 +207,7 @@ services:
 
     autoDeploy: true
 
-    # Кэширование Next.js для быстрых пересборок
-    buildFilter:
-      paths:
-        - apps/web/**
-
     envVars:
-      # Настройка кэширования Next.js
-      - key: NEXT_BUILD_CACHE_DIR
-        value: /opt/render/project/src/apps/web/.next/cache
-
       - key: NODE_ENV
         value: production
       
