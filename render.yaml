@@ -214,18 +214,12 @@ services:
       - key: PORT
         value: 3000
 
+      # API URL с префиксом /api
       - key: NEXT_PUBLIC_API_URL
-
-        fromService:
-          name: aimak-api
-          type: web
-          property: host
+        sync: false
 
       - key: API_URL
-        fromService:
-          name: aimak-api
-          type: web
-          property: host
+        sync: false
 
       
       - key: NEXT_PUBLIC_APP_NAME
