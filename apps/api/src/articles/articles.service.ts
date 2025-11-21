@@ -76,15 +76,35 @@ export class ArticlesService {
     return article;
   }
 
-  async findAll(published?: boolean, isBreaking?: boolean) {
+  async findAll(filters?: {
+    published?: boolean;
+    isBreaking?: boolean;
+    isFeatured?: boolean;
+    isPinned?: boolean;
+    categorySlug?: string;
+  }) {
     const where: any = {};
 
-    if (published !== undefined) {
-      where.published = published;
+    if (filters?.published !== undefined) {
+      where.published = filters.published;
     }
 
-    if (isBreaking !== undefined) {
-      where.isBreaking = isBreaking;
+    if (filters?.isBreaking !== undefined) {
+      where.isBreaking = filters.isBreaking;
+    }
+
+    if (filters?.isFeatured !== undefined) {
+      where.isFeatured = filters.isFeatured;
+    }
+
+    if (filters?.isPinned !== undefined) {
+      where.isPinned = filters.isPinned;
+    }
+
+    if (filters?.categorySlug) {
+      where.category = {
+        slug: filters.categorySlug,
+      };
     }
 
     return this.prisma.article.findMany({
@@ -100,9 +120,12 @@ export class ArticlesService {
         category: true,
         tags: true,
       },
-      orderBy: {
-        createdAt: 'desc',
-      },
+      orderBy: [
+        // Pinned articles first
+        { isPinned: 'desc' },
+        // Then by creation date
+        { createdAt: 'desc' },
+      ],
     });
   }
 
