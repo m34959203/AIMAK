@@ -14,36 +14,102 @@ interface WeatherData {
 }
 
 const KAZAKHSTAN_CITIES = [
+  // Города республиканского значения
   'Астана',
   'Алматы',
   'Шымкент',
-  'Актобе',
-  'Караганда',
-  'Тараз',
-  'Павлодар',
-  'Усть-Каменогорск',
+
+  // Абайская область (центр - Семей)
   'Семей',
-  'Атырау',
-  'Костанай',
-  'Кызылорда',
-  'Уральск',
-  'Петропавловск',
-  'Актау',
-  'Темиртау',
-  'Туркестан',
+  'Аягоз',
+  'Курчатов',
+
+  // Акмолинская область (центр - Кокшетау)
   'Кокшетау',
+  'Степногорск',
+  'Щучинск',
+
+  // Актюбинская область (центр - Актобе)
+  'Актобе',
+  'Хромтау',
+  'Кандыагаш',
+
+  // Алматинская область (центр - Конаев)
   'Талдыкорган',
-  'Экибастуз',
-  'Рудный',
-  'Жанаозен',
+  'Конаев',
+  'Капчагай',
+  'Текели',
+  'Есик',
+
+  // Атырауская область (центр - Атырау)
+  'Атырау',
+  'Кульсары',
+
+  // Восточно-Казахстанская область (центр - Усть-Каменогорск)
+  'Усть-Каменогорск',
+  'Риддер',
+  'Зыряновск',
+
+  // Жамбылская область (центр - Тараз)
+  'Тараз',
+  'Каратау',
+
+  // Жетысуская область (центр - Талдыкорган)
+  'Ушарал',
+
+  // Западно-Казахстанская область (центр - Уральск)
+  'Уральск',
+  'Аксай',
+
+  // Карагандинская область (центр - Караганда)
+  'Караганда',
+  'Темиртау',
+  'Жезказган',
   'Балхаш',
   'Сатпаев',
-];
+  'Абай',
+  'Шахтинск',
+
+  // Костанайская область (центр - Костанай)
+  'Костанай',
+  'Рудный',
+  'Аркалык',
+  'Лисаковск',
+
+  // Кызылординская область (центр - Кызылорда)
+  'Кызылорда',
+  'Байконыр',
+
+  // Мангистауская область (центр - Актау)
+  'Актау',
+  'Жанаозен',
+  'Форт-Шевченко',
+
+  // Павлодарская область (центр - Павлодар)
+  'Павлодар',
+  'Экибастуз',
+  'Аксу',
+
+  // Северо-Казахстанская область (центр - Петропавловск)
+  'Петропавловск',
+  'Булаево',
+
+  // Туркестанская область (центр - Туркестан)
+  'Туркестан',
+  'Кентау',
+  'Арысь',
+  'Сарыагаш',
+
+  // Улытауская область (центр - Жезказган)
+  'Улытау',
+  'Каражал',
+].sort();
 
 export function WeatherWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [isCityDropdownOpen, setIsCityDropdownOpen] = useState(false);
   const [selectedCity, setSelectedCity] = useState('Алматы');
+  const [citySearchQuery, setCitySearchQuery] = useState('');
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [loading, setLoading] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -110,7 +176,13 @@ export function WeatherWidget() {
   const handleCitySelect = (city: string) => {
     setSelectedCity(city);
     setIsCityDropdownOpen(false);
+    setCitySearchQuery('');
   };
+
+  // Фильтрация городов по поисковому запросу
+  const filteredCities = KAZAKHSTAN_CITIES.filter((city) =>
+    city.toLowerCase().includes(citySearchQuery.toLowerCase())
+  );
 
   return (
     <div className="relative" ref={dropdownRef}>
@@ -147,18 +219,38 @@ export function WeatherWidget() {
 
             {/* City dropdown */}
             {isCityDropdownOpen && (
-              <div className="absolute top-full left-0 right-0 bg-white border-t border-gray-200 max-h-60 overflow-y-auto shadow-lg z-50">
-                {KAZAKHSTAN_CITIES.map((city) => (
-                  <button
-                    key={city}
-                    onClick={() => handleCitySelect(city)}
-                    className={`w-full px-4 py-2 text-left hover:bg-gray-50 transition-colors ${
-                      city === selectedCity ? 'bg-blue-50 text-blue-600' : 'text-gray-700'
-                    }`}
-                  >
-                    {city}
-                  </button>
-                ))}
+              <div className="absolute top-full left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50">
+                {/* Search input */}
+                <div className="p-2 border-b border-gray-200">
+                  <input
+                    type="text"
+                    value={citySearchQuery}
+                    onChange={(e) => setCitySearchQuery(e.target.value)}
+                    placeholder="Поиск города..."
+                    className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                </div>
+                {/* City list */}
+                <div className="max-h-60 overflow-y-auto">
+                  {filteredCities.length > 0 ? (
+                    filteredCities.map((city) => (
+                      <button
+                        key={city}
+                        onClick={() => handleCitySelect(city)}
+                        className={`w-full px-4 py-2 text-left hover:bg-gray-50 transition-colors ${
+                          city === selectedCity ? 'bg-blue-50 text-blue-600' : 'text-gray-700'
+                        }`}
+                      >
+                        {city}
+                      </button>
+                    ))
+                  ) : (
+                    <div className="px-4 py-3 text-gray-500 text-sm text-center">
+                      Город не найден
+                    </div>
+                  )}
+                </div>
               </div>
             )}
           </div>
