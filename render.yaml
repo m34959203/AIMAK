@@ -118,7 +118,7 @@ services:
         sync: false
 
       - key: SUPABASE_BUCKET
-        value: media
+        value: aimak-media
 
       # Legacy S3 variables (не используются, но оставлены для совместимости)
       - key: S3_ENDPOINT
