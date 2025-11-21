@@ -31,7 +31,7 @@ services:
     name: aimak-api
     runtime: node
     plan: free
-    buildCommand: pnpm install --frozen-lockfile && cd apps/api && pnpm prisma generate && pnpm migrate:deploy && pnpm db:seed && pnpm build
+    buildCommand: pnpm install --frozen-lockfile && cd apps/api && pnpm prisma generate && pnpm migrate:deploy && pnpm build
     startCommand: cd apps/api && pnpm start:prod
     
     healthCheckPath: /api/health
