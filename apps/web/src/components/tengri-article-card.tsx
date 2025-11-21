@@ -61,15 +61,15 @@ export function TengriArticleCard({
       })
     : '';
 
-  // Category colors (Tengrinews style)
+  // Category colors (softer, professional palette)
   const getCategoryColor = (categorySlug?: string) => {
     const colors: Record<string, string> = {
-      zhanalyqtar: 'bg-blue-600',
-      ozekti: 'bg-red-600',
-      sayasat: 'bg-purple-600',
-      madeniyet: 'bg-pink-600',
-      qogam: 'bg-green-600',
-      kazakhmys: 'bg-orange-600',
+      zhanalyqtar: 'bg-[#3B82F6]',    // Мягкий синий
+      ozekti: 'bg-[#DC2626]',         // Приглушенный красный
+      sayasat: 'bg-[#7C3AED]',        // Мягкий фиолетовый
+      madeniyet: 'bg-[#DB2777]',      // Приглушенный розовый
+      qogam: 'bg-[#059669]',          // Изумрудный зеленый
+      kazakhmys: 'bg-[#D97706]',      // Приглушенный оранжевый
     };
     return colors[categorySlug || ''] || 'bg-gray-600';
   };

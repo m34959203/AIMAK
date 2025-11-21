@@ -164,9 +164,9 @@ export function TengriHeader({ lang = 'kz' }: HeaderProps) {
               <div className="flex gap-1 border rounded">
                 <button
                   onClick={() => switchLang('kz')}
-                  className={`px-3 py-1 text-xs font-medium ${
+                  className={`px-3 py-1 text-xs font-medium transition-colors ${
                     lang === 'kz'
-                      ? 'bg-green-600 text-white'
+                      ? 'bg-[#1A7F7E] text-white'
                       : 'text-gray-600 hover:bg-gray-100'
                   }`}
                 >
@@ -174,9 +174,9 @@ export function TengriHeader({ lang = 'kz' }: HeaderProps) {
                 </button>
                 <button
                   onClick={() => switchLang('ru')}
-                  className={`px-3 py-1 text-xs font-medium ${
+                  className={`px-3 py-1 text-xs font-medium transition-colors ${
                     lang === 'ru'
-                      ? 'bg-green-600 text-white'
+                      ? 'bg-[#1A7F7E] text-white'
                       : 'text-gray-600 hover:bg-gray-100'
                   }`}
                 >
@@ -193,9 +193,9 @@ export function TengriHeader({ lang = 'kz' }: HeaderProps) {
         <div className="flex items-center justify-between py-4">
           {/* Logo */}
           <Link href={`/${lang}`} className="flex items-center">
-            <div className="text-3xl font-bold">
-              <span className="text-green-600">АЙМАҚ</span>{' '}
-              <span className="text-gray-800">АҚШАМЫ</span>
+            <div className="text-3xl font-bold tracking-tight">
+              <span className="text-[#1A7F7E]">АЙМАҚ</span>{' '}
+              <span className="text-gray-700">АҚШАМЫ</span>
             </div>
           </Link>
 
@@ -227,18 +227,18 @@ export function TengriHeader({ lang = 'kz' }: HeaderProps) {
                 {(user.role === 'EDITOR' || user.role === 'ADMIN') && (
                   <Link
                     href="/admin"
-                    className="text-sm font-medium text-gray-700 hover:text-green-600 transition"
+                    className="text-sm font-medium text-gray-700 hover:text-[#22A699] transition"
                   >
                     {text.adminPanel}
                   </Link>
                 )}
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-green-600 text-white flex items-center justify-center text-sm font-semibold">
+                  <div className="w-8 h-8 rounded-full bg-[#1A7F7E] text-white flex items-center justify-center text-sm font-semibold">
                     {user.firstName[0]}{user.lastName[0]}
                   </div>
                   <button
                     onClick={logout}
-                    className="text-sm text-gray-600 hover:text-red-600"
+                    className="text-sm text-gray-600 hover:text-red-500 transition"
                   >
                     {text.logout}
                   </button>
@@ -247,7 +247,7 @@ export function TengriHeader({ lang = 'kz' }: HeaderProps) {
             ) : (
               <Link
                 href={`/${lang}/login`}
-                className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition font-medium text-sm"
+                className="px-4 py-2 bg-[#1A7F7E] text-white rounded hover:bg-[#22A699] transition font-medium text-sm"
               >
                 {text.login}
               </Link>
@@ -285,7 +285,7 @@ export function TengriHeader({ lang = 'kz' }: HeaderProps) {
       </div>
 
       {/* Categories Navigation */}
-      <div className="bg-gray-900 text-white">
+      <div className="bg-[#303133] text-white">
         <div className="container mx-auto px-4">
           <nav className="hidden lg:flex items-center justify-between">
             <div className="flex items-center">
