@@ -17,6 +17,7 @@ export function TengriHeader({ lang = 'kz' }: HeaderProps) {
   const [showSearch, setShowSearch] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [currentTime, setCurrentTime] = useState('');
+  const [selectedCity, setSelectedCity] = useState('Алматы');
   const [weather, setWeather] = useState({ temp: '+15', icon: '🌤️' });
   const [currency, setCurrency] = useState({ usd: '450', eur: '520' });
   const pathname = usePathname();
@@ -153,9 +154,9 @@ export function TengriHeader({ lang = 'kz' }: HeaderProps) {
         <div className="container mx-auto px-4 py-2">
           <div className="flex items-center justify-between text-sm">
             <div className="flex items-center gap-6 text-gray-600">
-              <span className="font-medium">Сатпаев</span>
+              <span className="font-medium">{selectedCity}</span>
               {currentTime && <span className="font-semibold">{currentTime}</span>}
-              <WeatherWidget />
+              <WeatherWidget selectedCity={selectedCity} onCityChange={setSelectedCity} />
               <span>$ {currency.usd}₸</span>
               <span>€ {currency.eur}₸</span>
             </div>

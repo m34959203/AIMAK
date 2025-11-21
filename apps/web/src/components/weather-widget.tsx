@@ -105,15 +105,25 @@ const KAZAKHSTAN_CITIES = [
   'Каражал',
 ].sort();
 
-export function WeatherWidget() {
+interface WeatherWidgetProps {
+  selectedCity?: string;
+  onCityChange?: (city: string) => void;
+}
+
+export function WeatherWidget({ selectedCity: initialCity = 'Алматы', onCityChange }: WeatherWidgetProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isCityDropdownOpen, setIsCityDropdownOpen] = useState(false);
-  const [selectedCity, setSelectedCity] = useState('Алматы');
+  const [selectedCity, setSelectedCity] = useState(initialCity);
   const [citySearchQuery, setCitySearchQuery] = useState('');
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [loading, setLoading] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const cityDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Sync with external city prop
+  useEffect(() => {
+    setSelectedCity(initialCity);
+  }, [initialCity]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -177,6 +187,9 @@ export function WeatherWidget() {
     setSelectedCity(city);
     setIsCityDropdownOpen(false);
     setCitySearchQuery('');
+    if (onCityChange) {
+      onCityChange(city);
+    }
   };
 
   // Фильтрация городов по поисковому запросу
