@@ -21,16 +21,14 @@ const nextConfig = {
 
   // Webpack кэширование для быстрых пересборок
   webpack: (config, { dev, isServer }) => {
-    // Включаем кэширование в режиме разработки
-    if (dev) {
-      config.cache = {
-        type: 'filesystem',
-        buildDependencies: {
-          config: [__filename],
-        },
-        cacheDirectory: '.next/cache/webpack',
-      };
-    }
+    // Включаем кэширование для всех режимов (dev и production)
+    config.cache = {
+      type: 'filesystem',
+      buildDependencies: {
+        config: [__filename],
+      },
+      cacheDirectory: '.next/cache/webpack',
+    };
     return config;
   },
 
