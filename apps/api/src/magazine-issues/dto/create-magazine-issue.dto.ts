@@ -5,33 +5,33 @@ export class CreateMagazineIssueDto {
   @ApiProperty({ example: 1, description: 'Номер выпуска' })
   @IsInt()
   @Min(1)
-  issueNumber: number;
+  issueNumber!: number;
 
   @ApiProperty({ example: 2025, description: 'Год выпуска' })
   @IsInt()
   @Min(2020)
   @Max(2100)
-  year: number;
+  year!: number;
 
   @ApiProperty({ example: 1, description: 'Месяц выпуска (1-12)' })
   @IsInt()
   @Min(1)
   @Max(12)
-  month: number;
+  month!: number;
 
   @ApiProperty({ example: '2025-01-15T00:00:00Z', description: 'Дата публикации' })
   @IsDateString()
-  publishDate: string;
+  publishDate!: string;
 
   @ApiProperty({ example: 'Қаңтар айының шығарылымы', description: 'Название на казахском' })
   @IsString()
   @IsNotEmpty()
-  titleKz: string;
+  titleKz!: string;
 
   @ApiProperty({ example: 'Январский выпуск', description: 'Название на русском' })
   @IsString()
   @IsNotEmpty()
-  titleRu: string;
+  titleRu!: string;
 
   @ApiProperty({ example: 'Қысқа сипаттама', description: 'Описание на казахском', required: false })
   @IsString()

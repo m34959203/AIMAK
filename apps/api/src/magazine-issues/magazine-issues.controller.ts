@@ -69,15 +69,15 @@ export class MagazineIssuesController {
       throw new BadRequestException('PDF файл обязателен');
     }
 
-    // Конвертация строковых значений из FormData в числа
+    // Конвертация строковых значений из FormData в числа и булевы
     const dto = {
       ...createMagazineIssueDto,
       issueNumber: Number(createMagazineIssueDto.issueNumber),
       year: Number(createMagazineIssueDto.year),
       month: Number(createMagazineIssueDto.month),
       pagesCount: createMagazineIssueDto.pagesCount ? Number(createMagazineIssueDto.pagesCount) : undefined,
-      isPublished: createMagazineIssueDto.isPublished === 'true' || createMagazineIssueDto.isPublished === true,
-      isPinned: createMagazineIssueDto.isPinned === 'true' || createMagazineIssueDto.isPinned === true,
+      isPublished: (createMagazineIssueDto.isPublished as any) === 'true' || createMagazineIssueDto.isPublished === true,
+      isPinned: (createMagazineIssueDto.isPinned as any) === 'true' || createMagazineIssueDto.isPinned === true,
     };
 
     return this.magazineIssuesService.create(dto, file, user.id);
