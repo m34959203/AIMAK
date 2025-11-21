@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { MulterModule } from '@nestjs/platform-express';
+import { memoryStorage } from 'multer';
 import { Request } from 'express';
 import { MediaController } from './media.controller';
 import { MediaService } from './media.service';
@@ -11,7 +12,7 @@ import { SupabaseModule } from '../common/supabase/supabase.module';
     PrismaModule,
     SupabaseModule,
     MulterModule.register({
-      storage: 'memoryStorage', // Use memory storage for Supabase upload
+      storage: memoryStorage(), // Use memory storage for Supabase upload
       fileFilter: (
         req: Request,
         file: Express.Multer.File,
