@@ -11,6 +11,9 @@ import type {
   UpdateBilingualArticleDto,
   CreateBilingualCategoryDto,
   CreateBilingualTagDto,
+  MagazineIssue,
+  CreateMagazineIssueDto,
+  UpdateMagazineIssueDto,
 } from '@/types';
 import { getApiUrl } from './api-url';
 
@@ -122,6 +125,46 @@ export const mediaApi = {
       },
     });
   },
+};
+
+// Magazine Issues API
+export const magazineIssuesApi = {
+  getAll: (published?: boolean) =>
+    api.get<MagazineIssue[]>('/magazine-issues', {
+      params: published !== undefined ? { published } : {},
+    }),
+  getById: (id: string) => api.get<MagazineIssue>(`/magazine-issues/${id}`),
+  getByYear: (year: number) =>
+    api.get<MagazineIssue[]>(`/magazine-issues/year/${year}`),
+  create: (data: CreateMagazineIssueDto, pdfFile: File) => {
+    const formData = new FormData();
+    formData.append('file', pdfFile);
+    formData.append('issueNumber', data.issueNumber.toString());
+    formData.append('year', data.year.toString());
+    formData.append('month', data.month.toString());
+    formData.append('publishDate', data.publishDate);
+    formData.append('titleKz', data.titleKz);
+    formData.append('titleRu', data.titleRu);
+    if (data.descriptionKz) formData.append('descriptionKz', data.descriptionKz);
+    if (data.descriptionRu) formData.append('descriptionRu', data.descriptionRu);
+    if (data.pagesCount) formData.append('pagesCount', data.pagesCount.toString());
+    if (data.coverImageUrl) formData.append('coverImageUrl', data.coverImageUrl);
+    if (data.isPublished !== undefined) formData.append('isPublished', data.isPublished.toString());
+    if (data.isPinned !== undefined) formData.append('isPinned', data.isPinned.toString());
+
+    return api.post<MagazineIssue>('/magazine-issues', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+  },
+  update: (id: string, data: UpdateMagazineIssueDto) =>
+    api.patch<MagazineIssue>(`/magazine-issues/${id}`, data),
+  delete: (id: string) => api.delete(`/magazine-issues/${id}`),
+  incrementViews: (id: string) =>
+    api.post(`/magazine-issues/${id}/view`),
+  incrementDownloads: (id: string) =>
+    api.post(`/magazine-issues/${id}/download`),
 };
 
 export default api;

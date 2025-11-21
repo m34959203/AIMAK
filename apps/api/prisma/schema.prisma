@@ -22,20 +22,21 @@ enum ArticleStatus {
 }
 
 model User {
-  id           String    @id @default(uuid())
-  email        String    @unique
-  password     String
-  firstName    String
-  lastName     String
-  avatarUrl    String?
-  bio          String?
-  role         Role      @default(USER)
-  isActive     Boolean   @default(true)
-  isVerified   Boolean   @default(false)
-  articles     Article[]
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-  lastLoginAt  DateTime?
+  id              String          @id @default(uuid())
+  email           String          @unique
+  password        String
+  firstName       String
+  lastName        String
+  avatarUrl       String?
+  bio             String?
+  role            Role            @default(USER)
+  isActive        Boolean         @default(true)
+  isVerified      Boolean         @default(false)
+  articles        Article[]
+  magazineIssues  MagazineIssue[]
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  lastLoginAt     DateTime?
 
   @@map("users")
 }
@@ -284,4 +285,51 @@ model AIGeneration {
   @@map("ai_generations")
   @@index([userId])
   @@index([provider])
+}
+
+// PDF-выпуски журнала
+model MagazineIssue {
+  id             String   @id @default(uuid())
+  issueNumber    Int      @map("issue_number")           // Номер выпуска
+  year           Int                                      // Год выпуска
+  month          Int                                      // Месяц выпуска (1-12)
+  publishDate    DateTime @map("publish_date")           // Дата публикации
+
+  // Двуязычные поля
+  titleKz        String   @map("title_kz")               // Название (каз)
+  titleRu        String   @map("title_ru")               // Название (рус)
+  descriptionKz  String?  @map("description_kz")         // Описание (каз)
+  descriptionRu  String?  @map("description_ru")         // Описание (рус)
+
+  // PDF файл
+  pdfFilename    String   @map("pdf_filename")           // Имя файла
+  pdfUrl         String   @map("pdf_url")                // URL PDF
+  fileSize       Int      @map("file_size")              // Размер файла в байтах
+  pagesCount     Int?     @map("pages_count")            // Количество страниц
+
+  // Обложка
+  coverImageUrl  String?  @map("cover_image_url")        // URL обложки
+
+  // Метрики
+  viewsCount     Int      @default(0) @map("views_count")       // Просмотры
+  downloadsCount Int      @default(0) @map("downloads_count")   // Скачивания
+
+  // Статус
+  isPublished    Boolean  @default(true) @map("is_published")   // Опубликован
+  isPinned       Boolean  @default(false) @map("is_pinned")     // Закреплен
+
+  // Связи
+  uploadedById   String?  @map("uploaded_by_id")
+  uploadedBy     User?    @relation(fields: [uploadedById], references: [id])
+
+  // Временные метки
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  @@map("magazine_issues")
+  @@unique([year, month, issueNumber])                   // Уникальная комбинация
+  @@index([year, month])
+  @@index([publishDate])
+  @@index([isPublished])
+  @@index([uploadedById])
 }
