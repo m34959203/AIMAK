@@ -92,6 +92,16 @@ export const tagsApi = {
   update: (id: string, data: Partial<CreateBilingualTagDto>) =>
     api.patch<Tag>(`/tags/${id}`, data),
   delete: (id: string) => api.delete(`/tags/${id}`),
+  generateTags: (data: {
+    titleKz: string;
+    contentKz: string;
+    titleRu?: string;
+    contentRu?: string;
+  }) =>
+    api.post<{
+      existing: Array<{ nameKz: string; nameRu: string }>;
+      suggested: Array<{ nameKz: string; nameRu: string }>;
+    }>('/tags/generate', data),
 };
 
 // Users API

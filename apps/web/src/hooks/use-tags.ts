@@ -56,3 +56,14 @@ export function useDeleteTag() {
     },
   });
 }
+
+export function useGenerateTags() {
+  return useMutation({
+    mutationFn: (data: {
+      titleKz: string;
+      contentKz: string;
+      titleRu?: string;
+      contentRu?: string;
+    }) => tagsApi.generateTags(data),
+  });
+}
