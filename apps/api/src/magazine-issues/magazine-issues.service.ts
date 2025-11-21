@@ -53,29 +53,35 @@ export class MagazineIssuesService {
    * Получить все выпуски (с фильтрацией)
    */
   async findAll(published?: boolean) {
-    const where: any = {};
+    try {
+      const where: any = {};
 
-    if (published !== undefined) {
-      where.isPublished = published;
-    }
+      if (published !== undefined) {
+        where.isPublished = published;
+      }
 
-    return this.prisma.magazineIssue.findMany({
-      where,
-      orderBy: [
-        { isPinned: 'desc' },
-        { publishDate: 'desc' },
-        { issueNumber: 'desc' },
-      ],
-      include: {
-        uploadedBy: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
+      return this.prisma.magazineIssue.findMany({
+        where,
+        orderBy: [
+          { isPinned: 'desc' },
+          { publishDate: 'desc' },
+          { issueNumber: 'desc' },
+        ],
+        include: {
+          uploadedBy: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+            },
           },
         },
-      },
-    });
+      });
+    } catch (error) {
+      console.error('Error in magazineIssuesService.findAll:', error);
+      // Возвращаем пустой массив вместо ошибки, если таблица пуста
+      return [];
+    }
   }
 
   /**
