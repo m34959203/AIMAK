@@ -12,17 +12,11 @@ const execAsync = promisify(exec);
 async function preMigrate() {
   console.log('🔍 Resolving failed migrations...');
 
-  // Try to mark the known failed migration as rolled back
-  try {
-    console.log('⚠️  Attempting to resolve migration 20251118000000_init...');
-    await execAsync('npx prisma migrate resolve --rolled-back 20251118000000_init', {
-      cwd: __dirname + '/..',
-    });
-    console.log('✅ Migration marked as rolled back successfully');
-    return;
-  } catch (resolveError) {
-    console.log('⚠️  Prisma migrate resolve failed, trying direct database cleanup...');
-  }
+  // List of known problematic migrations to clean up
+  const problematicMigrations = [
+    '20251118000000_init',
+    '20251121165811_remove_year_month_description_fields'
+  ];
 
   // If prisma migrate resolve fails, try direct SQL approach
   if (!process.env.DATABASE_URL) {
@@ -32,15 +26,27 @@ async function preMigrate() {
   }
 
   try {
-    // Use psql to directly delete the failed migration record
-    const deleteCommand = `psql "${process.env.DATABASE_URL}" -c "DELETE FROM _prisma_migrations WHERE migration_name = '20251118000000_init' AND finished_at IS NULL;"`;
+    // Use psql to directly delete ALL failed migration records
+    const deleteCommand = `psql "${process.env.DATABASE_URL}" -c "DELETE FROM _prisma_migrations WHERE finished_at IS NULL OR (migration_name IN ('${problematicMigrations.join("','")}'));"`;
 
     await execAsync(deleteCommand);
-    console.log('✅ Failed migration record removed from database');
+    console.log('✅ Failed migration records removed from database');
   } catch (dbError) {
-    console.log('⚠️  Could not clean failed migration from database');
+    console.log('⚠️  Could not clean failed migrations from database');
     console.log('ℹ️  Error:', dbError.message);
-    console.log('ℹ️  Deployment may fail - manual database cleanup may be required');
+
+    // Try one by one with prisma migrate resolve
+    for (const migration of problematicMigrations) {
+      try {
+        console.log(`⚠️  Attempting to resolve migration ${migration}...`);
+        await execAsync(`npx prisma migrate resolve --rolled-back ${migration}`, {
+          cwd: __dirname + '/..',
+        });
+        console.log(`✅ Migration ${migration} marked as rolled back`);
+      } catch (resolveError) {
+        console.log(`⚠️  Could not resolve ${migration}`);
+      }
+    }
   }
 }
 

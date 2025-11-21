@@ -29,18 +29,21 @@ export default function IssuesPage({ params }: Props) {
     params.then((p) => setLang(p.lang));
   }, [params]);
 
-  // Получить уникальные годы из выпусков
-  const years = Array.from(new Set(issues?.map((issue) => issue.year) || [])).sort((a, b) => b - a);
+  // Получить уникальные годы из выпусков (из publishDate)
+  const years = Array.from(
+    new Set(issues?.map((issue) => new Date(issue.publishDate).getFullYear()) || [])
+  ).sort((a, b) => b - a);
 
   // Фильтрация по году
   const filteredIssues = selectedYear
-    ? issues?.filter((issue) => issue.year === selectedYear)
+    ? issues?.filter((issue) => new Date(issue.publishDate).getFullYear() === selectedYear)
     : issues;
 
-  // Группировка по годам
+  // Группировка по годам (из publishDate)
   const issuesByYear = filteredIssues?.reduce((acc, issue) => {
-    if (!acc[issue.year]) acc[issue.year] = [];
-    acc[issue.year].push(issue);
+    const year = new Date(issue.publishDate).getFullYear();
+    if (!acc[year]) acc[year] = [];
+    acc[year].push(issue);
     return acc;
   }, {} as Record<number, MagazineIssue[]>);
 
@@ -125,8 +128,9 @@ export default function IssuesPage({ params }: Props) {
                   <div className="divide-y">
                     {yearIssues
                       .sort((a, b) => {
-                        if (b.year !== a.year) return b.year - a.year;
-                        if (b.month !== a.month) return b.month - a.month;
+                        // Сортировка по дате публикации, затем по номеру выпуска
+                        const dateCompare = new Date(b.publishDate).getTime() - new Date(a.publishDate).getTime();
+                        if (dateCompare !== 0) return dateCompare;
                         return b.issueNumber - a.issueNumber;
                       })
                       .map((issue) => (
@@ -183,16 +187,14 @@ export default function IssuesPage({ params }: Props) {
             <div>
               <div className="bg-white rounded-lg shadow-md p-4 mb-4">
                 <h2 className="text-2xl font-bold mb-2">
-                  {text.issue} №{selectedIssue.issueNumber} ({selectedIssue.month}/{selectedIssue.year})
+                  {text.issue} №{selectedIssue.issueNumber}
                 </h2>
                 <h3 className="text-xl mb-2">
                   {lang === 'kz' ? selectedIssue.titleKz : selectedIssue.titleRu}
                 </h3>
-                {(lang === 'kz' ? selectedIssue.descriptionKz : selectedIssue.descriptionRu) && (
-                  <p className="text-gray-600 mb-2">
-                    {lang === 'kz' ? selectedIssue.descriptionKz : selectedIssue.descriptionRu}
-                  </p>
-                )}
+                <p className="text-sm text-gray-600 mb-2">
+                  {text.published}: {new Date(selectedIssue.publishDate).toLocaleDateString(lang === 'kz' ? 'kk-KZ' : 'ru-RU')}
+                </p>
                 <div className="flex gap-4 text-sm text-gray-500">
                   {selectedIssue.pagesCount && <span>{selectedIssue.pagesCount} {text.pages}</span>}
                   <span>{selectedIssue.viewsCount} {text.views}</span>
