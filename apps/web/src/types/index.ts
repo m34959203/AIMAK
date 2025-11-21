@@ -271,3 +271,78 @@ export interface CreateBilingualTagDto {
   nameKz: string;
   nameRu: string;
 }
+
+// Magazine Issues
+export interface MagazineIssue {
+  id: string;
+  issueNumber: number;
+  year: number;
+  month: number;
+  publishDate: string;
+
+  // Bilingual fields
+  titleKz: string;
+  titleRu: string;
+  descriptionKz?: string;
+  descriptionRu?: string;
+
+  // PDF file
+  pdfFilename: string;
+  pdfUrl: string;
+  fileSize: number;
+  pagesCount?: number;
+
+  // Cover
+  coverImageUrl?: string;
+
+  // Metrics
+  viewsCount: number;
+  downloadsCount: number;
+
+  // Status
+  isPublished: boolean;
+  isPinned: boolean;
+
+  // Relations
+  uploadedById?: string;
+  uploadedBy?: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+  };
+
+  // Timestamps
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateMagazineIssueDto {
+  issueNumber: number;
+  year: number;
+  month: number;
+  publishDate: string;
+  titleKz: string;
+  titleRu: string;
+  descriptionKz?: string;
+  descriptionRu?: string;
+  pagesCount?: number;
+  coverImageUrl?: string;
+  isPublished?: boolean;
+  isPinned?: boolean;
+}
+
+export interface UpdateMagazineIssueDto {
+  issueNumber?: number;
+  year?: number;
+  month?: number;
+  publishDate?: string;
+  titleKz?: string;
+  titleRu?: string;
+  descriptionKz?: string;
+  descriptionRu?: string;
+  pagesCount?: number;
+  coverImageUrl?: string;
+  isPublished?: boolean;
+  isPinned?: boolean;
+}

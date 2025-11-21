@@ -1,0 +1,135 @@
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  Query,
+  UseInterceptors,
+  UploadedFile,
+  BadRequestException,
+} from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { ApiTags, ApiOperation, ApiBearerAuth, ApiConsumes, ApiBody, ApiQuery } from '@nestjs/swagger';
+import { MagazineIssuesService } from './magazine-issues.service';
+import { CreateMagazineIssueDto } from './dto/create-magazine-issue.dto';
+import { UpdateMagazineIssueDto } from './dto/update-magazine-issue.dto';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { Role } from '@prisma/client';
+
+@ApiTags('Magazine Issues')
+@Controller('magazine-issues')
+export class MagazineIssuesController {
+  constructor(private readonly magazineIssuesService: MagazineIssuesService) {}
+
+  @Post()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.EDITOR, Role.ADMIN)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Загрузить новый выпуск журнала (Editor/Admin only)' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+          description: 'PDF файл выпуска журнала',
+        },
+        issueNumber: { type: 'number', example: 1 },
+        year: { type: 'number', example: 2025 },
+        month: { type: 'number', example: 1 },
+        publishDate: { type: 'string', example: '2025-01-15T00:00:00Z' },
+        titleKz: { type: 'string', example: 'Қаңтар айының шығарылымы' },
+        titleRu: { type: 'string', example: 'Январский выпуск' },
+        descriptionKz: { type: 'string', example: 'Қысқа сипаттама' },
+        descriptionRu: { type: 'string', example: 'Краткое описание' },
+        pagesCount: { type: 'number', example: 120 },
+        coverImageUrl: { type: 'string', example: 'https://example.com/cover.jpg' },
+        isPublished: { type: 'boolean', example: true },
+        isPinned: { type: 'boolean', example: false },
+      },
+      required: ['file', 'issueNumber', 'year', 'month', 'publishDate', 'titleKz', 'titleRu'],
+    },
+  })
+  @UseInterceptors(FileInterceptor('file'))
+  create(
+    @UploadedFile() file: Express.Multer.File,
+    @Body() createMagazineIssueDto: CreateMagazineIssueDto,
+    @CurrentUser() user: any,
+  ) {
+    if (!file) {
+      throw new BadRequestException('PDF файл обязателен');
+    }
+
+    // Конвертация строковых значений из FormData в числа
+    const dto = {
+      ...createMagazineIssueDto,
+      issueNumber: Number(createMagazineIssueDto.issueNumber),
+      year: Number(createMagazineIssueDto.year),
+      month: Number(createMagazineIssueDto.month),
+      pagesCount: createMagazineIssueDto.pagesCount ? Number(createMagazineIssueDto.pagesCount) : undefined,
+      isPublished: createMagazineIssueDto.isPublished === 'true' || createMagazineIssueDto.isPublished === true,
+      isPinned: createMagazineIssueDto.isPinned === 'true' || createMagazineIssueDto.isPinned === true,
+    };
+
+    return this.magazineIssuesService.create(dto, file, user.id);
+  }
+
+  @Get()
+  @ApiOperation({ summary: 'Получить все выпуски журнала' })
+  @ApiQuery({ name: 'published', required: false, type: Boolean, description: 'Фильтр по статусу публикации' })
+  findAll(@Query('published') published?: string) {
+    const publishedBool = published === 'true' ? true : published === 'false' ? false : undefined;
+    return this.magazineIssuesService.findAll(publishedBool);
+  }
+
+  @Get('year/:year')
+  @ApiOperation({ summary: 'Получить выпуски по году' })
+  findByYear(@Param('year') year: string) {
+    return this.magazineIssuesService.findByYear(Number(year));
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: 'Получить выпуск по ID' })
+  findOne(@Param('id') id: string) {
+    return this.magazineIssuesService.findOne(id);
+  }
+
+  @Patch(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.EDITOR, Role.ADMIN)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Обновить выпуск (Editor/Admin only)' })
+  update(@Param('id') id: string, @Body() updateMagazineIssueDto: UpdateMagazineIssueDto) {
+    return this.magazineIssuesService.update(id, updateMagazineIssueDto);
+  }
+
+  @Delete(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.EDITOR, Role.ADMIN)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Удалить выпуск (Editor/Admin only)' })
+  remove(@Param('id') id: string) {
+    return this.magazineIssuesService.remove(id);
+  }
+
+  @Post(':id/view')
+  @ApiOperation({ summary: 'Увеличить счетчик просмотров' })
+  incrementViews(@Param('id') id: string) {
+    return this.magazineIssuesService.incrementViews(id);
+  }
+
+  @Post(':id/download')
+  @ApiOperation({ summary: 'Увеличить счетчик скачиваний' })
+  incrementDownloads(@Param('id') id: string) {
+    return this.magazineIssuesService.incrementDownloads(id);
+  }
+}

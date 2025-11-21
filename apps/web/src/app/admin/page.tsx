@@ -5,12 +5,14 @@ import { useAuth } from '@/hooks/use-auth';
 import { useArticles } from '@/hooks/use-articles';
 import { useCategories } from '@/hooks/use-categories';
 import { useTags } from '@/hooks/use-tags';
+import { useMagazineIssues } from '@/hooks/use-magazine-issues';
 
 export default function AdminPage() {
   const { user } = useAuth();
   const { data: articles } = useArticles();
   const { data: categories } = useCategories();
   const { data: tags } = useTags();
+  const { data: issues } = useMagazineIssues();
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -21,7 +23,7 @@ export default function AdminPage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <div className="bg-blue-50 rounded-lg p-6">
           <h3 className="text-lg font-semibold mb-2">Статьи</h3>
           <p className="text-3xl font-bold text-blue-600">
@@ -40,9 +42,15 @@ export default function AdminPage() {
             {tags?.length || 0}
           </p>
         </div>
+        <div className="bg-orange-50 rounded-lg p-6">
+          <h3 className="text-lg font-semibold mb-2">Выпуски</h3>
+          <p className="text-3xl font-bold text-orange-600">
+            {issues?.length || 0}
+          </p>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Link
           href="/admin/articles"
           className="border rounded-lg p-6 hover:shadow-lg transition-shadow"
@@ -50,6 +58,16 @@ export default function AdminPage() {
           <h3 className="text-xl font-bold mb-2">Управление статьями</h3>
           <p className="text-gray-600">
             Создавайте, редактируйте и публикуйте статьи
+          </p>
+        </Link>
+
+        <Link
+          href="/admin/magazine-issues"
+          className="border rounded-lg p-6 hover:shadow-lg transition-shadow bg-orange-50"
+        >
+          <h3 className="text-xl font-bold mb-2">Выпуски журнала</h3>
+          <p className="text-gray-600">
+            Загружайте и управляйте PDF-выпусками журнала
           </p>
         </Link>
 
