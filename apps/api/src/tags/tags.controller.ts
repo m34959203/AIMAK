@@ -12,6 +12,7 @@ import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { TagsService } from './tags.service';
 import { CreateTagDto } from './dto/create-tag.dto';
 import { UpdateTagDto } from './dto/update-tag.dto';
+import { GenerateTagsDto } from './dto/generate-tags.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -62,5 +63,14 @@ export class TagsController {
   @ApiOperation({ summary: 'Delete tag (Admin only)' })
   remove(@Param('id') id: string) {
     return this.tagsService.remove(id);
+  }
+
+  @Post('generate')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.EDITOR, Role.ADMIN)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Generate tags using AI (Editor/Admin only)' })
+  generateTags(@Body() dto: GenerateTagsDto) {
+    return this.tagsService.generateTags(dto);
   }
 }

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useCategories } from '@/hooks/use-categories';
-import { useTags } from '@/hooks/use-tags';
+import { useTags, useGenerateTags } from '@/hooks/use-tags';
 import { useUploadImage } from '@/hooks/use-media';
 import { RichTextEditor } from './rich-text-editor';
 import { ArticleStatus } from '@/types';
@@ -49,6 +49,13 @@ export function ArticleForm({ article, onSubmit, isLoading }: ArticleFormProps) 
   const { data: categories } = useCategories();
   const { data: tags } = useTags();
   const uploadImage = useUploadImage();
+  const generateTags = useGenerateTags();
+
+  const [showSuggestedTags, setShowSuggestedTags] = useState(false);
+  const [suggestedTags, setSuggestedTags] = useState<{
+    existing: Array<{ nameKz: string; nameRu: string }>;
+    suggested: Array<{ nameKz: string; nameRu: string }>;
+  } | null>(null);
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -124,6 +131,44 @@ export function ArticleForm({ article, onSubmit, isLoading }: ArticleFormProps) 
         ? prev.filter((id) => id !== tagId)
         : [...prev, tagId]
     );
+  };
+
+  const handleGenerateTags = async () => {
+    if (!titleKz || !contentKz) {
+      alert('Пожалуйста, заполните как минимум заголовок и содержание на казахском языке');
+      return;
+    }
+
+    try {
+      const response = await generateTags.mutateAsync({
+        titleKz,
+        contentKz,
+        titleRu: titleRu || undefined,
+        contentRu: contentRu || undefined,
+      });
+
+      setSuggestedTags(response.data);
+      setShowSuggestedTags(true);
+
+      // Auto-select existing tags
+      if (response.data.existing.length > 0) {
+        const existingTagIds = response.data.existing
+          .map((suggestedTag) => {
+            const tag = tags?.find(
+              (t) =>
+                t.nameKz.toLowerCase() === suggestedTag.nameKz.toLowerCase() ||
+                t.nameRu.toLowerCase() === suggestedTag.nameRu.toLowerCase()
+            );
+            return tag?.id;
+          })
+          .filter(Boolean) as string[];
+
+        setSelectedTags((prev) => [...new Set([...prev, ...existingTagIds])]);
+      }
+    } catch (error) {
+      console.error('Error generating tags:', error);
+      alert('Ошибка при генерации тегов. Пожалуйста, попробуйте еще раз.');
+    }
   };
 
   return (
@@ -343,9 +388,90 @@ export function ArticleForm({ article, onSubmit, isLoading }: ArticleFormProps) 
 
         {tags && tags.length > 0 && (
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Теги
-            </label>
+            <div className="flex items-center justify-between mb-2">
+              <label className="block text-sm font-medium text-gray-700">
+                Теги
+              </label>
+              <button
+                type="button"
+                onClick={handleGenerateTags}
+                disabled={generateTags.isPending || !titleKz || !contentKz}
+                className="bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium py-2 px-4 rounded disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                {generateTags.isPending ? (
+                  <>
+                    <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Генерация...
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                    </svg>
+                    Автозаполнение AI
+                  </>
+                )}
+              </button>
+            </div>
+
+            {/* Suggested Tags */}
+            {showSuggestedTags && suggestedTags && (
+              <div className="mb-4 p-4 bg-purple-50 border border-purple-200 rounded-lg">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="font-medium text-purple-900">AI предложения:</h4>
+                  <button
+                    type="button"
+                    onClick={() => setShowSuggestedTags(false)}
+                    className="text-purple-600 hover:text-purple-800 text-sm"
+                  >
+                    Закрыть
+                  </button>
+                </div>
+
+                {suggestedTags.existing.length > 0 && (
+                  <div className="mb-3">
+                    <p className="text-sm text-purple-700 mb-2">
+                      ✓ Найдены существующие теги (автоматически выбраны):
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {suggestedTags.existing.map((tag, index) => (
+                        <span
+                          key={index}
+                          className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm border border-green-300"
+                        >
+                          {tag.nameKz} / {tag.nameRu}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {suggestedTags.suggested.length > 0 && (
+                  <div>
+                    <p className="text-sm text-purple-700 mb-2">
+                      💡 Рекомендуется создать новые теги:
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {suggestedTags.suggested.map((tag, index) => (
+                        <span
+                          key={index}
+                          className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm border border-purple-300"
+                        >
+                          {tag.nameKz} / {tag.nameRu}
+                        </span>
+                      ))}
+                    </div>
+                    <p className="text-xs text-purple-600 mt-2">
+                      Примечание: Создайте эти теги в разделе "Теги" в админ-панели, затем вернитесь сюда и выберите их.
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+
             <div className="flex flex-wrap gap-2">
               {tags.map((tag) => (
                 <button

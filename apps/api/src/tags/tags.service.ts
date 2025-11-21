@@ -2,6 +2,8 @@ import { Injectable, NotFoundException, ConflictException } from '@nestjs/common
 import { PrismaService } from '../common/prisma/prisma.service';
 import { CreateTagDto } from './dto/create-tag.dto';
 import { UpdateTagDto } from './dto/update-tag.dto';
+import { GenerateTagsDto } from './dto/generate-tags.dto';
+import axios from 'axios';
 
 @Injectable()
 export class TagsService {
@@ -131,5 +133,114 @@ export class TagsService {
     });
 
     return { message: 'Tag deleted successfully' };
+  }
+
+  async generateTags(dto: GenerateTagsDto) {
+    const apiKey = process.env.OPENROUTER_API_KEY;
+
+    if (!apiKey) {
+      throw new Error('OpenRouter API key is not configured');
+    }
+
+    // Get existing tags to help AI suggest relevant ones
+    const existingTags = await this.prisma.tag.findMany({
+      select: {
+        nameKz: true,
+        nameRu: true,
+      },
+    });
+
+    const existingTagsList = existingTags
+      .map((tag) => `${tag.nameKz} / ${tag.nameRu}`)
+      .join(', ');
+
+    // Prepare content for analysis
+    const contentKz = `${dto.titleKz}\n\n${dto.contentKz}`;
+    const contentRu = dto.titleRu && dto.contentRu
+      ? `${dto.titleRu}\n\n${dto.contentRu}`
+      : '';
+
+    const prompt = `Analyze the following article and suggest 3-5 relevant tags in both Kazakh and Russian languages.
+
+Article (Kazakh):
+${contentKz}
+
+${contentRu ? `Article (Russian):\n${contentRu}\n` : ''}
+
+Existing tags in the system (for reference):
+${existingTagsList || 'No existing tags'}
+
+Instructions:
+1. Suggest 3-5 tags that best describe the article's main topics/themes
+2. Each tag should be in both Kazakh (nameKz) and Russian (nameRu)
+3. Try to match existing tags when appropriate, but you can also suggest new ones
+4. Keep tags concise (1-3 words max)
+5. Focus on key topics, not general words
+6. Return ONLY a valid JSON array in this exact format, no other text:
+[
+  {"nameKz": "Саясат", "nameRu": "Политика"},
+  {"nameKz": "Экономика", "nameRu": "Экономика"}
+]
+
+Return only the JSON array, no explanations or additional text.`;
+
+    try {
+      const response = await axios.post(
+        'https://openrouter.ai/api/v1/chat/completions',
+        {
+          model: 'anthropic/claude-3.5-sonnet',
+          messages: [
+            {
+              role: 'user',
+              content: prompt,
+            },
+          ],
+        },
+        {
+          headers: {
+            'Authorization': `Bearer ${apiKey}`,
+            'Content-Type': 'application/json',
+            'HTTP-Referer': process.env.FRONTEND_URL || 'http://localhost:3000',
+            'X-Title': 'AIMAK News',
+          },
+        },
+      );
+
+      const aiResponse = response.data.choices[0].message.content;
+
+      // Extract JSON from the response (in case AI adds any extra text)
+      const jsonMatch = aiResponse.match(/\[[\s\S]*\]/);
+      if (!jsonMatch) {
+        throw new Error('Failed to parse AI response');
+      }
+
+      const suggestedTags = JSON.parse(jsonMatch[0]);
+
+      // Match suggested tags with existing tags
+      const matchedTags = [];
+      const newTags = [];
+
+      for (const suggested of suggestedTags) {
+        const existing = existingTags.find(
+          (tag) =>
+            tag.nameKz.toLowerCase() === suggested.nameKz.toLowerCase() ||
+            tag.nameRu.toLowerCase() === suggested.nameRu.toLowerCase(),
+        );
+
+        if (existing) {
+          matchedTags.push(existing);
+        } else {
+          newTags.push(suggested);
+        }
+      }
+
+      return {
+        existing: matchedTags,
+        suggested: newTags,
+      };
+    } catch (error) {
+      console.error('Error generating tags:', error);
+      throw new Error('Failed to generate tags. Please try again.');
+    }
   }
 }
