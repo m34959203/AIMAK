@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { formatDate } from '@/lib/utils';
+import { getImageUrl } from '@/lib/image-url';
 import type { Article } from '@/types';
 
 interface ArticleCardProps {
@@ -12,13 +13,14 @@ export function ArticleCard({ article, lang = 'kz' }: ArticleCardProps) {
   const excerpt = lang === 'kz' ? article.excerptKz : article.excerptRu || article.excerptKz;
   const slug = lang === 'kz' ? article.slugKz : article.slugRu || article.slugKz;
   const categoryName = lang === 'kz' ? article.category.nameKz : article.category.nameRu;
+  const coverImageUrl = getImageUrl(article.coverImage);
 
   return (
     <article className="border rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
-      {article.coverImage && (
+      {coverImageUrl && (
         <div className="aspect-video bg-gray-200">
           <img
-            src={article.coverImage}
+            src={coverImageUrl}
             alt={title}
             className="w-full h-full object-cover"
           />

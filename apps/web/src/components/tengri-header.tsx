@@ -17,7 +17,7 @@ export function TengriHeader({ lang = 'kz' }: HeaderProps) {
   const [showSearch, setShowSearch] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [currentTime, setCurrentTime] = useState('');
-  const [selectedCity, setSelectedCity] = useState('Алматы');
+  const [selectedCity, setSelectedCity] = useState('Сатпаев');
   const [weather, setWeather] = useState({ temp: '+15', icon: '🌤️' });
   const [currency, setCurrency] = useState({ usd: '450', eur: '520' });
   const pathname = usePathname();
@@ -40,9 +40,10 @@ export function TengriHeader({ lang = 'kz' }: HeaderProps) {
   useEffect(() => {
     const fetchWeather = async () => {
       try {
-        // Using OpenWeatherMap API for Satpaev, Kazakhstan
+        // Using OpenWeatherMap API for Satpaev (Satbayev), Kazakhstan
+        // Note: OpenWeatherMap recognizes the city as "Satbayev" instead of "Satpaev"
         const response = await fetch(
-          `https://api.openweathermap.org/data/2.5/weather?q=Satpaev,KZ&units=metric&appid=aa8b515e87f73801f11cf922205790fd`
+          `https://api.openweathermap.org/data/2.5/weather?q=Satbayev,KZ&units=metric&appid=aa8b515e87f73801f11cf922205790fd`
         );
 
         if (response.ok) {

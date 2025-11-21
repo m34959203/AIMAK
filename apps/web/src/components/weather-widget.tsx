@@ -105,12 +105,19 @@ const KAZAKHSTAN_CITIES = [
   'Каражал',
 ].sort();
 
+// Mapping for cities with different API names
+const CITY_API_MAPPING: Record<string, string> = {
+  'Сатпаев': 'Satbayev',  // OpenWeatherMap uses "Satbayev" instead of "Satpaev"
+  'Усть-Каменогорск': 'Ust-Kamenogorsk',
+  'Форт-Шевченко': 'Fort-Shevchenko',
+};
+
 interface WeatherWidgetProps {
   selectedCity?: string;
   onCityChange?: (city: string) => void;
 }
 
-export function WeatherWidget({ selectedCity: initialCity = 'Алматы', onCityChange }: WeatherWidgetProps) {
+export function WeatherWidget({ selectedCity: initialCity = 'Сатпаев', onCityChange }: WeatherWidgetProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isCityDropdownOpen, setIsCityDropdownOpen] = useState(false);
   const [selectedCity, setSelectedCity] = useState(initialCity);
@@ -144,8 +151,10 @@ export function WeatherWidget({ selectedCity: initialCity = 'Алматы', onCi
   const fetchWeather = useCallback(async (city: string) => {
     setLoading(true);
     try {
+      // Use mapped city name if available, otherwise use the original
+      const apiCity = CITY_API_MAPPING[city] || city;
       const response = await fetch(
-        `https://api.openweathermap.org/data/2.5/weather?q=${city},KZ&units=metric&appid=aa8b515e87f73801f11cf922205790fd&lang=ru`
+        `https://api.openweathermap.org/data/2.5/weather?q=${apiCity},KZ&units=metric&appid=aa8b515e87f73801f11cf922205790fd&lang=ru`
       );
 
       if (!response.ok) {
@@ -212,7 +221,7 @@ export function WeatherWidget({ selectedCity: initialCity = 'Алматы', onCi
 
       {/* Expanded view */}
       {isOpen && (
-        <div className="absolute top-full right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden z-50">
+        <div className="absolute top-full left-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden z-50">
           {/* City selector */}
           <div className="relative border-b border-gray-100" ref={cityDropdownRef}>
             <button

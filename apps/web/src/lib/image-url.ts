@@ -22,6 +22,12 @@ export const getImageUrl = (imageUrl?: string | null): string | null => {
   // If it's a relative URL, prepend the API base URL (without /api)
   const apiUrl = getApiUrl().replace('/api', '');
 
+  // Handle bare filenames (e.g., "file-123456789-123456789.jpeg")
+  // These are uploaded files that should be in the /uploads/ directory
+  if (!imageUrl.startsWith('/') && imageUrl.match(/^file-\d+-\d+\.(jpeg|jpg|png|gif|webp)$/i)) {
+    return `${apiUrl}/uploads/${imageUrl}`;
+  }
+
   // Ensure the path starts with a slash
   const path = imageUrl.startsWith('/') ? imageUrl : `/${imageUrl}`;
 
