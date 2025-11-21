@@ -23,17 +23,6 @@ export function useMagazineIssue(id: string) {
   });
 }
 
-export function useMagazineIssuesByYear(year: number) {
-  return useQuery({
-    queryKey: ['magazine-issues', 'year', year],
-    queryFn: async () => {
-      const response = await magazineIssuesApi.getByYear(year);
-      return response.data;
-    },
-    enabled: !!year,
-  });
-}
-
 export function useCreateMagazineIssue() {
   const queryClient = useQueryClient();
 
