@@ -9,27 +9,23 @@ export class MediaService {
   async saveMediaFile(file: Express.Multer.File, userId: string) {
     const ext = extname(file.originalname);
 
-    // Construct full URL with protocol
-    let baseUrl = process.env.APP_URL || 'http://localhost:4000';
-    console.log('[MediaService] Original APP_URL:', baseUrl);
+    // Construct full URL - try multiple sources
+    let baseUrl = process.env.APP_URL || process.env.RENDER_EXTERNAL_URL || 'http://localhost:4000';
+    console.log('[MediaService] Original URL from env:', baseUrl);
 
-    // Ensure baseUrl has protocol (Render provides hostname without https://)
+    // Normalize URL
+    // 1. Add protocol if missing
     if (!baseUrl.startsWith('http://') && !baseUrl.startsWith('https://')) {
-      baseUrl = `https://${baseUrl}`;
+      // Use https for production, http for localhost
+      const protocol = baseUrl.includes('localhost') ? 'http://' : 'https://';
+      baseUrl = `${protocol}${baseUrl}`;
     }
 
-    // Ensure .onrender.com domain is present if running on Render
-    // The APP_URL from Render can be like: aimak-api-w8ps, aimak-api-w8ps.onrender.com, etc.
-    if (baseUrl.includes('aimak-api') && !baseUrl.includes('.onrender.com')) {
-      // Simply append .onrender.com if it's not already there
-      baseUrl = baseUrl.replace(/^(https?:\/\/)?(.+?)(\/?$)/, (match, protocol, domain, slash) => {
-        return `${protocol || 'https://'}${domain}.onrender.com${slash}`;
-      });
-      console.log('[MediaService] Added .onrender.com domain');
-    }
+    // 2. Remove trailing slashes
+    baseUrl = baseUrl.replace(/\/+$/, '');
 
-    // Remove trailing /api if present
-    baseUrl = baseUrl.replace(/\/api\/?$/, '');
+    // 3. Remove /api suffix if present
+    baseUrl = baseUrl.replace(/\/api$/, '');
 
     const url = `${baseUrl}/uploads/${file.filename}`;
     console.log('[MediaService] Final image URL:', url);
