@@ -5,9 +5,9 @@ import Image from 'next/image';
 import { formatDistanceToNow } from 'date-fns';
 import { kk, ru } from 'date-fns/locale';
 import { IoEye } from 'react-icons/io5';
-import { HiNewspaper } from 'react-icons/hi2';
 import { BsPinAngleFill } from 'react-icons/bs';
 import { getImageUrl } from '@/lib/image-url';
+import { ArticlePlaceholder } from './article-placeholder';
 
 interface Article {
   id: string;
@@ -84,19 +84,27 @@ export function TengriArticleCard({
       >
         <div className="relative h-[500px]">
           {imageUrl ? (
-            <Image
-              src={imageUrl}
-              alt={title}
-              fill
-              className="object-cover group-hover:scale-105 transition-transform duration-300"
-            />
+            <>
+              <Image
+                src={imageUrl}
+                alt={title}
+                fill
+                className="object-cover group-hover:scale-105 transition-transform duration-300"
+              />
+              {/* Gradient overlay */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+            </>
           ) : (
-            <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-              <HiNewspaper className="text-5xl text-gray-400" />
-            </div>
+            <>
+              <ArticlePlaceholder
+                title={title}
+                categorySlug={article.category?.slug}
+                variant="hero"
+              />
+              {/* Gradient overlay for placeholder */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+            </>
           )}
-          {/* Gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
 
           {/* Content */}
           <div className="absolute bottom-0 left-0 right-0 p-8 text-white">
@@ -160,9 +168,11 @@ export function TengriArticleCard({
               className="object-cover group-hover:scale-105 transition-transform duration-300"
             />
           ) : (
-            <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-              <HiNewspaper className="text-5xl text-gray-400" />
-            </div>
+            <ArticlePlaceholder
+              title={title}
+              categorySlug={article.category?.slug}
+              variant="vertical"
+            />
           )}
           <div className="absolute top-2 left-2 flex gap-2 flex-wrap">
             {article.isPinned && (
@@ -222,9 +232,11 @@ export function TengriArticleCard({
             className="object-cover group-hover:scale-105 transition-transform duration-300"
           />
         ) : (
-          <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-            <HiNewspaper className="text-3xl text-gray-400" />
-          </div>
+          <ArticlePlaceholder
+            title={title}
+            categorySlug={article.category?.slug}
+            variant="horizontal"
+          />
         )}
         <div className="absolute top-1 left-1 flex gap-1 flex-wrap">
           {article.isPinned && (
