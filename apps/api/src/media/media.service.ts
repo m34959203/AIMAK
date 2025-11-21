@@ -1,51 +1,46 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../common/prisma/prisma.service';
+import { SupabaseService } from '../common/supabase/supabase.service';
 import { extname } from 'path';
 
 @Injectable()
 export class MediaService {
-  constructor(private prisma: PrismaService) {}
+  private readonly logger = new Logger(MediaService.name);
+
+  constructor(
+    private prisma: PrismaService,
+    private supabaseService: SupabaseService,
+  ) {}
 
   async saveMediaFile(file: Express.Multer.File, userId: string) {
-    const ext = extname(file.originalname);
+    // Upload to Supabase Storage
+    const uploadResult = await this.supabaseService.uploadFile(
+      file.buffer,
+      file.originalname,
+      file.mimetype,
+    );
 
-    // Construct full URL - try multiple sources
-    let baseUrl = process.env.APP_URL || process.env.RENDER_EXTERNAL_URL || 'http://localhost:4000';
-    console.log('[MediaService] Original URL from env:', baseUrl);
-
-    // Normalize URL
-    // 1. Add protocol if missing
-    if (!baseUrl.startsWith('http://') && !baseUrl.startsWith('https://')) {
-      // Use https for production, http for localhost
-      const protocol = baseUrl.includes('localhost') ? 'http://' : 'https://';
-      baseUrl = `${protocol}${baseUrl}`;
+    if (!uploadResult) {
+      this.logger.error('Failed to upload file to Supabase');
+      throw new Error('Failed to upload file');
     }
 
-    // 2. Remove trailing slashes
-    baseUrl = baseUrl.replace(/\/+$/, '');
-
-    // 3. Remove /api suffix if present
-    baseUrl = baseUrl.replace(/\/api$/, '');
-
-    const url = `${baseUrl}/uploads/${file.filename}`;
-    console.log('[MediaService] Final image URL:', url);
+    this.logger.log(`File uploaded successfully: ${uploadResult.url}`);
 
     // Get image dimensions if available
     let width: number | undefined;
     let height: number | undefined;
 
-    // For now, we'll save basic file info
-    // In production, you might want to use sharp or another library to get dimensions
-
+    // Save metadata to database
     const mediaFile = await this.prisma.mediaFile.create({
       data: {
-        filename: file.filename,
+        filename: uploadResult.path,
         originalFilename: file.originalname,
         mimeType: file.mimetype,
         size: file.size,
         width,
         height,
-        url,
+        url: uploadResult.url,
         uploadedById: userId,
       },
     });

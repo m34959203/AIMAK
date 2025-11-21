@@ -110,18 +110,29 @@ services:
         value: gpt-4-turbo-preview
       
       # S3
+      # Supabase Storage (используется вместо S3)
+      - key: SUPABASE_URL
+        sync: false
+
+      - key: SUPABASE_KEY
+        sync: false
+
+      - key: SUPABASE_BUCKET
+        value: media
+
+      # Legacy S3 variables (не используются, но оставлены для совместимости)
       - key: S3_ENDPOINT
         sync: false
-      
+
       - key: S3_ACCESS_KEY
         sync: false
-      
+
       - key: S3_SECRET_KEY
         sync: false
-      
+
       - key: S3_BUCKET
         value: aimak-media
-      
+
       - key: S3_REGION
         value: eu-central-1
       

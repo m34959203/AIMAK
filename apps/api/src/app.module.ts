@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { PrismaModule } from './common/prisma/prisma.module';
+import { SupabaseModule } from './common/supabase/supabase.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { ArticlesModule } from './articles/articles.module';
@@ -22,6 +23,7 @@ import { BootstrapAdminService } from './bootstrap-admin.service';
       isGlobal: true,
     }),
     PrismaModule,
+    SupabaseModule,
     AuthModule,
     UsersModule,
     ArticlesModule,
