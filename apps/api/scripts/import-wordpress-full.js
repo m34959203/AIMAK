@@ -13,8 +13,8 @@ const path = require('path');
 
 const OLD_SITE = 'https://aimaqaqshamy.kz';
 const NEW_API = process.env.NEW_API_URL || 'https://aimak-api-w8ps.onrender.com';
-const ADMIN_EMAIL = 'admin@aimakakshamy.kz';
-const ADMIN_PASSWORD = 'admin123';
+const ADMIN_EMAIL = 'admin@aimak.kz';
+const ADMIN_PASSWORD = 'admin';
 
 // Маппинг категорий WordPress → наша система
 const CATEGORY_MAPPING = {
