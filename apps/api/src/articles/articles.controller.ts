@@ -39,13 +39,28 @@ export class ArticlesController {
   @ApiOperation({ summary: 'Get all articles' })
   @ApiQuery({ name: 'published', required: false, type: Boolean })
   @ApiQuery({ name: 'isBreaking', required: false, type: Boolean })
+  @ApiQuery({ name: 'isFeatured', required: false, type: Boolean })
+  @ApiQuery({ name: 'isPinned', required: false, type: Boolean })
+  @ApiQuery({ name: 'categorySlug', required: false, type: String })
   findAll(
     @Query('published') published?: string,
     @Query('isBreaking') isBreaking?: string,
+    @Query('isFeatured') isFeatured?: string,
+    @Query('isPinned') isPinned?: string,
+    @Query('categorySlug') categorySlug?: string,
   ) {
     const publishedFilter = published === 'true' ? true : published === 'false' ? false : undefined;
     const isBreakingFilter = isBreaking === 'true' ? true : isBreaking === 'false' ? false : undefined;
-    return this.articlesService.findAll(publishedFilter, isBreakingFilter);
+    const isFeaturedFilter = isFeatured === 'true' ? true : isFeatured === 'false' ? false : undefined;
+    const isPinnedFilter = isPinned === 'true' ? true : isPinned === 'false' ? false : undefined;
+
+    return this.articlesService.findAll({
+      published: publishedFilter,
+      isBreaking: isBreakingFilter,
+      isFeatured: isFeaturedFilter,
+      isPinned: isPinnedFilter,
+      categorySlug,
+    });
   }
 
   @Get('slug/:slug')

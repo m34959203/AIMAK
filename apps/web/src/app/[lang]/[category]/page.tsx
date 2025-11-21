@@ -6,7 +6,11 @@ export const dynamic = 'force-dynamic';
 
 async function getCategoryArticles(categorySlug: string) {
   try {
-    const apiEndpoint = getApiEndpoint('/articles', { published: true });
+    // Use API filter for better performance - fetch only articles from this category
+    const apiEndpoint = getApiEndpoint('/articles', {
+      published: true,
+      categorySlug
+    });
 
     const res = await fetch(apiEndpoint, { cache: 'no-store' });
 
@@ -15,19 +19,63 @@ async function getCategoryArticles(categorySlug: string) {
       return [];
     }
 
-    const allArticles = await res.json();
+    const articles = await res.json();
 
-    if (!Array.isArray(allArticles)) {
-      console.error('Invalid articles response format:', allArticles);
+    if (!Array.isArray(articles)) {
+      console.error('Invalid articles response format:', articles);
       return [];
     }
 
-    console.log(`Total articles fetched: ${allArticles.length}`);
-    const filtered = allArticles.filter((article: any) => article.category?.slug === categorySlug);
-    console.log(`Articles in category '${categorySlug}': ${filtered.length}`);
-    return filtered;
+    console.log(`Articles in category '${categorySlug}': ${articles.length}`);
+    return articles;
   } catch (error) {
     console.error('Failed to fetch articles:', error);
+    return [];
+  }
+}
+
+async function getFeaturedCategoryArticles(categorySlug: string) {
+  try {
+    // Fetch featured articles separately for better performance
+    const apiEndpoint = getApiEndpoint('/articles', {
+      published: true,
+      categorySlug,
+      isFeatured: true
+    });
+
+    const res = await fetch(apiEndpoint, { cache: 'no-store' });
+
+    if (!res.ok) {
+      return [];
+    }
+
+    const articles = await res.json();
+    return Array.isArray(articles) ? articles.slice(0, 3) : [];
+  } catch (error) {
+    console.error('Failed to fetch featured articles:', error);
+    return [];
+  }
+}
+
+async function getRegularCategoryArticles(categorySlug: string) {
+  try {
+    // Fetch non-featured articles separately for better performance
+    const apiEndpoint = getApiEndpoint('/articles', {
+      published: true,
+      categorySlug,
+      isFeatured: false
+    });
+
+    const res = await fetch(apiEndpoint, { cache: 'no-store' });
+
+    if (!res.ok) {
+      return [];
+    }
+
+    const articles = await res.json();
+    return Array.isArray(articles) ? articles : [];
+  } catch (error) {
+    console.error('Failed to fetch regular articles:', error);
     return [];
   }
 }
@@ -110,9 +158,12 @@ export default async function CategoryPage({
 }: {
   params: { lang: 'kz' | 'ru'; category: string };
 }) {
-  const [category, articles] = await Promise.all([
+  // Fetch category info and articles in parallel for better performance
+  const [category, featuredArticles, regularArticles, allArticles] = await Promise.all([
     getCategory(params.category),
-    getCategoryArticles(params.category),
+    getFeaturedCategoryArticles(params.category),
+    getRegularCategoryArticles(params.category),
+    getCategoryArticles(params.category), // For popular articles sidebar
   ]);
 
   if (!category) {
@@ -127,9 +178,6 @@ export default async function CategoryPage({
 
   const categoryName = params.lang === 'kz' ? category.nameKz : category.nameRu;
   const categoryDescription = params.lang === 'kz' ? category.descriptionKz : category.descriptionRu;
-
-  const featuredArticles = articles.filter((a: any) => a.isFeatured).slice(0, 3);
-  const regularArticles = articles.filter((a: any) => !a.isFeatured);
 
   return (
     <div className="bg-gray-50">
@@ -201,7 +249,7 @@ export default async function CategoryPage({
                 {params.lang === 'kz' ? 'Танымал мақалалар' : 'Популярные статьи'}
               </h3>
               <div className="space-y-4">
-                {articles
+                {allArticles
                   .sort((a: any, b: any) => (b.views || 0) - (a.views || 0))
                   .slice(0, 5)
                   .map((article: any, index: number) => (

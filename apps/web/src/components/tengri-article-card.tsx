@@ -6,6 +6,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { kk, ru } from 'date-fns/locale';
 import { IoEye } from 'react-icons/io5';
 import { HiNewspaper } from 'react-icons/hi2';
+import { BsPinAngleFill } from 'react-icons/bs';
 import { getImageUrl } from '@/lib/image-url';
 
 interface Article {
@@ -21,6 +22,7 @@ interface Article {
   views?: number;
   isBreaking?: boolean;
   isFeatured?: boolean;
+  isPinned?: boolean;
   category?: {
     slug: string;
     nameKz: string;
@@ -98,7 +100,13 @@ export function TengriArticleCard({
 
           {/* Content */}
           <div className="absolute bottom-0 left-0 right-0 p-8 text-white">
-            <div className="flex items-center gap-3 mb-4">
+            <div className="flex items-center gap-3 mb-4 flex-wrap">
+              {article.isPinned && (
+                <span className="px-3 py-1 bg-yellow-500 text-white text-xs font-bold uppercase rounded flex items-center gap-1">
+                  <BsPinAngleFill className="text-xs" />
+                  {lang === 'kz' ? 'Бекітілген' : 'Закреплено'}
+                </span>
+              )}
               {article.isBreaking && (
                 <span className="px-3 py-1 bg-red-600 text-white text-xs font-bold uppercase rounded">
                   {lang === 'kz' ? 'Жедел' : 'Срочно'}
@@ -156,11 +164,18 @@ export function TengriArticleCard({
               <HiNewspaper className="text-5xl text-gray-400" />
             </div>
           )}
-          {article.isBreaking && (
-            <span className="absolute top-2 left-2 px-2 py-1 bg-red-600 text-white text-xs font-bold uppercase rounded">
-              {lang === 'kz' ? 'Жедел' : 'Срочно'}
-            </span>
-          )}
+          <div className="absolute top-2 left-2 flex gap-2 flex-wrap">
+            {article.isPinned && (
+              <span className="px-2 py-1 bg-yellow-500 text-white text-xs font-bold uppercase rounded flex items-center gap-1">
+                <BsPinAngleFill className="text-xs" />
+              </span>
+            )}
+            {article.isBreaking && (
+              <span className="px-2 py-1 bg-red-600 text-white text-xs font-bold uppercase rounded">
+                {lang === 'kz' ? 'Жедел' : 'Срочно'}
+              </span>
+            )}
+          </div>
         </div>
         <div className="p-4">
           {article.category && (
@@ -211,16 +226,23 @@ export function TengriArticleCard({
             <HiNewspaper className="text-3xl text-gray-400" />
           </div>
         )}
-        {article.isBreaking && (
-          <span className="absolute top-1 left-1 px-2 py-0.5 bg-red-600 text-white text-[10px] font-bold uppercase rounded">
-            {lang === 'kz' ? 'Жедел' : 'Срочно'}
-          </span>
-        )}
+        <div className="absolute top-1 left-1 flex gap-1 flex-wrap">
+          {article.isPinned && (
+            <span className="px-2 py-0.5 bg-yellow-500 text-white text-[10px] font-bold uppercase rounded flex items-center gap-0.5">
+              <BsPinAngleFill className="text-[10px]" />
+            </span>
+          )}
+          {article.isBreaking && (
+            <span className="px-2 py-0.5 bg-red-600 text-white text-[10px] font-bold uppercase rounded">
+              {lang === 'kz' ? 'Жедел' : 'Срочно'}
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Content */}
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 mb-1">
+        <div className="flex items-center gap-2 mb-1 flex-wrap">
           {article.category && (
             <span
               className={`px-2 py-0.5 ${getCategoryColor(
