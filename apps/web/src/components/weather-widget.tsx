@@ -105,6 +105,13 @@ const KAZAKHSTAN_CITIES = [
   'Каражал',
 ].sort();
 
+// Mapping for cities with different API names
+const CITY_API_MAPPING: Record<string, string> = {
+  'Сатпаев': 'Satbayev',  // OpenWeatherMap uses "Satbayev" instead of "Satpaev"
+  'Усть-Каменогорск': 'Ust-Kamenogorsk',
+  'Форт-Шевченко': 'Fort-Shevchenko',
+};
+
 export function WeatherWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [isCityDropdownOpen, setIsCityDropdownOpen] = useState(false);
@@ -134,8 +141,10 @@ export function WeatherWidget() {
   const fetchWeather = useCallback(async (city: string) => {
     setLoading(true);
     try {
+      // Use mapped city name if available, otherwise use the original
+      const apiCity = CITY_API_MAPPING[city] || city;
       const response = await fetch(
-        `https://api.openweathermap.org/data/2.5/weather?q=${city},KZ&units=metric&appid=aa8b515e87f73801f11cf922205790fd&lang=ru`
+        `https://api.openweathermap.org/data/2.5/weather?q=${apiCity},KZ&units=metric&appid=aa8b515e87f73801f11cf922205790fd&lang=ru`
       );
 
       if (!response.ok) {

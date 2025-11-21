@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { useMagazineIssues, useIncrementViews, useIncrementDownloads } from '@/hooks/use-magazine-issues';
+import { getImageUrl } from '@/lib/image-url';
 import type { MagazineIssue } from '@/types';
 
 // Динамический импорт PDFViewer только на клиенте
@@ -150,9 +151,9 @@ export default function IssuesPage({ params }: Props) {
                           <div className="text-sm text-gray-500 mb-2">
                             {text.published}: {new Date(issue.publishDate).toLocaleDateString(lang === 'kz' ? 'kk-KZ' : 'ru-RU')}
                           </div>
-                          {issue.coverImageUrl && (
+                          {getImageUrl(issue.coverImageUrl) && (
                             <img
-                              src={issue.coverImageUrl}
+                              src={getImageUrl(issue.coverImageUrl)!}
                               alt={lang === 'kz' ? issue.titleKz : issue.titleRu}
                               className="w-full h-40 object-cover rounded mb-2"
                             />

@@ -211,6 +211,15 @@ export class MagazineIssuesService {
    * Увеличить счетчик просмотров
    */
   async incrementViews(id: string) {
+    // Проверить существование записи
+    const issue = await this.prisma.magazineIssue.findUnique({
+      where: { id },
+    });
+
+    if (!issue) {
+      throw new NotFoundException(`Выпуск с ID ${id} не найден`);
+    }
+
     return this.prisma.magazineIssue.update({
       where: { id },
       data: {
@@ -225,6 +234,15 @@ export class MagazineIssuesService {
    * Увеличить счетчик скачиваний
    */
   async incrementDownloads(id: string) {
+    // Проверить существование записи
+    const issue = await this.prisma.magazineIssue.findUnique({
+      where: { id },
+    });
+
+    if (!issue) {
+      throw new NotFoundException(`Выпуск с ID ${id} не найден`);
+    }
+
     return this.prisma.magazineIssue.update({
       where: { id },
       data: {

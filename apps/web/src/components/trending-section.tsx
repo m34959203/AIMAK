@@ -7,6 +7,7 @@ import { kk, ru } from 'date-fns/locale';
 import { HiFire } from 'react-icons/hi';
 import { IoEye } from 'react-icons/io5';
 import { BiTime } from 'react-icons/bi';
+import { getImageUrl } from '@/lib/image-url';
 
 interface TrendingArticle {
   id: string;
@@ -65,6 +66,8 @@ export function TrendingSection({ articles, lang }: TrendingSectionProps) {
               })
             : '';
 
+          const coverImageUrl = getImageUrl(article.coverImage);
+
           return (
             <div key={article.id} className="group">
               <Link
@@ -79,10 +82,10 @@ export function TrendingSection({ articles, lang }: TrendingSectionProps) {
                 </div>
 
                 {/* Thumbnail */}
-                {article.coverImage && (
+                {coverImageUrl && (
                   <div className="relative w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden shadow-md">
                     <Image
-                      src={article.coverImage}
+                      src={coverImageUrl}
                       alt={title}
                       fill
                       className="object-cover group-hover:scale-110 transition-transform duration-500"
