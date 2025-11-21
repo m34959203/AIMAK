@@ -67,3 +67,16 @@ export function useDeleteArticle() {
     },
   });
 }
+
+export function useAnalyzeArticle() {
+  return useMutation({
+    mutationFn: (data: {
+      titleKz: string;
+      contentKz: string;
+      excerptKz?: string;
+      titleRu?: string;
+      contentRu?: string;
+      excerptRu?: string;
+    }) => articlesApi.analyze(data),
+  });
+}

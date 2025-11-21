@@ -71,6 +71,29 @@ export const articlesApi = {
   update: (id: string, data: UpdateBilingualArticleDto) =>
     api.patch<Article>(`/articles/${id}`, data),
   delete: (id: string) => api.delete(`/articles/${id}`),
+  analyze: (data: {
+    titleKz: string;
+    contentKz: string;
+    excerptKz?: string;
+    titleRu?: string;
+    contentRu?: string;
+    excerptRu?: string;
+  }) =>
+    api.post<{
+      score: number;
+      summary: string;
+      suggestions: Array<{
+        category: string;
+        severity: 'low' | 'medium' | 'high';
+        title: string;
+        description: string;
+      }>;
+      strengths: string[];
+      improvements: {
+        title?: string;
+        excerpt?: string;
+      };
+    }>('/articles/analyze', data),
 };
 
 // Categories API
