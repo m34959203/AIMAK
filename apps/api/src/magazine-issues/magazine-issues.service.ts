@@ -13,23 +13,6 @@ export class MagazineIssuesService {
    * Создать новый выпуск журнала
    */
   async create(dto: CreateMagazineIssueDto, pdfFile: Express.Multer.File, userId: string) {
-    // Проверка на уникальность комбинации year-month-issueNumber
-    const existingIssue = await this.prisma.magazineIssue.findUnique({
-      where: {
-        year_month_issueNumber: {
-          year: dto.year,
-          month: dto.month,
-          issueNumber: dto.issueNumber,
-        },
-      },
-    });
-
-    if (existingIssue) {
-      throw new BadRequestException(
-        `Выпуск №${dto.issueNumber} за ${dto.month}/${dto.year} уже существует`,
-      );
-    }
-
     // Получить базовый URL для формирования ссылки на PDF
     const baseUrl = process.env.APP_URL || process.env.RENDER_EXTERNAL_URL || 'http://localhost:4000';
     const normalizedBaseUrl = this.normalizeUrl(baseUrl);
@@ -39,13 +22,9 @@ export class MagazineIssuesService {
     const issue = await this.prisma.magazineIssue.create({
       data: {
         issueNumber: dto.issueNumber,
-        year: dto.year,
-        month: dto.month,
         publishDate: new Date(dto.publishDate),
         titleKz: dto.titleKz,
         titleRu: dto.titleRu,
-        descriptionKz: dto.descriptionKz,
-        descriptionRu: dto.descriptionRu,
         pdfFilename: pdfFile.filename,
         pdfUrl,
         fileSize: pdfFile.size,
@@ -84,8 +63,7 @@ export class MagazineIssuesService {
       where,
       orderBy: [
         { isPinned: 'desc' },
-        { year: 'desc' },
-        { month: 'desc' },
+        { publishDate: 'desc' },
         { issueNumber: 'desc' },
       ],
       include: {
@@ -125,46 +103,12 @@ export class MagazineIssuesService {
     return issue;
   }
 
-  /**
-   * Получить выпуски по году
-   */
-  async findByYear(year: number) {
-    return this.prisma.magazineIssue.findMany({
-      where: {
-        year,
-        isPublished: true,
-      },
-      orderBy: [
-        { month: 'desc' },
-        { issueNumber: 'desc' },
-      ],
-    });
-  }
 
   /**
    * Обновить выпуск
    */
   async update(id: string, dto: UpdateMagazineIssueDto) {
-    const issue = await this.findOne(id);
-
-    // Если изменяются year, month, issueNumber - проверить уникальность
-    if (dto.year !== undefined || dto.month !== undefined || dto.issueNumber !== undefined) {
-      const year = dto.year ?? issue.year;
-      const month = dto.month ?? issue.month;
-      const issueNumber = dto.issueNumber ?? issue.issueNumber;
-
-      const existingIssue = await this.prisma.magazineIssue.findUnique({
-        where: {
-          year_month_issueNumber: { year, month, issueNumber },
-        },
-      });
-
-      if (existingIssue && existingIssue.id !== id) {
-        throw new BadRequestException(
-          `Выпуск №${issueNumber} за ${month}/${year} уже существует`,
-        );
-      }
-    }
+    await this.findOne(id);
 
     return this.prisma.magazineIssue.update({
       where: { id },

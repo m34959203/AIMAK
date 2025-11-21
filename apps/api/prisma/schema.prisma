@@ -291,15 +291,11 @@ model AIGeneration {
 model MagazineIssue {
   id             String   @id @default(uuid())
   issueNumber    Int      @map("issue_number")           // Номер выпуска
-  year           Int                                      // Год выпуска
-  month          Int                                      // Месяц выпуска (1-12)
   publishDate    DateTime @map("publish_date")           // Дата публикации
 
   // Двуязычные поля
   titleKz        String   @map("title_kz")               // Название (каз)
   titleRu        String   @map("title_ru")               // Название (рус)
-  descriptionKz  String?  @map("description_kz")         // Описание (каз)
-  descriptionRu  String?  @map("description_ru")         // Описание (рус)
 
   // PDF файл
   pdfFilename    String   @map("pdf_filename")           // Имя файла
@@ -327,8 +323,6 @@ model MagazineIssue {
   updatedAt      DateTime @updatedAt @map("updated_at")
 
   @@map("magazine_issues")
-  @@unique([year, month, issueNumber])                   // Уникальная комбинация
-  @@index([year, month])
   @@index([publishDate])
   @@index([isPublished])
   @@index([uploadedById])

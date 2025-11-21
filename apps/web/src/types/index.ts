@@ -276,15 +276,11 @@ export interface CreateBilingualTagDto {
 export interface MagazineIssue {
   id: string;
   issueNumber: number;
-  year: number;
-  month: number;
   publishDate: string;
 
   // Bilingual fields
   titleKz: string;
   titleRu: string;
-  descriptionKz?: string;
-  descriptionRu?: string;
 
   // PDF file
   pdfFilename: string;
@@ -319,13 +315,9 @@ export interface MagazineIssue {
 
 export interface CreateMagazineIssueDto {
   issueNumber: number;
-  year: number;
-  month: number;
   publishDate: string;
   titleKz: string;
   titleRu: string;
-  descriptionKz?: string;
-  descriptionRu?: string;
   pagesCount?: number;
   coverImageUrl?: string;
   isPublished?: boolean;
@@ -334,13 +326,9 @@ export interface CreateMagazineIssueDto {
 
 export interface UpdateMagazineIssueDto {
   issueNumber?: number;
-  year?: number;
-  month?: number;
   publishDate?: string;
   titleKz?: string;
   titleRu?: string;
-  descriptionKz?: string;
-  descriptionRu?: string;
   pagesCount?: number;
   coverImageUrl?: string;
   isPublished?: boolean;

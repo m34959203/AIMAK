@@ -13,13 +13,9 @@ export default function MagazineIssuesPage() {
 
   const [formData, setFormData] = useState<CreateMagazineIssueDto>({
     issueNumber: 1,
-    year: new Date().getFullYear(),
-    month: new Date().getMonth() + 1,
     publishDate: new Date().toISOString().split('T')[0] + 'T00:00:00Z',
     titleKz: '',
     titleRu: '',
-    descriptionKz: '',
-    descriptionRu: '',
     pagesCount: undefined,
     coverImageUrl: '',
     isPublished: true,
@@ -62,13 +58,9 @@ export default function MagazineIssuesPage() {
       setPdfFile(null);
       setFormData({
         issueNumber: 1,
-        year: new Date().getFullYear(),
-        month: new Date().getMonth() + 1,
         publishDate: new Date().toISOString().split('T')[0] + 'T00:00:00Z',
         titleKz: '',
         titleRu: '',
-        descriptionKz: '',
-        descriptionRu: '',
         pagesCount: undefined,
         coverImageUrl: '',
         isPublished: true,
@@ -105,43 +97,16 @@ export default function MagazineIssuesPage() {
         <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg shadow-md mb-8">
           <h2 className="text-xl font-bold mb-4">Новый выпуск</h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-            <div>
-              <label className="block text-sm font-medium mb-1">Номер выпуска *</label>
-              <input
-                type="number"
-                required
-                min="1"
-                value={formData.issueNumber}
-                onChange={(e) => setFormData({ ...formData, issueNumber: Number(e.target.value) })}
-                className="w-full px-3 py-2 border rounded"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Год *</label>
-              <input
-                type="number"
-                required
-                min="2020"
-                max="2100"
-                value={formData.year}
-                onChange={(e) => setFormData({ ...formData, year: Number(e.target.value) })}
-                className="w-full px-3 py-2 border rounded"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Месяц *</label>
-              <select
-                required
-                value={formData.month}
-                onChange={(e) => setFormData({ ...formData, month: Number(e.target.value) })}
-                className="w-full px-3 py-2 border rounded"
-              >
-                {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
-                  <option key={m} value={m}>{m}</option>
-                ))}
-              </select>
-            </div>
+          <div className="mb-4">
+            <label className="block text-sm font-medium mb-1">Номер выпуска *</label>
+            <input
+              type="number"
+              required
+              min="1"
+              value={formData.issueNumber}
+              onChange={(e) => setFormData({ ...formData, issueNumber: Number(e.target.value) })}
+              className="w-full px-3 py-2 border rounded"
+            />
           </div>
 
           <div className="mb-4">
@@ -180,26 +145,6 @@ export default function MagazineIssuesPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <div>
-              <label className="block text-sm font-medium mb-1">Описание (Қазақша)</label>
-              <textarea
-                value={formData.descriptionKz}
-                onChange={(e) => setFormData({ ...formData, descriptionKz: e.target.value })}
-                className="w-full px-3 py-2 border rounded"
-                rows={3}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Описание (Русский)</label>
-              <textarea
-                value={formData.descriptionRu}
-                onChange={(e) => setFormData({ ...formData, descriptionRu: e.target.value })}
-                className="w-full px-3 py-2 border rounded"
-                rows={3}
-              />
-            </div>
-          </div>
 
           <div className="mb-4">
             <label className="block text-sm font-medium mb-1">PDF файл *</label>
@@ -309,7 +254,6 @@ export default function MagazineIssuesPage() {
                 <tr key={issue.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4">
                     <div className="font-medium">№{issue.issueNumber}</div>
-                    <div className="text-sm text-gray-500">{issue.year}/{issue.month}</div>
                   </td>
                   <td className="px-6 py-4">
                     <div className="font-medium">{issue.titleRu}</div>
