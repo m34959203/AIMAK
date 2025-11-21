@@ -1,29 +1,17 @@
 import { Module } from '@nestjs/common';
 import { MulterModule } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
 import { Request } from 'express';
-import { extname } from 'path';
 import { MediaController } from './media.controller';
 import { MediaService } from './media.service';
 import { PrismaModule } from '../common/prisma/prisma.module';
+import { SupabaseModule } from '../common/supabase/supabase.module';
 
 @Module({
   imports: [
     PrismaModule,
+    SupabaseModule,
     MulterModule.register({
-      storage: diskStorage({
-        destination: './uploads',
-        filename: (
-          req: Request,
-          file: Express.Multer.File,
-          callback: (error: Error | null, filename: string) => void,
-        ) => {
-          const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-          const ext = extname(file.originalname);
-          const filename = `${file.fieldname}-${uniqueSuffix}${ext}`;
-          callback(null, filename);
-        },
-      }),
+      storage: 'memoryStorage', // Use memory storage for Supabase upload
       fileFilter: (
         req: Request,
         file: Express.Multer.File,
