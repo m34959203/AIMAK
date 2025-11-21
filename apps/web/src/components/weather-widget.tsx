@@ -72,20 +72,35 @@ export function WeatherWidget() {
   const fetchWeather = async (city: string) => {
     setLoading(true);
     try {
-      // Mock data - в production заменить на реальный API
-      // Например: OpenWeatherMap API
-      await new Promise(resolve => setTimeout(resolve, 500));
+      const response = await fetch(
+        `https://api.openweathermap.org/data/2.5/weather?q=${city},KZ&units=metric&appid=aa8b515e87f73801f11cf922205790fd&lang=ru`
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch weather data');
+      }
+
+      const data = await response.json();
 
       setWeather({
-        temp: Math.round(Math.random() * 30 - 10),
-        description: 'Сейчас облачно с прояснениями, неплохая погода',
-        humidity: Math.round(Math.random() * 40 + 40),
-        pressure: Math.round(Math.random() * 50 + 660),
-        windSpeed: Math.round(Math.random() * 5 + 1),
+        temp: Math.round(data.main.temp),
+        description: data.weather[0].description,
+        humidity: data.main.humidity,
+        pressure: data.main.pressure,
+        windSpeed: Math.round(data.wind.speed),
         city: city,
       });
     } catch (error) {
       console.error('Failed to fetch weather:', error);
+      // Fallback to mock data if API fails
+      setWeather({
+        temp: 0,
+        description: 'Не удалось загрузить данные',
+        humidity: 0,
+        pressure: 0,
+        windSpeed: 0,
+        city: city,
+      });
     } finally {
       setLoading(false);
     }
