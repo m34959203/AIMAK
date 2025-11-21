@@ -127,7 +127,7 @@ export function WeatherWidget() {
 
       {/* Expanded view */}
       {isOpen && (
-        <div className="absolute top-full right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden z-50">
+        <div className="absolute top-full left-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden z-50">
           {/* City selector */}
           <div className="relative border-b border-gray-100" ref={cityDropdownRef}>
             <button
