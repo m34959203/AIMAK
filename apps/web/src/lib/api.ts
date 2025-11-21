@@ -134,19 +134,13 @@ export const magazineIssuesApi = {
       params: published !== undefined ? { published } : {},
     }),
   getById: (id: string) => api.get<MagazineIssue>(`/magazine-issues/${id}`),
-  getByYear: (year: number) =>
-    api.get<MagazineIssue[]>(`/magazine-issues/year/${year}`),
   create: (data: CreateMagazineIssueDto, pdfFile: File) => {
     const formData = new FormData();
     formData.append('file', pdfFile);
     formData.append('issueNumber', data.issueNumber.toString());
-    formData.append('year', data.year.toString());
-    formData.append('month', data.month.toString());
     formData.append('publishDate', data.publishDate);
     formData.append('titleKz', data.titleKz);
     formData.append('titleRu', data.titleRu);
-    if (data.descriptionKz) formData.append('descriptionKz', data.descriptionKz);
-    if (data.descriptionRu) formData.append('descriptionRu', data.descriptionRu);
     if (data.pagesCount) formData.append('pagesCount', data.pagesCount.toString());
     if (data.coverImageUrl) formData.append('coverImageUrl', data.coverImageUrl);
     if (data.isPublished !== undefined) formData.append('isPublished', data.isPublished.toString());
