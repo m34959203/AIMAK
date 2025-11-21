@@ -24,3 +24,9 @@ uploads/*
 
 # TypeScript build info
 *.tsbuildinfo
+
+# Build caches
+.next/cache
+.webpack-cache
+apps/api/.webpack-cache
+apps/web/.next/cache

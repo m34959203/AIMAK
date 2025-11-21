@@ -2,6 +2,38 @@
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
+
+  // Включаем экспериментальные функции для улучшения кэширования
+  experimental: {
+    // Турбо-режим для более быстрой разработки
+    turbo: {
+      rules: {
+        '*.svg': {
+          loaders: ['@svgr/webpack'],
+          as: '*.js',
+        },
+      },
+    },
+  },
+
+  // Оптимизация для production сборки
+  productionBrowserSourceMaps: false,
+
+  // Webpack кэширование для быстрых пересборок
+  webpack: (config, { dev, isServer }) => {
+    // Включаем кэширование в режиме разработки
+    if (dev) {
+      config.cache = {
+        type: 'filesystem',
+        buildDependencies: {
+          config: [__filename],
+        },
+        cacheDirectory: '.next/cache/webpack',
+      };
+    }
+    return config;
+  },
+
   images: {
     remotePatterns: [
       {
