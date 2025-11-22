@@ -42,6 +42,7 @@ export class ArticleCategorizationService {
 
     const categoriesDesc = this.getCategoriesDescription(categories);
     const prompt = this.buildPrompt(article, categoriesDesc);
+    const validSlugs = categories.map(c => c.slug);
 
     let aiResponse: string | null = null;
 
@@ -67,15 +68,41 @@ export class ArticleCategorizationService {
       return null;
     }
 
-    // Validate response
-    const suggestedSlug = aiResponse.toLowerCase().trim();
-    const validSlugs = categories.map(c => c.slug);
+    // Extract and validate slug from response
+    const suggestedSlug = this.extractSlugFromResponse(aiResponse, validSlugs);
 
-    if (validSlugs.includes(suggestedSlug)) {
+    if (suggestedSlug) {
       return suggestedSlug;
     }
 
-    console.error(`AI returned invalid category slug: "${suggestedSlug}"`);
+    console.error(`AI returned invalid category slug. Response: "${aiResponse.substring(0, 100)}"`);
+    return null;
+  }
+
+  /**
+   * Извлечь slug категории из ответа AI
+   */
+  private extractSlugFromResponse(response: string, validSlugs: string[]): string | null {
+    const cleaned = response.toLowerCase().trim();
+
+    // Проверяем, является ли весь ответ валидным slug
+    if (validSlugs.includes(cleaned)) {
+      return cleaned;
+    }
+
+    // Пробуем найти валидный slug в ответе
+    for (const slug of validSlugs) {
+      if (cleaned.includes(slug)) {
+        return slug;
+      }
+    }
+
+    // Пробуем взять первое слово
+    const firstWord = cleaned.split(/\s+/)[0].replace(/[^a-z]/g, '');
+    if (validSlugs.includes(firstWord)) {
+      return firstWord;
+    }
+
     return null;
   }
 
@@ -105,29 +132,25 @@ export class ArticleCategorizationService {
     article: { titleKz: string; contentKz: string; excerptKz?: string | null },
     categoriesDesc: string
   ): string {
-    return `Ты - эксперт по категоризации новостных статей. Проанализируй следующую статью и определи наиболее подходящую категорию.
+    return `Categorize this article. Respond with ONLY ONE WORD - the category slug.
 
-СТАТЬЯ:
-Заголовок: ${article.titleKz}
-${article.excerptKz ? `Краткое описание: ${article.excerptKz}` : ''}
-Содержание: ${article.contentKz.substring(0, 2000)}${article.contentKz.length > 2000 ? '...' : ''}
+ARTICLE:
+Title: ${article.titleKz}
+${article.excerptKz ? `Excerpt: ${article.excerptKz}` : ''}
+Content: ${article.contentKz.substring(0, 1500)}${article.contentKz.length > 1500 ? '...' : ''}
 
-ДОСТУПНЫЕ КАТЕГОРИИ:
+AVAILABLE CATEGORIES:
 ${categoriesDesc}
 
-ИНСТРУКЦИИ:
-1. Внимательно прочитай статью
-2. Определи её основную тему
-3. Выбери ОДНУ наиболее подходящую категорию из списка выше
-4. Верни ТОЛЬКО slug категории (например: "zhanalyqtar", "ozekti", "sayasat", "madeniyet", "qogam", "kazakhmys")
-5. Если статья про компанию Kazakhmys или горнодобывающую промышленность, выбери "kazakhmys"
-6. Если статья про политику или правительство, выбери "sayasat"
-7. Если статья про культуру, искусство, литературу, выбери "madeniyet"
-8. Если статья про социальные вопросы, общество, выбери "qogam"
-9. Если статья актуальна или важна, но не подходит к специфичным категориям, выбери "ozekti"
-10. Для обычных новостей выбери "zhanalyqtar"
+RULES:
+- kazakhmys: Kazakhmys company or mining industry news
+- sayasat: Politics, government, policy
+- madeniyet: Culture, art, literature
+- qogam: Society, social issues
+- ozekti: Important/urgent news that doesn't fit other categories
+- zhanalyqtar: General news
 
-Верни ТОЛЬКО slug категории без дополнительного текста.`;
+RESPOND WITH ONLY THE SLUG (one word), nothing else. Example: zhanalyqtar`;
   }
 
   /**
@@ -141,8 +164,8 @@ ${categoriesDesc}
     const model = this.geminiClient.getGenerativeModel({
       model: 'gemini-1.5-flash',
       generationConfig: {
-        temperature: 0.3,
-        maxOutputTokens: 50,
+        temperature: 0.1,
+        maxOutputTokens: 10,
       },
     });
 
@@ -161,47 +184,66 @@ ${categoriesDesc}
   }
 
   /**
-   * Категоризация через OpenRouter
+   * Категоризация через OpenRouter (с retry для rate limit)
    */
-  private async categorizeWithOpenRouter(prompt: string): Promise<string | null> {
+  private async categorizeWithOpenRouter(prompt: string, retries = 2): Promise<string | null> {
     if (!this.openRouterKey) {
       return null;
     }
 
-    const response = await axios.post(
-      'https://openrouter.ai/api/v1/chat/completions',
-      {
-        model: process.env.OPENROUTER_MODEL || 'anthropic/claude-3.5-sonnet',
-        messages: [
+    for (let attempt = 0; attempt <= retries; attempt++) {
+      try {
+        const response = await axios.post(
+          'https://openrouter.ai/api/v1/chat/completions',
           {
-            role: 'user',
-            content: prompt,
+            model: process.env.OPENROUTER_MODEL || 'google/gemini-2.0-flash-exp:free',
+            messages: [
+              {
+                role: 'system',
+                content: 'You are a categorization bot. Respond with ONLY ONE WORD - the category slug. No explanations.',
+              },
+              {
+                role: 'user',
+                content: prompt,
+              },
+            ],
+            temperature: 0.1,
+            max_tokens: 10,
           },
-        ],
-        temperature: 0.3,
-        max_tokens: 50,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${this.openRouterKey}`,
-          'Content-Type': 'application/json',
-          'HTTP-Referer': process.env.FRONTEND_URL || 'http://localhost:3000',
-          'X-Title': 'AIMAK News',
-        },
+          {
+            headers: {
+              Authorization: `Bearer ${this.openRouterKey}`,
+              'Content-Type': 'application/json',
+              'HTTP-Referer': process.env.FRONTEND_URL || 'http://localhost:3000',
+              'X-Title': 'AIMAK News',
+            },
+          }
+        );
+
+        if (!response.data?.choices || response.data.choices.length === 0) {
+          throw new Error('Invalid response from OpenRouter: no choices');
+        }
+
+        const choice = response.data.choices[0];
+        const messageContent = choice?.message?.content || choice?.message?.reasoning || '';
+
+        if (!messageContent || messageContent.trim().length === 0) {
+          throw new Error('Empty response from OpenRouter');
+        }
+
+        return messageContent.trim();
+      } catch (error) {
+        // Если rate limit и есть еще попытки, ждем и пробуем снова
+        if (axios.isAxiosError(error) && error.response?.status === 429 && attempt < retries) {
+          const delay = (attempt + 1) * 2000; // 2s, 4s
+          console.log(`Rate limit hit, waiting ${delay}ms before retry ${attempt + 1}/${retries}...`);
+          await new Promise(resolve => setTimeout(resolve, delay));
+          continue;
+        }
+        throw error;
       }
-    );
-
-    if (!response.data?.choices || response.data.choices.length === 0) {
-      throw new Error('Invalid response from OpenRouter: no choices');
     }
 
-    const choice = response.data.choices[0];
-    const messageContent = choice?.message?.content || choice?.message?.reasoning || '';
-
-    if (!messageContent || messageContent.trim().length === 0) {
-      throw new Error('Empty response from OpenRouter');
-    }
-
-    return messageContent.trim();
+    throw new Error('Failed after retries');
   }
 }
