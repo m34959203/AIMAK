@@ -108,6 +108,15 @@ export class ArticlesController {
     return this.articlesService.remove(id, user.id, user.role);
   }
 
+  @Post('delete-many')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.EDITOR, Role.ADMIN)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Delete multiple articles (Editor/Admin only)' })
+  removeMany(@Body() body: { ids: string[] }, @CurrentUser() user: any) {
+    return this.articlesService.removeMany(body.ids, user.id, user.role);
+  }
+
   @Post('analyze')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.EDITOR, Role.ADMIN)

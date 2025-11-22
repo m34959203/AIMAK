@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
-import { useArticles, useDeleteArticle } from '@/hooks/use-articles';
+import { useArticles, useDeleteArticle, useDeleteManyArticles } from '@/hooks/use-articles';
 import { useCategories } from '@/hooks/use-categories';
 import { formatDate } from '@/lib/utils';
 import { useAuth } from '@/hooks/use-auth';
@@ -15,6 +15,7 @@ export default function AdminArticlesPage() {
   const { data: categories } = useCategories();
   const { user } = useAuth();
   const deleteArticle = useDeleteArticle();
+  const deleteManyArticles = useDeleteManyArticles();
 
   // Фильтры и сортировка
   const [searchQuery, setSearchQuery] = useState('');
@@ -23,10 +24,44 @@ export default function AdminArticlesPage() {
   const [sortField, setSortField] = useState<SortField>('date');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
 
+  // Состояние для выбранных статей
+  const [selectedArticles, setSelectedArticles] = useState<Set<string>>(new Set());
+
   const handleDelete = async (id: string) => {
     if (confirm('Вы уверены, что хотите удалить эту статью?')) {
       deleteArticle.mutate(id);
     }
+  };
+
+  const handleDeleteSelected = async () => {
+    if (selectedArticles.size === 0) return;
+
+    if (confirm(`Вы уверены, что хотите удалить выбранные статьи (${selectedArticles.size})?`)) {
+      deleteManyArticles.mutate(Array.from(selectedArticles), {
+        onSuccess: () => {
+          setSelectedArticles(new Set());
+        },
+      });
+    }
+  };
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      const allIds = new Set(filteredAndSortedArticles.map(article => article.id));
+      setSelectedArticles(allIds);
+    } else {
+      setSelectedArticles(new Set());
+    }
+  };
+
+  const handleSelectArticle = (id: string, checked: boolean) => {
+    const newSelected = new Set(selectedArticles);
+    if (checked) {
+      newSelected.add(id);
+    } else {
+      newSelected.delete(id);
+    }
+    setSelectedArticles(newSelected);
   };
 
   const handleSort = (field: SortField) => {
@@ -109,12 +144,25 @@ export default function AdminArticlesPage() {
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-4xl font-bold">Управление статьями</h1>
-        <Link
-          href="/admin/articles/new"
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-        >
-          Создать статью
-        </Link>
+        <div className="flex gap-2">
+          {selectedArticles.size > 0 && (
+            <button
+              onClick={handleDeleteSelected}
+              className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+              disabled={deleteManyArticles.isPending}
+            >
+              {deleteManyArticles.isPending
+                ? 'Удаление...'
+                : `Удалить выбранные (${selectedArticles.size})`}
+            </button>
+          )}
+          <Link
+            href="/admin/articles/new"
+            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+          >
+            Создать статью
+          </Link>
+        </div>
       </div>
 
       {/* Фильтры */}
@@ -205,6 +253,17 @@ export default function AdminArticlesPage() {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <input
+                    type="checkbox"
+                    checked={selectedArticles.size === filteredAndSortedArticles.length && filteredAndSortedArticles.length > 0}
+                    onChange={(e) => handleSelectAll(e.target.checked)}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  />
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  №
+                </th>
                 <th
                   className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
                   onClick={() => handleSort('title')}
@@ -238,8 +297,19 @@ export default function AdminArticlesPage() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredAndSortedArticles.map((article) => (
+              {filteredAndSortedArticles.map((article, index) => (
                 <tr key={article.id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <input
+                      type="checkbox"
+                      checked={selectedArticles.has(article.id)}
+                      onChange={(e) => handleSelectArticle(article.id, e.target.checked)}
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    />
+                  </td>
+                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {index + 1}
+                  </td>
                   <td className="px-6 py-4">
                     <div className="text-sm font-medium text-gray-900 max-w-md truncate">
                       {article.titleKz.length > 80

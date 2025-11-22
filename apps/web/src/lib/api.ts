@@ -71,6 +71,8 @@ export const articlesApi = {
   update: (id: string, data: UpdateBilingualArticleDto) =>
     api.patch<Article>(`/articles/${id}`, data),
   delete: (id: string) => api.delete(`/articles/${id}`),
+  deleteMany: (ids: string[]) =>
+    api.post<{ message: string; count: number }>('/articles/delete-many', { ids }),
   analyze: (data: {
     titleKz: string;
     contentKz: string;

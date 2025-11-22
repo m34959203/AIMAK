@@ -68,6 +68,17 @@ export function useDeleteArticle() {
   });
 }
 
+export function useDeleteManyArticles() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (ids: string[]) => articlesApi.deleteMany(ids),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['articles'] });
+    },
+  });
+}
+
 export function useAnalyzeArticle() {
   return useMutation({
     mutationFn: (data: {
