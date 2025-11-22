@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { ArticlesService } from './articles.service';
+import { ArticleCategorizationService } from './article-categorization.service';
 import { CreateArticleDto } from './dto/create-article.dto';
 import { UpdateArticleDto } from './dto/update-article.dto';
 import { AnalyzeArticleDto } from './dto/analyze-article.dto';
@@ -20,11 +21,16 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Public } from '../auth/decorators/public.decorator';
 import { Role } from '@prisma/client';
+import { PrismaService } from '../common/prisma/prisma.service';
 
 @ApiTags('articles')
 @Controller('articles')
 export class ArticlesController {
-  constructor(private articlesService: ArticlesService) {}
+  constructor(
+    private articlesService: ArticlesService,
+    private categorizationService: ArticleCategorizationService,
+    private prisma: PrismaService,
+  ) {}
 
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -124,5 +130,109 @@ export class ArticlesController {
   @ApiOperation({ summary: 'Analyze article with AI editor (Editor/Admin only)' })
   analyzeArticle(@Body() dto: AnalyzeArticleDto) {
     return this.articlesService.analyzeArticle(dto);
+  }
+
+  @Post('categorize-all')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Categorize all articles using AI (Admin only)' })
+  async categorizeAllArticles() {
+    const categories = await this.prisma.category.findMany({
+      orderBy: { sortOrder: 'asc' },
+    });
+
+    if (categories.length === 0) {
+      return {
+        success: false,
+        message: 'No categories found',
+      };
+    }
+
+    const articles = await this.prisma.article.findMany({
+      select: {
+        id: true,
+        titleKz: true,
+        contentKz: true,
+        excerptKz: true,
+        categoryId: true,
+        category: {
+          select: {
+            slug: true,
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    if (articles.length === 0) {
+      return {
+        success: true,
+        message: 'No articles to categorize',
+        stats: {
+          total: 0,
+          updated: 0,
+          skipped: 0,
+          errors: 0,
+        },
+      };
+    }
+
+    let updated = 0;
+    let skipped = 0;
+    let errors = 0;
+
+    for (const article of articles) {
+      try {
+        const suggestedSlug = await this.categorizationService.categorizeArticle(
+          {
+            titleKz: article.titleKz,
+            contentKz: article.contentKz,
+            excerptKz: article.excerptKz,
+          },
+          categories
+        );
+
+        if (!suggestedSlug) {
+          skipped++;
+          continue;
+        }
+
+        const suggestedCategory = categories.find(c => c.slug === suggestedSlug);
+
+        if (!suggestedCategory) {
+          skipped++;
+          continue;
+        }
+
+        // Only update if category changed
+        if (article.category?.slug !== suggestedSlug) {
+          await this.prisma.article.update({
+            where: { id: article.id },
+            data: { categoryId: suggestedCategory.id },
+          });
+          updated++;
+        } else {
+          skipped++;
+        }
+
+        // Small delay to avoid rate limiting
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      } catch (error) {
+        console.error(`Error categorizing article ${article.id}:`, error);
+        errors++;
+      }
+    }
+
+    return {
+      success: true,
+      message: 'Categorization completed',
+      stats: {
+        total: articles.length,
+        updated,
+        skipped,
+        errors,
+      },
+    };
   }
 }

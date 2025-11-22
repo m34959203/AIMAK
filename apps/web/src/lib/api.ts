@@ -96,6 +96,17 @@ export const articlesApi = {
         excerpt?: string;
       };
     }>('/articles/analyze', data),
+  categorizeAll: () =>
+    api.post<{
+      success: boolean;
+      message: string;
+      stats: {
+        total: number;
+        updated: number;
+        skipped: number;
+        errors: number;
+      };
+    }>('/articles/categorize-all'),
 };
 
 // Categories API
