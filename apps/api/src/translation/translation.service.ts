@@ -97,10 +97,33 @@ IMPORTANT: Return ONLY the translated text without any explanations, notes, or a
         throw new Error('Invalid response from OpenRouter: no choices');
       }
 
-      const messageContent = response.data.choices[0]?.message?.content;
+      const choice = response.data.choices[0];
+      const message = choice?.message;
+
+      // Try to get content from different possible fields
+      // Some models return in 'content', others in 'reasoning'
+      let messageContent = message?.content;
+
       if (!messageContent || messageContent.trim().length === 0) {
-        console.error('Invalid OpenRouter response: empty content');
-        console.error('Choices[0]:', JSON.stringify(response.data.choices[0]));
+        // Try reasoning field (used by some reasoning models like deepseek-r1)
+        if (message?.reasoning) {
+          console.log('Content field is empty, using reasoning field instead');
+          messageContent = message.reasoning;
+        } else if (choice?.reasoning_details && Array.isArray(choice.reasoning_details)) {
+          // Some models put reasoning in reasoning_details array
+          console.log('Content field is empty, using reasoning_details instead');
+          const reasoningText = choice.reasoning_details
+            .map((detail: any) => detail.text)
+            .join('\n');
+          if (reasoningText) {
+            messageContent = reasoningText;
+          }
+        }
+      }
+
+      if (!messageContent || messageContent.trim().length === 0) {
+        console.error('Invalid OpenRouter response: empty content and no reasoning field');
+        console.error('Choices[0]:', JSON.stringify(choice));
         throw new Error('Empty response from OpenRouter');
       }
 
@@ -251,10 +274,33 @@ IMPORTANT: Return ONLY the JSON object, no additional text or explanations.`;
         throw new Error('Invalid response from OpenRouter: no choices');
       }
 
-      const messageContent = response.data.choices[0]?.message?.content;
+      const choice = response.data.choices[0];
+      const message = choice?.message;
+
+      // Try to get content from different possible fields
+      // Some models return in 'content', others in 'reasoning'
+      let messageContent = message?.content;
+
       if (!messageContent || messageContent.trim().length === 0) {
-        console.error('Invalid OpenRouter response: empty content');
-        console.error('Choices[0]:', JSON.stringify(response.data.choices[0]));
+        // Try reasoning field (used by some reasoning models like deepseek-r1)
+        if (message?.reasoning) {
+          console.log('Content field is empty, using reasoning field instead');
+          messageContent = message.reasoning;
+        } else if (choice?.reasoning_details && Array.isArray(choice.reasoning_details)) {
+          // Some models put reasoning in reasoning_details array
+          console.log('Content field is empty, using reasoning_details instead');
+          const reasoningText = choice.reasoning_details
+            .map((detail: any) => detail.text)
+            .join('\n');
+          if (reasoningText) {
+            messageContent = reasoningText;
+          }
+        }
+      }
+
+      if (!messageContent || messageContent.trim().length === 0) {
+        console.error('Invalid OpenRouter response: empty content and no reasoning field');
+        console.error('Choices[0]:', JSON.stringify(choice));
         throw new Error('Empty response from OpenRouter');
       }
 
