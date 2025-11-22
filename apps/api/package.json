@@ -19,7 +19,8 @@
     "import:wordpress:images": "node scripts/import-with-images.js",
     "import:wordpress:full": "node scripts/import-wordpress-full.js",
     "migrate:deploy": "node scripts/pre-migrate.js && prisma migrate deploy",
-    "fix:media-urls": "node scripts/fix-media-urls.js"
+    "fix:media-urls": "node scripts/fix-media-urls.js",
+    "categorize:articles": "tsx scripts/categorize-articles.ts"
   },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"
