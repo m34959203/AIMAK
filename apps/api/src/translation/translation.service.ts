@@ -91,9 +91,18 @@ IMPORTANT: Return ONLY the translated text without any explanations, notes, or a
     excerpt?: string;
     content: string;
   }> {
+    console.log('Translation request received:', {
+      titleLength: dto.title?.length,
+      contentLength: dto.content?.length,
+      excerptLength: dto.excerpt?.length,
+      sourceLanguage: dto.sourceLanguage,
+      targetLanguage: dto.targetLanguage,
+    });
+
     const apiKey = process.env.OPENROUTER_API_KEY || process.env.OPENAI_API_KEY;
 
     if (!apiKey) {
+      console.error('Translation API key not configured');
       throw new BadRequestException(
         'Translation service is not configured. Please contact the administrator.',
       );
@@ -101,6 +110,11 @@ IMPORTANT: Return ONLY the translated text without any explanations, notes, or a
 
     if (dto.sourceLanguage === dto.targetLanguage) {
       throw new BadRequestException('Source and target languages must be different');
+    }
+
+    // Validate input data
+    if (!dto.title || !dto.content) {
+      throw new BadRequestException('Title and content are required for translation');
     }
 
     const languageNames = {
@@ -138,6 +152,7 @@ Return your translation as a JSON object with this EXACT structure:
 IMPORTANT: Return ONLY the JSON object, no additional text or explanations.`;
 
     try {
+      console.log('Sending request to OpenRouter API...');
       const response = await axios.post(
         'https://openrouter.ai/api/v1/chat/completions',
         {
@@ -148,7 +163,6 @@ IMPORTANT: Return ONLY the JSON object, no additional text or explanations.`;
               content: prompt,
             },
           ],
-          temperature: 0.3, // Lower temperature for more consistent translations
         },
         {
           headers: {
@@ -160,15 +174,18 @@ IMPORTANT: Return ONLY the JSON object, no additional text or explanations.`;
         },
       );
 
+      console.log('OpenRouter API response received');
       const aiResponse = response.data.choices[0].message.content;
 
       // Extract JSON from the response
       const jsonMatch = aiResponse.match(/\{[\s\S]*\}/);
       if (!jsonMatch) {
+        console.error('Failed to extract JSON from response:', aiResponse);
         throw new Error('Failed to parse translation response');
       }
 
       const translation = JSON.parse(jsonMatch[0]);
+      console.log('Translation completed successfully');
 
       return {
         title: translation.title,
@@ -178,11 +195,20 @@ IMPORTANT: Return ONLY the JSON object, no additional text or explanations.`;
     } catch (error) {
       console.error('Article translation error:', error);
 
-      if (axios.isAxiosError(error) && error.response) {
-        console.error('API Response Error:', error.response.data);
-        throw new BadRequestException(
-          `Translation service error: ${error.response.data?.error?.message || 'Unknown error'}`,
-        );
+      if (axios.isAxiosError(error)) {
+        if (error.response) {
+          console.error('API Response Status:', error.response.status);
+          console.error('API Response Data:', JSON.stringify(error.response.data, null, 2));
+          const errorMessage = error.response.data?.error?.message || error.response.data?.message || 'Unknown error from translation service';
+          throw new BadRequestException(
+            `Translation service error: ${errorMessage}`,
+          );
+        } else if (error.request) {
+          console.error('No response received from API');
+          throw new BadRequestException(
+            'Translation service is not responding. Please try again later.',
+          );
+        }
       }
 
       if (error instanceof Error && error.message?.includes('Failed to parse')) {

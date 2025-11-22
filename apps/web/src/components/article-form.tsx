@@ -239,7 +239,15 @@ export function ArticleForm({ article, onSubmit, isLoading }: ArticleFormProps) 
       return;
     }
 
+    // Check if content is not just empty HTML tags
+    const contentText = contentKz.replace(/<[^>]*>/g, '').trim();
+    if (!contentText) {
+      alert('Содержание на казахском языке пустое. Пожалуйста, добавьте текст для перевода.');
+      return;
+    }
+
     try {
+      console.log('Starting translation from Kazakh to Russian...');
       const response = await translateArticle.mutateAsync({
         title: titleKz,
         content: contentKz,
@@ -248,6 +256,7 @@ export function ArticleForm({ article, onSubmit, isLoading }: ArticleFormProps) 
         targetLanguage: 'ru',
       });
 
+      console.log('Translation response:', response);
       setTitleRu(response.data.title);
       setContentRu(response.data.content);
       if (response.data.excerpt) {
@@ -255,9 +264,10 @@ export function ArticleForm({ article, onSubmit, isLoading }: ArticleFormProps) 
       }
 
       alert('Перевод успешно завершен!');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error translating article:', error);
-      alert('Ошибка при переводе статьи. Пожалуйста, попробуйте еще раз.');
+      const errorMessage = error?.response?.data?.message || error?.message || 'Неизвестная ошибка';
+      alert(`Ошибка при переводе статьи: ${errorMessage}\n\nПожалуйста, попробуйте еще раз или обратитесь к администратору.`);
     }
   };
 
@@ -267,7 +277,15 @@ export function ArticleForm({ article, onSubmit, isLoading }: ArticleFormProps) 
       return;
     }
 
+    // Check if content is not just empty HTML tags
+    const contentText = contentRu.replace(/<[^>]*>/g, '').trim();
+    if (!contentText) {
+      alert('Содержание на русском языке пустое. Пожалуйста, добавьте текст для перевода.');
+      return;
+    }
+
     try {
+      console.log('Starting translation from Russian to Kazakh...');
       const response = await translateArticle.mutateAsync({
         title: titleRu,
         content: contentRu,
@@ -276,6 +294,7 @@ export function ArticleForm({ article, onSubmit, isLoading }: ArticleFormProps) 
         targetLanguage: 'kk',
       });
 
+      console.log('Translation response:', response);
       setTitleKz(response.data.title);
       setContentKz(response.data.content);
       if (response.data.excerpt) {
@@ -283,9 +302,10 @@ export function ArticleForm({ article, onSubmit, isLoading }: ArticleFormProps) 
       }
 
       alert('Аударма сәтті аяқталды!');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error translating article:', error);
-      alert('Мақаланы аудару кезінде қате. Қайталап көріңіз.');
+      const errorMessage = error?.response?.data?.message || error?.message || 'Белгісіз қате';
+      alert(`Мақаланы аудару кезінде қате: ${errorMessage}\n\nҚайталап көріңіз немесе әкімшіге хабарласыңыз.`);
     }
   };
 
