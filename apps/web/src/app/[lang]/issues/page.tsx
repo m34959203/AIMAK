@@ -13,21 +13,17 @@ const PDFViewer = dynamic(
 );
 
 interface Props {
-  params: Promise<{ lang: 'kz' | 'ru' }>;
+  params: { lang: 'kz' | 'ru' };
 }
 
 export default function IssuesPage({ params }: Props) {
-  const [lang, setLang] = useState<'kz' | 'ru'>('kz');
+  const [lang, setLang] = useState<'kz' | 'ru'>(params.lang);
   const [selectedIssue, setSelectedIssue] = useState<MagazineIssue | null>(null);
   const [selectedYear, setSelectedYear] = useState<number | null>(null);
 
   const { data: issues, isLoading, error } = useMagazineIssues(true); // Только опубликованные
   const incrementViews = useIncrementViews();
   const incrementDownloads = useIncrementDownloads();
-
-  useEffect(() => {
-    params.then((p) => setLang(p.lang));
-  }, [params]);
 
   // Получить уникальные годы из выпусков (из publishDate)
   const years = Array.from(
