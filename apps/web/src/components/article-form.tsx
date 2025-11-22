@@ -197,6 +197,7 @@ export function ArticleForm({ article, onSubmit, isLoading }: ArticleFormProps) 
         titleRu: titleRu || undefined,
         contentRu: contentRu || undefined,
         excerptRu: excerptRu || undefined,
+        targetLanguage: activeTab, // Pass the active tab (kz or ru)
       });
 
       setAIAnalysis(response.data);

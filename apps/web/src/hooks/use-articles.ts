@@ -88,6 +88,7 @@ export function useAnalyzeArticle() {
       titleRu?: string;
       contentRu?: string;
       excerptRu?: string;
+      targetLanguage?: 'kz' | 'ru';
     }) => articlesApi.analyze(data),
   });
 }
