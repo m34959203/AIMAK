@@ -60,7 +60,7 @@ export class MagazineIssuesService {
         where.isPublished = published;
       }
 
-      return this.prisma.magazineIssue.findMany({
+      const issues = await this.prisma.magazineIssue.findMany({
         where,
         orderBy: [
           { isPinned: 'desc' },
@@ -77,6 +77,15 @@ export class MagazineIssuesService {
           },
         },
       });
+
+      // Fix PDF URLs for all issues
+      const baseUrl = process.env.APP_URL || process.env.RENDER_EXTERNAL_URL || 'http://localhost:4000';
+      const normalizedBaseUrl = this.normalizeUrl(baseUrl);
+
+      return issues.map(issue => ({
+        ...issue,
+        pdfUrl: `${normalizedBaseUrl}/uploads/magazines/${issue.pdfFilename}`,
+      }));
     } catch (error) {
       console.error('Error in magazineIssuesService.findAll:', error);
       // Возвращаем пустой массив вместо ошибки, если таблица пуста
@@ -106,7 +115,14 @@ export class MagazineIssuesService {
       throw new NotFoundException(`Выпуск с ID ${id} не найден`);
     }
 
-    return issue;
+    // Fix PDF URL
+    const baseUrl = process.env.APP_URL || process.env.RENDER_EXTERNAL_URL || 'http://localhost:4000';
+    const normalizedBaseUrl = this.normalizeUrl(baseUrl);
+
+    return {
+      ...issue,
+      pdfUrl: `${normalizedBaseUrl}/uploads/magazines/${issue.pdfFilename}`,
+    };
   }
 
 
@@ -116,7 +132,7 @@ export class MagazineIssuesService {
   async update(id: string, dto: UpdateMagazineIssueDto) {
     await this.findOne(id);
 
-    return this.prisma.magazineIssue.update({
+    const updated = await this.prisma.magazineIssue.update({
       where: { id },
       data: {
         ...dto,
@@ -132,6 +148,15 @@ export class MagazineIssuesService {
         },
       },
     });
+
+    // Fix PDF URL
+    const baseUrl = process.env.APP_URL || process.env.RENDER_EXTERNAL_URL || 'http://localhost:4000';
+    const normalizedBaseUrl = this.normalizeUrl(baseUrl);
+
+    return {
+      ...updated,
+      pdfUrl: `${normalizedBaseUrl}/uploads/magazines/${updated.pdfFilename}`,
+    };
   }
 
   /**
@@ -170,7 +195,7 @@ export class MagazineIssuesService {
       throw new NotFoundException(`Выпуск с ID ${id} не найден`);
     }
 
-    return this.prisma.magazineIssue.update({
+    const updated = await this.prisma.magazineIssue.update({
       where: { id },
       data: {
         viewsCount: {
@@ -178,6 +203,15 @@ export class MagazineIssuesService {
         },
       },
     });
+
+    // Fix PDF URL
+    const baseUrl = process.env.APP_URL || process.env.RENDER_EXTERNAL_URL || 'http://localhost:4000';
+    const normalizedBaseUrl = this.normalizeUrl(baseUrl);
+
+    return {
+      ...updated,
+      pdfUrl: `${normalizedBaseUrl}/uploads/magazines/${updated.pdfFilename}`,
+    };
   }
 
   /**
@@ -193,7 +227,7 @@ export class MagazineIssuesService {
       throw new NotFoundException(`Выпуск с ID ${id} не найден`);
     }
 
-    return this.prisma.magazineIssue.update({
+    const updated = await this.prisma.magazineIssue.update({
       where: { id },
       data: {
         downloadsCount: {
@@ -201,6 +235,15 @@ export class MagazineIssuesService {
         },
       },
     });
+
+    // Fix PDF URL
+    const baseUrl = process.env.APP_URL || process.env.RENDER_EXTERNAL_URL || 'http://localhost:4000';
+    const normalizedBaseUrl = this.normalizeUrl(baseUrl);
+
+    return {
+      ...updated,
+      pdfUrl: `${normalizedBaseUrl}/uploads/magazines/${updated.pdfFilename}`,
+    };
   }
 
   /**
