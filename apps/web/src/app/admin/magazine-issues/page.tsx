@@ -22,7 +22,7 @@ export default function MagazineIssuesPage() {
     isPinned: false,
   });
 
-  const { data: issues, isLoading } = useMagazineIssues();
+  const { data: issues, isLoading, error } = useMagazineIssues();
   const deleteMutation = useDeleteMagazineIssue();
   const createMutation = useCreateMagazineIssue();
   const uploadImage = useUploadImage();
@@ -77,6 +77,22 @@ export default function MagazineIssuesPage() {
     return (
       <div className="flex justify-center items-center h-64">
         <div className="text-gray-600">Загрузка...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+          <h2 className="text-red-800 font-bold mb-2">Ошибка загрузки</h2>
+          <p className="text-red-600 mb-4">
+            Не удалось загрузить выпуски журнала. Возможно, база данных еще не готова.
+          </p>
+          <p className="text-sm text-red-500">
+            Технические детали: {(error as any)?.message || 'Неизвестная ошибка'}
+          </p>
+        </div>
       </div>
     );
   }

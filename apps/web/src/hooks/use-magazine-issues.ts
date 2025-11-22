@@ -9,6 +9,8 @@ export function useMagazineIssues(published?: boolean) {
       const response = await magazineIssuesApi.getAll(published);
       return response.data;
     },
+    retry: 1,
+    staleTime: 30000, // 30 seconds
   });
 }
 
