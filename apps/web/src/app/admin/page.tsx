@@ -77,7 +77,7 @@ export default function AdminPage() {
         >
           <h3 className="text-xl font-bold mb-2">Управление категориями</h3>
           <p className="text-gray-600">
-            Добавляйте и редактируйте категории
+            Настраивайте основные разделы для структурирования контента сайта
           </p>
         </Link>
 
@@ -87,7 +87,7 @@ export default function AdminPage() {
         >
           <h3 className="text-xl font-bold mb-2">Управление тегами</h3>
           <p className="text-gray-600">
-            Добавляйте и редактируйте теги
+            Управляйте ключевыми словами для классификации и быстрого поиска статей
           </p>
         </Link>
       </div>
