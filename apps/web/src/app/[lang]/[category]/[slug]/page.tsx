@@ -186,15 +186,27 @@ export default async function ArticlePage({
                       {params.lang === 'kz' ? 'Тегтер:' : 'Теги:'}
                     </h3>
                     <div className="flex flex-wrap gap-2">
-                      {article.tags.map((tag: any) => (
-                        <a
-                          key={tag.id}
-                          href={`/${params.lang}/tag/${tag.slug}`}
-                          className="px-3 py-1.5 bg-green-50 hover:bg-green-100 text-green-700 text-sm font-medium rounded-full transition-colors"
-                        >
-                          #{params.lang === 'kz' ? tag.nameKz : tag.nameRu}
-                        </a>
-                      ))}
+                      {article.tags.map((tag: any) => {
+                        // Safely extract tag name - handle malformed data
+                        const getTagName = () => {
+                          const tagName = params.lang === 'kz' ? tag.nameKz : tag.nameRu;
+                          // If tagName is an object (malformed), try to extract string value
+                          if (typeof tagName === 'object' && tagName !== null) {
+                            return (tagName as any).kazakh || (tagName as any).russian || (tag.nameKz as any)?.kazakh || (tag.nameRu as any)?.russian || 'Tag';
+                          }
+                          return tagName || tag.nameKz || tag.nameRu || 'Tag';
+                        };
+
+                        return (
+                          <a
+                            key={tag.id}
+                            href={`/${params.lang}/tag/${tag.slug}`}
+                            className="px-3 py-1.5 bg-green-50 hover:bg-green-100 text-green-700 text-sm font-medium rounded-full transition-colors"
+                          >
+                            #{getTagName()}
+                          </a>
+                        );
+                      })}
                     </div>
                   </div>
                 )}

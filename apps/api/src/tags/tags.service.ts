@@ -297,7 +297,22 @@ Return only the JSON array, no explanations or additional text.`;
         throw new Error('Failed to parse AI response');
       }
 
-      const suggestedTags = JSON.parse(jsonMatch[0]);
+      let suggestedTags = JSON.parse(jsonMatch[0]);
+
+      // Normalize AI response - handle different possible field names
+      // AI might return {kazakh, russian} instead of {nameKz, nameRu}
+      suggestedTags = suggestedTags.map((tag: any) => {
+        // If the tag already has the correct fields, return as is
+        if (tag.nameKz && tag.nameRu) {
+          return tag;
+        }
+
+        // Otherwise, try to map from alternative field names
+        return {
+          nameKz: tag.nameKz || tag.kazakh || tag.kz || tag.kazakhName || '',
+          nameRu: tag.nameRu || tag.russian || tag.ru || tag.russianName || '',
+        };
+      }).filter((tag: any) => tag.nameKz && tag.nameRu); // Filter out any invalid tags
 
       // Match suggested tags with existing tags
       const matchedTags = [];

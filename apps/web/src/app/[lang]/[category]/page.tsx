@@ -194,8 +194,21 @@ export default async function CategoryPage({
     );
   }
 
-  const categoryName = params.lang === 'kz' ? category.nameKz : category.nameRu;
-  const categoryDescription = params.lang === 'kz' ? category.descriptionKz : category.descriptionRu;
+  // Safely extract category name and description - handle malformed data
+  const getCategoryField = (field: any) => {
+    if (typeof field === 'object' && field !== null) {
+      return field.kazakh || field.russian || '';
+    }
+    return field || '';
+  };
+
+  const categoryName = getCategoryField(
+    params.lang === 'kz' ? category.nameKz : category.nameRu
+  ) || getCategoryField(category.nameKz) || getCategoryField(category.nameRu);
+
+  const categoryDescription = getCategoryField(
+    params.lang === 'kz' ? category.descriptionKz : category.descriptionRu
+  );
 
   return (
     <div className="bg-gray-50">

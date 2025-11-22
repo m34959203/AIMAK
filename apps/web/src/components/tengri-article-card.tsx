@@ -47,12 +47,19 @@ export function TengriArticleCard({
 }: TengriArticleCardProps) {
   const slug = lang === 'kz' ? article.slugKz : article.slugRu || article.slugKz;
   const title = lang === 'kz' ? article.titleKz : article.titleRu || article.titleKz;
-  const excerpt = lang === 'kz' ? article.excerptKz : article.excerptRu || article.excerptKz;
-  const categoryName = article.category
-    ? lang === 'kz'
-      ? article.category.nameKz
-      : article.category.nameRu
-    : '';
+  const excerpt = lang === 'kz' ? article.excerptKz : article.excerptRu || article.excerptRu || article.excerptKz;
+
+  // Safely extract category name - handle malformed data
+  const getCategoryName = () => {
+    if (!article.category) return '';
+    const catName = lang === 'kz' ? article.category.nameKz : article.category.nameRu;
+    // If catName is an object (malformed), try to extract string value
+    if (typeof catName === 'object' && catName !== null) {
+      return (catName as any).kazakh || (catName as any).russian || article.category.nameKz || article.category.nameRu || '';
+    }
+    return catName || article.category.nameKz || article.category.nameRu || '';
+  };
+  const categoryName = getCategoryName();
 
   const timeAgo = article.publishedAt
     ? formatDistanceToNow(new Date(article.publishedAt), {
