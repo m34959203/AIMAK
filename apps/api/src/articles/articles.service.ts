@@ -475,14 +475,14 @@ Return ONLY the JSON object, no additional text.`;
       console.error('Error analyzing article:', error);
 
       // Provide more detailed error information
-      if (error.response) {
+      if (axios.isAxiosError(error) && error.response) {
         console.error('API Response Error:', error.response.data);
         throw new BadRequestException(
           `AI service error: ${error.response.data?.error?.message || 'Unknown error from AI service'}`,
         );
       }
 
-      if (error.message?.includes('Failed to parse')) {
+      if (error instanceof Error && error.message?.includes('Failed to parse')) {
         throw new BadRequestException(
           'AI returned invalid response format. Please try again or contact support.',
         );
