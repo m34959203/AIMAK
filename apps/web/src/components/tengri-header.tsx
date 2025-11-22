@@ -287,7 +287,7 @@ export function TengriHeader({ lang = 'kz' }: HeaderProps) {
       </div>
 
       {/* Categories Navigation */}
-      <div className="bg-[#303133] text-white">
+      <div className="bg-[#111827] text-white">
         <div className="container mx-auto px-4">
           <nav className="hidden lg:flex items-center justify-between">
             <div className="flex items-center">
