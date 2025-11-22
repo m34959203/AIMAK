@@ -205,16 +205,12 @@ export class ArticlesController {
           continue;
         }
 
-        // Only update if category changed
-        if (article.category?.slug !== suggestedSlug) {
-          await this.prisma.article.update({
-            where: { id: article.id },
-            data: { categoryId: suggestedCategory.id },
-          });
-          updated++;
-        } else {
-          skipped++;
-        }
+        // Всегда обновляем категорию на основе AI предложения
+        await this.prisma.article.update({
+          where: { id: article.id },
+          data: { categoryId: suggestedCategory.id },
+        });
+        updated++;
 
         // Delay to avoid rate limiting (2 seconds between requests)
         await new Promise(resolve => setTimeout(resolve, 2000));
