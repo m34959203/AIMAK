@@ -27,6 +27,8 @@ let accessToken = null;
 let adminId = null;
 let categoriesCache = {};
 let wpCategoriesCache = {};
+let tagsCache = {}; // Наши теги: { slug: tagObject }
+let wpTagsCache = {}; // WordPress теги: { id: tagObject }
 
 // HTTP запрос с таймаутом
 function request(url, options = {}) {
@@ -235,6 +237,17 @@ async function loadCategories() {
   }
 }
 
+// Получить теги из новой системы
+async function loadTags() {
+  const response = await request(`${NEW_API}/api/tags`);
+  if (response.status === 200) {
+    response.body.forEach(tag => {
+      tagsCache[tag.slug] = tag;
+    });
+    console.log(`✅ Загружено ${Object.keys(tagsCache).length} тегов\n`);
+  }
+}
+
 // Получить категории WordPress
 async function loadWPCategories() {
   try {
@@ -250,11 +263,71 @@ async function loadWPCategories() {
   }
 }
 
+// Получить теги WordPress
+async function loadWPTags() {
+  try {
+    const response = await request(`${OLD_SITE}/wp-json/wp/v2/tags?per_page=100`);
+    if (response.status === 200) {
+      response.body.forEach(tag => {
+        wpTagsCache[tag.id] = tag;
+      });
+      console.log(`✅ Загружено ${Object.keys(wpTagsCache).length} тегов WordPress\n`);
+    }
+  } catch (error) {
+    console.log('⚠️  Не удалось загрузить теги WordPress');
+  }
+}
+
 // Определить категорию для статьи
 function getTargetCategory(wpCategoryIds) {
   // Пока все статьи идут в "Жаңалықтар"
   // TODO: можно добавить маппинг по названиям категорий
   return categoriesCache['zhanalyqtar'];
+}
+
+// Создать slug для тега
+function createTagSlug(name) {
+  return name
+    .toLowerCase()
+    .replace(/[^a-zа-яәіңғүұқөһ0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+}
+
+// Создать тег
+async function createTag(name) {
+  try {
+    const response = await request(`${NEW_API}/api/tags`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${accessToken}`
+      },
+      body: { name }
+    });
+
+    if (response.status === 200 || response.status === 201) {
+      const tag = response.body;
+      tagsCache[tag.slug] = tag;
+      return tag;
+    }
+  } catch (error) {
+    // Тег может уже существовать
+  }
+  return null;
+}
+
+// Получить или создать тег по имени
+async function getOrCreateTag(name) {
+  const slug = createTagSlug(name);
+
+  // Проверяем кеш
+  if (tagsCache[slug]) {
+    return tagsCache[slug];
+  }
+
+  // Создаем новый тег
+  const tag = await createTag(name);
+  return tag;
 }
 
 // Получить статьи из WordPress
@@ -419,6 +492,21 @@ async function importArticle(wpPost) {
 
   content = contentResult.html;
 
+  // Обработать теги
+  const tagIds = [];
+  if (wpPost.tags && wpPost.tags.length > 0) {
+    for (const wpTagId of wpPost.tags) {
+      const wpTag = wpTagsCache[wpTagId];
+      if (wpTag) {
+        const tag = await getOrCreateTag(wpTag.name);
+        if (tag) {
+          tagIds.push(tag.id);
+          process.stdout.write('🏷️');
+        }
+      }
+    }
+  }
+
   const articleData = {
     titleKz: title,
     slugKz: slug + '-' + wpPost.id,
@@ -430,6 +518,7 @@ async function importArticle(wpPost) {
     published: true,
     publishedAt: wpPost.date,
     coverImage: coverImageUrl, // Всегда есть, так как проверили выше
+    tagIds: tagIds.length > 0 ? tagIds : undefined, // Добавляем теги если есть
   };
 
   try {
@@ -467,9 +556,11 @@ async function main() {
     process.exit(1);
   }
 
-  // Загрузить категории
+  // Загрузить категории и теги
   await loadCategories();
   await loadWPCategories();
+  await loadTags();
+  await loadWPTags();
 
   if (skipCount > 0) {
     console.log(`📊 Пропуск первых ${skipCount} статей, затем импорт ${limit} статей...\n`);
