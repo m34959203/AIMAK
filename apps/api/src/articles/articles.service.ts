@@ -345,11 +345,12 @@ export class ArticlesService {
   }
 
   async analyzeArticle(dto: AnalyzeArticleDto) {
-    const apiKey = process.env.OPENROUTER_API_KEY;
+    // Support both OPENROUTER_API_KEY and OPENAI_API_KEY for compatibility
+    const apiKey = process.env.OPENROUTER_API_KEY || process.env.OPENAI_API_KEY;
 
     if (!apiKey) {
       throw new BadRequestException(
-        'AI editor is not configured. Please contact the administrator to set up the OPENROUTER_API_KEY environment variable.',
+        'AI editor is not configured. Please contact the administrator to set up the OPENROUTER_API_KEY or OPENAI_API_KEY environment variable.',
       );
     }
 

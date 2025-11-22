@@ -136,10 +136,11 @@ export class TagsService {
   }
 
   async generateTags(dto: GenerateTagsDto) {
-    const apiKey = process.env.OPENROUTER_API_KEY;
+    // Support both OPENROUTER_API_KEY and OPENAI_API_KEY for compatibility
+    const apiKey = process.env.OPENROUTER_API_KEY || process.env.OPENAI_API_KEY;
 
     if (!apiKey) {
-      throw new Error('OpenRouter API key is not configured');
+      throw new Error('OpenRouter API key is not configured. Please set OPENROUTER_API_KEY or OPENAI_API_KEY environment variable.');
     }
 
     // Get existing tags to help AI suggest relevant ones
