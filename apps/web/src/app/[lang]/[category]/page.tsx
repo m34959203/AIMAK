@@ -1,4 +1,5 @@
 import { TengriArticleCard } from '@/components/tengri-article-card';
+import { Pagination } from '@/components/pagination';
 import { getApiEndpoint } from '@/lib/api-url';
 
 // Force dynamic rendering to always fetch fresh data
@@ -57,26 +58,35 @@ async function getFeaturedCategoryArticles(categorySlug: string) {
   }
 }
 
-async function getRegularCategoryArticles(categorySlug: string) {
+async function getRegularCategoryArticles(categorySlug: string, page: number = 1) {
   try {
-    // Fetch non-featured articles separately for better performance
+    // Fetch non-featured articles with pagination
     const apiEndpoint = getApiEndpoint('/articles', {
       published: true,
       categorySlug,
-      isFeatured: false
+      isFeatured: false,
+      page,
+      limit: 20
     });
 
     const res = await fetch(apiEndpoint, { cache: 'no-store' });
 
     if (!res.ok) {
-      return [];
+      return { data: [], meta: { total: 0, page: 1, limit: 20, totalPages: 0 } };
     }
 
-    const articles = await res.json();
-    return Array.isArray(articles) ? articles : [];
+    const response = await res.json();
+
+    // If response is paginated (has data and meta)
+    if (response.data && response.meta) {
+      return response;
+    }
+
+    // Fallback for non-paginated response
+    return { data: Array.isArray(response) ? response : [], meta: { total: 0, page: 1, limit: 20, totalPages: 0 } };
   } catch (error) {
     console.error('Failed to fetch regular articles:', error);
-    return [];
+    return { data: [], meta: { total: 0, page: 1, limit: 20, totalPages: 0 } };
   }
 }
 
@@ -155,16 +165,23 @@ async function getCategory(categorySlug: string) {
 
 export default async function CategoryPage({
   params,
+  searchParams,
 }: {
   params: { lang: 'kz' | 'ru'; category: string };
+  searchParams: { page?: string };
 }) {
+  const currentPage = searchParams.page ? parseInt(searchParams.page, 10) : 1;
+
   // Fetch category info and articles in parallel for better performance
-  const [category, featuredArticles, regularArticles, allArticles] = await Promise.all([
+  const [category, featuredArticles, paginatedArticles, allArticles] = await Promise.all([
     getCategory(params.category),
     getFeaturedCategoryArticles(params.category),
-    getRegularCategoryArticles(params.category),
+    getRegularCategoryArticles(params.category, currentPage),
     getCategoryArticles(params.category), // For popular articles sidebar
   ]);
+
+  const regularArticles = paginatedArticles.data;
+  const paginationMeta = paginatedArticles.meta;
 
   if (!category) {
     return (
@@ -215,26 +232,36 @@ export default async function CategoryPage({
             )}
 
             {/* All Articles */}
-            <div className="bg-white rounded-lg p-6">
+            <div className="bg-white rounded-lg p-6 mb-6">
               <h2 className="text-2xl font-bold mb-6 border-b pb-4">
                 {params.lang === 'kz' ? 'Барлық мақалалар' : 'Все статьи'}
               </h2>
 
               {regularArticles.length > 0 ? (
-                <div className="space-y-4">
-                  {regularArticles.map((article: any) => (
-                    <TengriArticleCard
-                      key={article.id}
-                      article={article}
-                      lang={params.lang}
-                      variant="horizontal"
-                    />
-                  ))}
-                </div>
+                <>
+                  <div className="space-y-4">
+                    {regularArticles.map((article: any) => (
+                      <TengriArticleCard
+                        key={article.id}
+                        article={article}
+                        lang={params.lang}
+                        variant="horizontal"
+                      />
+                    ))}
+                  </div>
+
+                  {/* Pagination */}
+                  <Pagination
+                    currentPage={paginationMeta.page}
+                    totalPages={paginationMeta.totalPages}
+                    baseUrl={`/${params.lang}/${params.category}`}
+                    lang={params.lang}
+                  />
+                </>
               ) : (
                 <div className="text-center py-12 text-gray-500">
                   {params.lang === 'kz'
-                    ? 'Бұл санатта әзірге мақалалар жоқ'
+                    ? 'Бұл санатта әзірше мақалалар жоқ'
                     : 'В этой категории пока нет статей'}
                 </div>
               )}

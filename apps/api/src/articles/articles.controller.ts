@@ -37,23 +37,29 @@ export class ArticlesController {
 
   @Get()
   @Public()
-  @ApiOperation({ summary: 'Get all articles' })
+  @ApiOperation({ summary: 'Get all articles with optional pagination' })
   @ApiQuery({ name: 'published', required: false, type: Boolean })
   @ApiQuery({ name: 'isBreaking', required: false, type: Boolean })
   @ApiQuery({ name: 'isFeatured', required: false, type: Boolean })
   @ApiQuery({ name: 'isPinned', required: false, type: Boolean })
   @ApiQuery({ name: 'categorySlug', required: false, type: String })
+  @ApiQuery({ name: 'page', required: false, type: Number, description: 'Page number (starts from 1)' })
+  @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Items per page (default: 20)' })
   findAll(
     @Query('published') published?: string,
     @Query('isBreaking') isBreaking?: string,
     @Query('isFeatured') isFeatured?: string,
     @Query('isPinned') isPinned?: string,
     @Query('categorySlug') categorySlug?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
   ) {
     const publishedFilter = published === 'true' ? true : published === 'false' ? false : undefined;
     const isBreakingFilter = isBreaking === 'true' ? true : isBreaking === 'false' ? false : undefined;
     const isFeaturedFilter = isFeatured === 'true' ? true : isFeatured === 'false' ? false : undefined;
     const isPinnedFilter = isPinned === 'true' ? true : isPinned === 'false' ? false : undefined;
+    const pageNumber = page ? parseInt(page, 10) : undefined;
+    const limitNumber = limit ? parseInt(limit, 10) : undefined;
 
     return this.articlesService.findAll({
       published: publishedFilter,
@@ -61,6 +67,8 @@ export class ArticlesController {
       isFeatured: isFeaturedFilter,
       isPinned: isPinnedFilter,
       categorySlug,
+      page: pageNumber,
+      limit: limitNumber,
     });
   }
 
