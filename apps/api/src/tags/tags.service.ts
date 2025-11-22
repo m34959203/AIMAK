@@ -4,10 +4,19 @@ import { CreateTagDto } from './dto/create-tag.dto';
 import { UpdateTagDto } from './dto/update-tag.dto';
 import { GenerateTagsDto } from './dto/generate-tags.dto';
 import axios from 'axios';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 @Injectable()
 export class TagsService {
-  constructor(private prisma: PrismaService) {}
+  private geminiClient: GoogleGenerativeAI | null = null;
+
+  constructor(private prisma: PrismaService) {
+    // Initialize Google Gemini client if API key is available
+    const geminiApiKey = process.env.GEMINI_API_KEY;
+    if (geminiApiKey) {
+      this.geminiClient = new GoogleGenerativeAI(geminiApiKey);
+    }
+  }
 
   private generateSlug(name: string): string {
     return name
@@ -136,13 +145,6 @@ export class TagsService {
   }
 
   async generateTags(dto: GenerateTagsDto) {
-    // Support both OPENROUTER_API_KEY and OPENAI_API_KEY for compatibility
-    const apiKey = process.env.OPENROUTER_API_KEY || process.env.OPENAI_API_KEY;
-
-    if (!apiKey) {
-      throw new Error('OpenRouter API key is not configured. Please set OPENROUTER_API_KEY or OPENAI_API_KEY environment variable.');
-    }
-
     // Get existing tags to help AI suggest relevant ones
     const existingTags = await this.prisma.tag.findMany({
       select: {
@@ -185,29 +187,67 @@ Instructions:
 
 Return only the JSON array, no explanations or additional text.`;
 
-    try {
-      const response = await axios.post(
-        'https://openrouter.ai/api/v1/chat/completions',
-        {
-          model: 'google/gemma-2-27b-it',
-          messages: [
-            {
-              role: 'user',
-              content: prompt,
-            },
-          ],
-        },
-        {
-          headers: {
-            'Authorization': `Bearer ${apiKey}`,
-            'Content-Type': 'application/json',
-            'HTTP-Referer': process.env.FRONTEND_URL || 'http://localhost:3000',
-            'X-Title': 'AIMAK News',
-          },
-        },
-      );
+    let aiResponse: string | null = null;
 
-      const aiResponse = response.data.choices[0].message.content;
+    // Try Google Gemini first if available
+    if (this.geminiClient) {
+      try {
+        console.log('Using Google Gemini API for tag generation...');
+        const model = this.geminiClient.getGenerativeModel({ model: 'gemini-1.5-flash' });
+        const result = await model.generateContent(prompt);
+        aiResponse = result.response.text();
+        console.log('Google Gemini tag generation successful');
+      } catch (error) {
+        console.error('Google Gemini tag generation error:', error);
+        // Fall through to OpenRouter
+      }
+    }
+
+    // Fall back to OpenRouter if Gemini failed or unavailable
+    if (!aiResponse) {
+      const openRouterKey = process.env.OPENROUTER_API_KEY || process.env.OPENAI_API_KEY;
+      if (!openRouterKey) {
+        throw new Error('Translation service is not configured. Please set GEMINI_API_KEY or OPENROUTER_API_KEY environment variable.');
+      }
+
+      try {
+        console.log('Using OpenRouter API for tag generation...');
+        const response = await axios.post(
+          'https://openrouter.ai/api/v1/chat/completions',
+          {
+            model: process.env.OPENROUTER_MODEL || 'tngtech/deepseek-r1t2-chimera:free',
+            messages: [
+              {
+                role: 'user',
+                content: prompt,
+              },
+            ],
+          },
+          {
+            headers: {
+              'Authorization': `Bearer ${openRouterKey}`,
+              'Content-Type': 'application/json',
+              'HTTP-Referer': process.env.FRONTEND_URL || 'http://localhost:3000',
+              'X-Title': 'AIMAK News',
+            },
+          },
+        );
+
+        aiResponse = response.data.choices[0].message.content;
+        console.log('OpenRouter tag generation successful');
+      } catch (error) {
+        console.error('OpenRouter tag generation error:', error);
+        if (axios.isAxiosError(error) && error.response) {
+          console.error('API Response Error:', error.response.data);
+          throw new Error(
+            `Tag generation service error: ${error.response.data?.error?.message || 'Unknown error'}`,
+          );
+        }
+        throw new Error('Failed to generate tags. Please try again later.');
+      }
+    }
+
+    try {
 
       // Extract JSON from the response (in case AI adds any extra text)
       const jsonMatch = aiResponse.match(/\[[\s\S]*\]/);
