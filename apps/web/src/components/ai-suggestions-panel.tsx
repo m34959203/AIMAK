@@ -33,6 +33,16 @@ export function AISuggestionsPanel({
 }: AISuggestionsPanelProps) {
   const [expandedSuggestions, setExpandedSuggestions] = useState<number[]>([]);
 
+  // Safely extract improvement text - handle malformed data
+  const getImprovementText = (field: any): string => {
+    if (!field) return '';
+    if (typeof field === 'string') return field;
+    if (typeof field === 'object') {
+      return (field as any).kk || (field as any).ru || (field as any).kazakh || (field as any).russian || '';
+    }
+    return String(field);
+  };
+
   const toggleSuggestion = (index: number) => {
     setExpandedSuggestions((prev) =>
       prev.includes(index)
@@ -152,10 +162,10 @@ export function AISuggestionsPanel({
                       Улучшенный заголовок:
                     </div>
                     <div className="bg-white border border-blue-300 rounded p-3 flex items-start justify-between gap-2">
-                      <p className="text-gray-800 flex-1">{analysis.improvements.title}</p>
+                      <p className="text-gray-800 flex-1">{getImprovementText(analysis.improvements.title)}</p>
                       {onApplyImprovement && (
                         <button
-                          onClick={() => onApplyImprovement('title', analysis.improvements.title!)}
+                          onClick={() => onApplyImprovement('title', getImprovementText(analysis.improvements.title))}
                           className="bg-blue-600 hover:bg-blue-700 text-white text-sm px-3 py-1 rounded whitespace-nowrap"
                         >
                           Применить
@@ -170,10 +180,10 @@ export function AISuggestionsPanel({
                       Улучшенное описание:
                     </div>
                     <div className="bg-white border border-blue-300 rounded p-3 flex items-start justify-between gap-2">
-                      <p className="text-gray-800 flex-1">{analysis.improvements.excerpt}</p>
+                      <p className="text-gray-800 flex-1">{getImprovementText(analysis.improvements.excerpt)}</p>
                       {onApplyImprovement && (
                         <button
-                          onClick={() => onApplyImprovement('excerpt', analysis.improvements.excerpt!)}
+                          onClick={() => onApplyImprovement('excerpt', getImprovementText(analysis.improvements.excerpt))}
                           className="bg-blue-600 hover:bg-blue-700 text-white text-sm px-3 py-1 rounded whitespace-nowrap"
                         >
                           Применить
