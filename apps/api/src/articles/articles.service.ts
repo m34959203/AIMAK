@@ -6,13 +6,22 @@ import { AnalyzeArticleDto } from './dto/analyze-article.dto';
 import { TranslationService } from '../translation/translation.service';
 import { TranslationLanguage } from '../translation/dto/translate.dto';
 import axios from 'axios';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 @Injectable()
 export class ArticlesService {
+  private geminiClient: GoogleGenerativeAI | null = null;
+
   constructor(
     private prisma: PrismaService,
     private translationService: TranslationService,
-  ) {}
+  ) {
+    // Initialize Google Gemini client if API key is available
+    const geminiApiKey = process.env.GEMINI_API_KEY;
+    if (geminiApiKey) {
+      this.geminiClient = new GoogleGenerativeAI(geminiApiKey);
+    }
+  }
 
   private generateSlug(title: string): string {
     return title
@@ -428,15 +437,6 @@ export class ArticlesService {
   }
 
   async analyzeArticle(dto: AnalyzeArticleDto) {
-    // Support both OPENROUTER_API_KEY and OPENAI_API_KEY for compatibility
-    const apiKey = process.env.OPENROUTER_API_KEY || process.env.OPENAI_API_KEY;
-
-    if (!apiKey) {
-      throw new BadRequestException(
-        'AI editor is not configured. Please contact the administrator to set up the OPENROUTER_API_KEY or OPENAI_API_KEY environment variable.',
-      );
-    }
-
     // Prepare content for analysis
     const kazakh = {
       title: dto.titleKz,
@@ -521,29 +521,71 @@ categories: "Структура", "Контент", "Заголовок", "Яз�
 
 Return ONLY the JSON object, no additional text.`;
 
-    try {
-      const response = await axios.post(
-        'https://openrouter.ai/api/v1/chat/completions',
-        {
-          model: 'google/gemma-2-27b-it',
-          messages: [
-            {
-              role: 'user',
-              content: prompt,
-            },
-          ],
-        },
-        {
-          headers: {
-            'Authorization': `Bearer ${apiKey}`,
-            'Content-Type': 'application/json',
-            'HTTP-Referer': process.env.FRONTEND_URL || 'http://localhost:3000',
-            'X-Title': 'AIMAK News',
-          },
-        },
-      );
+    let aiResponse: string | null = null;
 
-      const aiResponse = response.data.choices[0].message.content;
+    // Try Google Gemini first if available
+    if (this.geminiClient) {
+      try {
+        console.log('Using Google Gemini API for article analysis...');
+        const model = this.geminiClient.getGenerativeModel({ model: 'gemini-1.5-flash' });
+        const result = await model.generateContent(prompt);
+        aiResponse = result.response.text();
+        console.log('Google Gemini article analysis successful');
+      } catch (error) {
+        console.error('Google Gemini article analysis error:', error);
+        // Fall through to OpenRouter
+      }
+    }
+
+    // Fall back to OpenRouter if Gemini failed or unavailable
+    if (!aiResponse) {
+      const openRouterKey = process.env.OPENROUTER_API_KEY || process.env.OPENAI_API_KEY;
+      if (!openRouterKey) {
+        throw new BadRequestException(
+          'AI editor is not configured. Please set GEMINI_API_KEY or OPENROUTER_API_KEY environment variable.',
+        );
+      }
+
+      try {
+        console.log('Using OpenRouter API for article analysis...');
+        const response = await axios.post(
+          'https://openrouter.ai/api/v1/chat/completions',
+          {
+            model: process.env.OPENROUTER_MODEL || 'tngtech/deepseek-r1t2-chimera:free',
+            messages: [
+              {
+                role: 'user',
+                content: prompt,
+              },
+            ],
+          },
+          {
+            headers: {
+              'Authorization': `Bearer ${openRouterKey}`,
+              'Content-Type': 'application/json',
+              'HTTP-Referer': process.env.FRONTEND_URL || 'http://localhost:3000',
+              'X-Title': 'AIMAK News',
+            },
+          },
+        );
+
+        aiResponse = response.data.choices[0].message.content;
+        console.log('OpenRouter article analysis successful');
+      } catch (error) {
+        console.error('OpenRouter article analysis error:', error);
+        if (axios.isAxiosError(error) && error.response) {
+          console.error('API Response Error:', error.response.data);
+          throw new BadRequestException(
+            `AI service error: ${error.response.data?.error?.message || 'Unknown error from AI service'}`,
+          );
+        }
+        throw new BadRequestException(
+          'Failed to analyze article. Please try again later or contact support if the problem persists.',
+        );
+      }
+    }
+
+    try {
 
       // Extract JSON from the response
       const jsonMatch = aiResponse.match(/\{[\s\S]*\}/);

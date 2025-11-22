@@ -1,21 +1,23 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { TranslateDto, TranslateArticleDto, TranslationLanguage } from './dto/translate.dto';
 import axios from 'axios';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 @Injectable()
 export class TranslationService {
+  private geminiClient: GoogleGenerativeAI | null = null;
+
+  constructor() {
+    // Initialize Google Gemini client if API key is available
+    const geminiApiKey = process.env.GEMINI_API_KEY;
+    if (geminiApiKey) {
+      this.geminiClient = new GoogleGenerativeAI(geminiApiKey);
+    }
+  }
   /**
    * Translate a single text from one language to another
    */
   async translateText(dto: TranslateDto): Promise<{ translatedText: string }> {
-    const apiKey = process.env.OPENROUTER_API_KEY || process.env.OPENAI_API_KEY;
-
-    if (!apiKey) {
-      throw new BadRequestException(
-        'Translation service is not configured. Please contact the administrator.',
-      );
-    }
-
     if (dto.sourceLanguage === dto.targetLanguage) {
       throw new BadRequestException('Source and target languages must be different');
     }
@@ -41,22 +43,46 @@ ${dto.text}
 
 IMPORTANT: Return ONLY the translated text without any explanations, notes, or additional commentary.`;
 
+    // Try Google Gemini first if available
+    if (this.geminiClient) {
+      try {
+        console.log('Using Google Gemini API for translation...');
+        const model = this.geminiClient.getGenerativeModel({ model: 'gemini-1.5-flash' });
+        const result = await model.generateContent(prompt);
+        const translatedText = result.response.text().trim();
+        console.log('Google Gemini translation successful');
+        return { translatedText };
+      } catch (error) {
+        console.error('Google Gemini translation error:', error);
+        // Fall through to OpenRouter
+      }
+    }
+
+    // Fall back to OpenRouter
+    const openRouterKey = process.env.OPENROUTER_API_KEY || process.env.OPENAI_API_KEY;
+    if (!openRouterKey) {
+      throw new BadRequestException(
+        'Translation service is not configured. Please set GEMINI_API_KEY or OPENROUTER_API_KEY environment variable.',
+      );
+    }
+
     try {
+      console.log('Using OpenRouter API for translation...');
       const response = await axios.post(
         'https://openrouter.ai/api/v1/chat/completions',
         {
-          model: 'google/gemma-2-27b-it',
+          model: process.env.OPENROUTER_MODEL || 'tngtech/deepseek-r1t2-chimera:free',
           messages: [
             {
               role: 'user',
               content: prompt,
             },
           ],
-          temperature: 0.3, // Lower temperature for more consistent translations
+          temperature: 0.3,
         },
         {
           headers: {
-            'Authorization': `Bearer ${apiKey}`,
+            'Authorization': `Bearer ${openRouterKey}`,
             'Content-Type': 'application/json',
             'HTTP-Referer': process.env.FRONTEND_URL || 'http://localhost:3000',
             'X-Title': 'AIMAK News Translation',
@@ -65,10 +91,10 @@ IMPORTANT: Return ONLY the translated text without any explanations, notes, or a
       );
 
       const translatedText = response.data.choices[0].message.content.trim();
-
+      console.log('OpenRouter translation successful');
       return { translatedText };
     } catch (error) {
-      console.error('Translation error:', error);
+      console.error('OpenRouter translation error:', error);
 
       if (axios.isAxiosError(error) && error.response) {
         console.error('API Response Error:', error.response.data);
@@ -98,15 +124,6 @@ IMPORTANT: Return ONLY the translated text without any explanations, notes, or a
       sourceLanguage: dto.sourceLanguage,
       targetLanguage: dto.targetLanguage,
     });
-
-    const apiKey = process.env.OPENROUTER_API_KEY || process.env.OPENAI_API_KEY;
-
-    if (!apiKey) {
-      console.error('Translation API key not configured');
-      throw new BadRequestException(
-        'Translation service is not configured. Please contact the administrator.',
-      );
-    }
 
     if (dto.sourceLanguage === dto.targetLanguage) {
       throw new BadRequestException('Source and target languages must be different');
@@ -151,12 +168,49 @@ Return your translation as a JSON object with this EXACT structure:
 
 IMPORTANT: Return ONLY the JSON object, no additional text or explanations.`;
 
+    // Try Google Gemini first if available
+    if (this.geminiClient) {
+      try {
+        console.log('Using Google Gemini API for article translation...');
+        const model = this.geminiClient.getGenerativeModel({ model: 'gemini-1.5-flash' });
+        const result = await model.generateContent(prompt);
+        const aiResponse = result.response.text();
+
+        // Extract JSON from the response
+        const jsonMatch = aiResponse.match(/\{[\s\S]*\}/);
+        if (!jsonMatch) {
+          console.error('Failed to extract JSON from Gemini response:', aiResponse);
+          throw new Error('Failed to parse translation response');
+        }
+
+        const translation = JSON.parse(jsonMatch[0]);
+        console.log('Google Gemini article translation successful');
+
+        return {
+          title: translation.title,
+          excerpt: dto.excerpt ? translation.excerpt : undefined,
+          content: translation.content,
+        };
+      } catch (error) {
+        console.error('Google Gemini article translation error:', error);
+        // Fall through to OpenRouter
+      }
+    }
+
+    // Fall back to OpenRouter
+    const openRouterKey = process.env.OPENROUTER_API_KEY || process.env.OPENAI_API_KEY;
+    if (!openRouterKey) {
+      throw new BadRequestException(
+        'Translation service is not configured. Please set GEMINI_API_KEY or OPENROUTER_API_KEY environment variable.',
+      );
+    }
+
     try {
-      console.log('Sending request to OpenRouter API...');
+      console.log('Using OpenRouter API for article translation...');
       const response = await axios.post(
         'https://openrouter.ai/api/v1/chat/completions',
         {
-          model: 'google/gemma-2-27b-it',
+          model: process.env.OPENROUTER_MODEL || 'tngtech/deepseek-r1t2-chimera:free',
           messages: [
             {
               role: 'user',
@@ -166,7 +220,7 @@ IMPORTANT: Return ONLY the JSON object, no additional text or explanations.`;
         },
         {
           headers: {
-            'Authorization': `Bearer ${apiKey}`,
+            'Authorization': `Bearer ${openRouterKey}`,
             'Content-Type': 'application/json',
             'HTTP-Referer': process.env.FRONTEND_URL || 'http://localhost:3000',
             'X-Title': 'AIMAK News Translation',
@@ -185,7 +239,7 @@ IMPORTANT: Return ONLY the JSON object, no additional text or explanations.`;
       }
 
       const translation = JSON.parse(jsonMatch[0]);
-      console.log('Translation completed successfully');
+      console.log('OpenRouter article translation successful');
 
       return {
         title: translation.title,
