@@ -1,5 +1,6 @@
 import { TengriArticleCard } from '@/components/tengri-article-card';
 import { Pagination } from '@/components/pagination';
+import { Advertisement } from '@/components/advertisement';
 import { getApiEndpoint } from '@/lib/api-url';
 
 // Force dynamic rendering to always fetch fresh data
@@ -269,9 +270,9 @@ export default async function CategoryPage({
           </div>
 
           {/* Sidebar - 4 cols */}
-          <aside className="lg:col-span-4">
+          <aside className="lg:col-span-4 space-y-6">
             {/* Popular in Category */}
-            <div className="bg-white rounded-lg p-6 mb-6 sticky top-20">
+            <div className="bg-white rounded-lg p-6">
               <h3 className="text-xl font-bold mb-4 border-b pb-3">
                 {params.lang === 'kz' ? 'Танымал мақалалар' : 'Популярные статьи'}
               </h3>
@@ -311,11 +312,10 @@ export default async function CategoryPage({
             </div>
 
             {/* Ad Space */}
-            <div className="bg-gray-200 rounded-lg p-6 flex items-center justify-center h-64">
-              <span className="text-gray-400">
-                {params.lang === 'kz' ? 'Жарнама' : 'Реклама'} 300x600
-              </span>
-            </div>
+            <Advertisement
+              position="HOME_SIDEBAR"
+              className="w-full h-96 bg-gray-100 rounded-lg overflow-hidden"
+            />
           </aside>
         </div>
       </div>
