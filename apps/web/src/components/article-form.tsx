@@ -172,20 +172,9 @@ export function ArticleForm({ article, onSubmit, isLoading }: ArticleFormProps) 
       setSuggestedTags(response.data);
       setShowSuggestedTags(true);
 
-      // Auto-select existing tags
-      if (response.data.existing.length > 0) {
-        const existingTagIds = response.data.existing
-          .map((suggestedTag) => {
-            const tag = tags?.find(
-              (t) =>
-                t.nameKz.toLowerCase() === suggestedTag.nameKz.toLowerCase() ||
-                t.nameRu.toLowerCase() === suggestedTag.nameRu.toLowerCase()
-            );
-            return tag?.id;
-          })
-          .filter(Boolean) as string[];
-
-        setSelectedTags((prev) => Array.from(new Set([...prev, ...existingTagIds])));
+      // Auto-select all tags (existing + newly created)
+      if (response.data.tagIds && response.data.tagIds.length > 0) {
+        setSelectedTags((prev) => Array.from(new Set([...prev, ...response.data.tagIds])));
       }
     } catch (error) {
       console.error('Error generating tags:', error);
@@ -660,13 +649,13 @@ export function ArticleForm({ article, onSubmit, isLoading }: ArticleFormProps) 
                   </div>
                 )}
 
-                {suggestedTags.suggested.length > 0 && (
+                {suggestedTags.created && suggestedTags.created.length > 0 && (
                   <div>
                     <p className="text-sm text-purple-700 mb-2">
-                      💡 Рекомендуется создать новые теги:
+                      ✨ Созданы новые теги (автоматически выбраны):
                     </p>
                     <div className="flex flex-wrap gap-2">
-                      {suggestedTags.suggested.map((tag, index) => {
+                      {suggestedTags.created.map((tag, index) => {
                         // Safely extract tag names - handle malformed data
                         const getNameKz = () => {
                           if (typeof tag.nameKz === 'object' && tag.nameKz !== null) {
@@ -684,16 +673,13 @@ export function ArticleForm({ article, onSubmit, isLoading }: ArticleFormProps) 
                         return (
                           <span
                             key={index}
-                            className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm border border-purple-300"
+                            className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm border border-blue-300"
                           >
                             {getNameKz()} / {getNameRu()}
                           </span>
                         );
                       })}
                     </div>
-                    <p className="text-xs text-purple-600 mt-2">
-                      Примечание: Создайте эти теги в разделе "Теги" в админ-панели, затем вернитесь сюда и выберите их.
-                    </p>
                   </div>
                 )}
               </div>

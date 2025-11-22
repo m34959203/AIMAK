@@ -58,6 +58,8 @@ export function useDeleteTag() {
 }
 
 export function useGenerateTags() {
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: (data: {
       titleKz: string;
@@ -65,5 +67,20 @@ export function useGenerateTags() {
       titleRu?: string;
       contentRu?: string;
     }) => tagsApi.generateTags(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tags'] });
+    },
+  });
+}
+
+export function useGenerateTagsFromArticles() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => tagsApi.generateTagsFromArticles(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tags'] });
+      queryClient.invalidateQueries({ queryKey: ['articles'] });
+    },
   });
 }

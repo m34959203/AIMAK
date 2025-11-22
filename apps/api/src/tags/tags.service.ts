@@ -144,12 +144,14 @@ export class TagsService {
     return { message: 'Tag deleted successfully' };
   }
 
-  async generateTags(dto: GenerateTagsDto) {
+  async generateTags(dto: GenerateTagsDto, autoCreateTags = false) {
     // Get existing tags to help AI suggest relevant ones
     const existingTags = await this.prisma.tag.findMany({
       select: {
+        id: true,
         nameKz: true,
         nameRu: true,
+        slug: true,
       },
     });
 
@@ -314,9 +316,9 @@ Return only the JSON array, no explanations or additional text.`;
         };
       }).filter((tag: any) => tag.nameKz && tag.nameRu); // Filter out any invalid tags
 
-      // Match suggested tags with existing tags
+      // Match suggested tags with existing tags and create new ones if needed
       const matchedTags = [];
-      const newTags = [];
+      const createdTags = [];
 
       for (const suggested of suggestedTags) {
         const existing = existingTags.find(
@@ -327,18 +329,109 @@ Return only the JSON array, no explanations or additional text.`;
 
         if (existing) {
           matchedTags.push(existing);
+        } else if (autoCreateTags) {
+          // Automatically create the new tag
+          try {
+            const slug = this.generateSlug(suggested.nameKz);
+            const newTag = await this.prisma.tag.create({
+              data: {
+                nameKz: suggested.nameKz,
+                nameRu: suggested.nameRu,
+                slug,
+              },
+            });
+            createdTags.push(newTag);
+          } catch (error) {
+            console.error('Error creating tag:', error);
+            // Skip this tag if creation fails (e.g., duplicate)
+          }
         } else {
-          newTags.push(suggested);
+          // Return as suggestion if not auto-creating
+          createdTags.push(suggested);
         }
       }
 
       return {
         existing: matchedTags,
-        suggested: newTags,
+        created: createdTags,
+        tagIds: [...matchedTags, ...createdTags].map(tag => tag.id).filter(Boolean),
       };
     } catch (error) {
       console.error('Error generating tags:', error);
       throw new Error('Failed to generate tags. Please try again.');
     }
+  }
+
+  async generateTagsFromArticles() {
+    // Get all published articles
+    const articles = await this.prisma.article.findMany({
+      where: {
+        published: true,
+      },
+      select: {
+        id: true,
+        titleKz: true,
+        titleRu: true,
+        contentKz: true,
+        contentRu: true,
+      },
+    });
+
+    let processedCount = 0;
+    let errorCount = 0;
+    const newTagsCreated = new Set<string>();
+
+    for (const article of articles) {
+      try {
+        // Generate tags for this article
+        const result = await this.generateTags(
+          {
+            titleKz: article.titleKz,
+            titleRu: article.titleRu || undefined,
+            contentKz: article.contentKz,
+            contentRu: article.contentRu || undefined,
+          },
+          true, // Auto-create tags
+        );
+
+        // Collect IDs of all tags (existing + newly created)
+        const tagIds = result.tagIds || [];
+
+        if (tagIds.length > 0) {
+          // Update the article with the tags
+          await this.prisma.article.update({
+            where: { id: article.id },
+            data: {
+              tags: {
+                set: tagIds.map(id => ({ id })),
+              },
+            },
+          });
+        }
+
+        // Track newly created tags
+        result.created?.forEach(tag => {
+          if (tag.id) {
+            newTagsCreated.add(tag.id);
+          }
+        });
+
+        processedCount++;
+        console.log(`Processed article ${processedCount}/${articles.length}: ${article.titleKz}`);
+      } catch (error) {
+        console.error(`Error processing article ${article.id}:`, error);
+        errorCount++;
+      }
+
+      // Add delay to avoid rate limiting
+      await new Promise(resolve => setTimeout(resolve, 2000));
+    }
+
+    return {
+      totalArticles: articles.length,
+      processedArticles: processedCount,
+      errorCount,
+      newTagsCreated: newTagsCreated.size,
+    };
   }
 }

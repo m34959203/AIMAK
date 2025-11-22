@@ -71,6 +71,8 @@ export const articlesApi = {
   update: (id: string, data: UpdateBilingualArticleDto) =>
     api.patch<Article>(`/articles/${id}`, data),
   delete: (id: string) => api.delete(`/articles/${id}`),
+  deleteMany: (ids: string[]) =>
+    api.post<{ message: string; count: number }>('/articles/delete-many', { ids }),
   analyze: (data: {
     titleKz: string;
     contentKz: string;
@@ -122,9 +124,17 @@ export const tagsApi = {
     contentRu?: string;
   }) =>
     api.post<{
-      existing: Array<{ nameKz: string; nameRu: string }>;
-      suggested: Array<{ nameKz: string; nameRu: string }>;
+      existing: Tag[];
+      created: Tag[];
+      tagIds: string[];
     }>('/tags/generate', data),
+  generateTagsFromArticles: () =>
+    api.post<{
+      totalArticles: number;
+      processedArticles: number;
+      errorCount: number;
+      newTagsCreated: number;
+    }>('/tags/generate-from-articles'),
 };
 
 // Users API
