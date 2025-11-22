@@ -242,6 +242,8 @@ async function processContentImages(html) {
     });
   }
 
+  let failedImages = 0;
+
   // Скачать и загрузить все изображения
   for (const img of replacements) {
     try {
@@ -253,13 +255,22 @@ async function processContentImages(html) {
         // Заменить URL в HTML
         html = html.replace(new RegExp(img.original.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), newUrl);
         process.stdout.write('🖼️');
+      } else {
+        failedImages++;
+        process.stdout.write('❌');
       }
     } catch (error) {
-      // Пропускаем изображение если не удалось загрузить
+      // Изображение не загрузилось
+      failedImages++;
+      process.stdout.write('❌');
     }
   }
 
-  return html;
+  return {
+    html,
+    totalImages: replacements.length,
+    failedImages
+  };
 }
 
 // Очистка HTML
@@ -308,7 +319,7 @@ async function importArticle(wpPost) {
 
   let coverImageUrl = null;
 
-  // Главное изображение
+  // Главное изображение - ОБЯЗАТЕЛЬНО
   if (wpPost._embedded && wpPost._embedded['wp:featuredmedia'] && wpPost._embedded['wp:featuredmedia'][0]) {
     const featuredMedia = wpPost._embedded['wp:featuredmedia'][0];
     const imageUrl = featuredMedia.source_url;
@@ -319,14 +330,36 @@ async function importArticle(wpPost) {
         const { buffer, contentType } = await downloadFile(imageUrl);
         const filename = path.basename(new URL(imageUrl).pathname);
         coverImageUrl = await uploadImage(buffer, contentType, filename);
+
+        if (!coverImageUrl) {
+          // Главное изображение не загрузилось - отменяем импорт статьи
+          return { success: false, error: 'Failed to upload cover image' };
+        }
       } catch (error) {
-        // Пропускаем
+        // Ошибка загрузки главного изображения - отменяем импорт
+        return { success: false, error: `Cover image download failed: ${error.message}` };
       }
+    } else {
+      // Нет главного изображения - отменяем импорт
+      return { success: false, error: 'No cover image found' };
     }
+  } else {
+    // Статья без главного изображения - отменяем импорт
+    return { success: false, error: 'No featured media' };
   }
 
   // Обработать изображения в контенте
-  content = await processContentImages(content);
+  const contentResult = await processContentImages(content);
+
+  // Проверяем, что все изображения из контента загрузились
+  if (contentResult.failedImages > 0) {
+    return {
+      success: false,
+      error: `Failed to upload ${contentResult.failedImages} of ${contentResult.totalImages} content images`
+    };
+  }
+
+  content = contentResult.html;
 
   const articleData = {
     titleKz: title,
@@ -338,11 +371,8 @@ async function importArticle(wpPost) {
     status: 'PUBLISHED',
     published: true,
     publishedAt: wpPost.date,
+    coverImage: coverImageUrl, // Всегда есть, так как проверили выше
   };
-
-  if (coverImageUrl) {
-    articleData.coverImage = coverImageUrl;
-  }
 
   try {
     const response = await request(`${NEW_API}/api/articles`, {
