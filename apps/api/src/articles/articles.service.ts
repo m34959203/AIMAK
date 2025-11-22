@@ -436,6 +436,36 @@ export class ArticlesService {
     return { message: 'Article deleted successfully' };
   }
 
+  async removeMany(ids: string[], userId: string, userRole: string) {
+    // Fetch all articles to check permissions
+    const articles = await this.prisma.article.findMany({
+      where: { id: { in: ids } },
+    });
+
+    if (articles.length === 0) {
+      throw new NotFoundException('No articles found with provided IDs');
+    }
+
+    // Check permissions for each article
+    const unauthorizedArticles = articles.filter(
+      article => article.authorId !== userId && userRole !== 'ADMIN'
+    );
+
+    if (unauthorizedArticles.length > 0) {
+      throw new ForbiddenException('You can only delete your own articles');
+    }
+
+    // Delete all articles
+    const result = await this.prisma.article.deleteMany({
+      where: { id: { in: ids } },
+    });
+
+    return {
+      message: `${result.count} article(s) deleted successfully`,
+      count: result.count,
+    };
+  }
+
   async analyzeArticle(dto: AnalyzeArticleDto) {
     // Prepare content for analysis
     const kazakh = {
