@@ -21,7 +21,7 @@ export default function IssuesPage({ params }: Props) {
   const [selectedIssue, setSelectedIssue] = useState<MagazineIssue | null>(null);
   const [selectedYear, setSelectedYear] = useState<number | null>(null);
 
-  const { data: issues, isLoading } = useMagazineIssues(true); // Только опубликованные
+  const { data: issues, isLoading, error } = useMagazineIssues(true); // Только опубликованные
   const incrementViews = useIncrementViews();
   const incrementDownloads = useIncrementDownloads();
 
@@ -89,6 +89,19 @@ export default function IssuesPage({ params }: Props) {
       <div className="container mx-auto px-4 py-8">
         <div className="flex justify-center items-center h-64">
           <div className="text-gray-600">Загрузка...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+          <h2 className="text-red-800 font-bold mb-2">Ошибка загрузки</h2>
+          <p className="text-red-600">
+            Не удалось загрузить выпуски журнала. Пожалуйста, попробуйте позже.
+          </p>
         </div>
       </div>
     );
