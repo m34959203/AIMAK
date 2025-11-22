@@ -9,7 +9,7 @@ import { useTranslateArticle } from '@/hooks/use-translation';
 import { RichTextEditor } from './rich-text-editor';
 import { AISuggestionsPanel } from './ai-suggestions-panel';
 import { ArticleStatus } from '@/types';
-import type { Article, CreateBilingualArticleDto, UpdateBilingualArticleDto } from '@/types';
+import type { Article, CreateBilingualArticleDto, UpdateBilingualArticleDto, Tag } from '@/types';
 import { AiFillStar, AiOutlineComment, AiOutlinePushpin } from 'react-icons/ai';
 
 interface ArticleFormProps {
@@ -58,8 +58,9 @@ export function ArticleForm({ article, onSubmit, isLoading }: ArticleFormProps) 
 
   const [showSuggestedTags, setShowSuggestedTags] = useState(false);
   const [suggestedTags, setSuggestedTags] = useState<{
-    existing: Array<{ nameKz: string; nameRu: string }>;
-    suggested: Array<{ nameKz: string; nameRu: string }>;
+    existing: Tag[];
+    created: Tag[];
+    tagIds: string[];
   } | null>(null);
 
   const [showAIAnalysis, setShowAIAnalysis] = useState(false);
