@@ -71,6 +71,15 @@ export class TagsController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Generate tags using AI (Editor/Admin only)' })
   generateTags(@Body() dto: GenerateTagsDto) {
-    return this.tagsService.generateTags(dto);
+    return this.tagsService.generateTags(dto, true);
+  }
+
+  @Post('generate-from-articles')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Generate tags from all existing articles (Admin only)' })
+  generateTagsFromArticles() {
+    return this.tagsService.generateTagsFromArticles();
   }
 }

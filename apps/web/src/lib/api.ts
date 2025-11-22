@@ -124,9 +124,17 @@ export const tagsApi = {
     contentRu?: string;
   }) =>
     api.post<{
-      existing: Array<{ nameKz: string; nameRu: string }>;
-      suggested: Array<{ nameKz: string; nameRu: string }>;
+      existing: Tag[];
+      created: Tag[];
+      tagIds: string[];
     }>('/tags/generate', data),
+  generateTagsFromArticles: () =>
+    api.post<{
+      totalArticles: number;
+      processedArticles: number;
+      errorCount: number;
+      newTagsCreated: number;
+    }>('/tags/generate-from-articles'),
 };
 
 // Users API
