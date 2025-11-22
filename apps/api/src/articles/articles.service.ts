@@ -586,6 +586,10 @@ Return ONLY the JSON object, no additional text.`;
     }
 
     try {
+      // Ensure we have a response
+      if (!aiResponse) {
+        throw new BadRequestException('No response received from AI service');
+      }
 
       // Extract JSON from the response
       const jsonMatch = aiResponse.match(/\{[\s\S]*\}/);

@@ -248,6 +248,10 @@ Return only the JSON array, no explanations or additional text.`;
     }
 
     try {
+      // Ensure we have a response
+      if (!aiResponse) {
+        throw new Error('No response received from AI service');
+      }
 
       // Extract JSON from the response (in case AI adds any extra text)
       const jsonMatch = aiResponse.match(/\[[\s\S]*\]/);
