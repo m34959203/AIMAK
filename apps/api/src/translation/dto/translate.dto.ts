@@ -8,25 +8,25 @@ export enum TranslationLanguage {
 export class TranslateDto {
   @IsString()
   @IsNotEmpty()
-  text: string;
+  text!: string;
 
   @IsEnum(TranslationLanguage)
   @IsNotEmpty()
-  sourceLanguage: TranslationLanguage;
+  sourceLanguage!: TranslationLanguage;
 
   @IsEnum(TranslationLanguage)
   @IsNotEmpty()
-  targetLanguage: TranslationLanguage;
+  targetLanguage!: TranslationLanguage;
 }
 
 export class TranslateArticleDto {
   @IsString()
   @IsNotEmpty()
-  title: string;
+  title!: string;
 
   @IsString()
   @IsNotEmpty()
-  content: string;
+  content!: string;
 
   @IsString()
   @IsOptional()
@@ -34,9 +34,9 @@ export class TranslateArticleDto {
 
   @IsEnum(TranslationLanguage)
   @IsNotEmpty()
-  sourceLanguage: TranslationLanguage;
+  sourceLanguage!: TranslationLanguage;
 
   @IsEnum(TranslationLanguage)
   @IsNotEmpty()
-  targetLanguage: TranslationLanguage;
+  targetLanguage!: TranslationLanguage;
 }
