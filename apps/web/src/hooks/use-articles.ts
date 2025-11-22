@@ -92,3 +92,14 @@ export function useAnalyzeArticle() {
     }) => articlesApi.analyze(data),
   });
 }
+
+export function useCategorizeAllArticles() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => articlesApi.categorizeAll(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['articles'] });
+    },
+  });
+}

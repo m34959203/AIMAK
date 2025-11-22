@@ -18,6 +18,7 @@
     "import:wordpress": "node scripts/import-from-wordpress.js",
     "import:wordpress:images": "node scripts/import-with-images.js",
     "import:wordpress:full": "node scripts/import-wordpress-full.js",
+    "import:wordpress:ai": "node scripts/import-with-categorization.js",
     "migrate:deploy": "node scripts/pre-migrate.js && prisma migrate deploy",
     "fix:media-urls": "node scripts/fix-media-urls.js",
     "categorize:articles": "tsx scripts/categorize-articles.ts"

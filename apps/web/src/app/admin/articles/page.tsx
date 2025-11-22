@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
-import { useArticles, useDeleteArticle, useDeleteManyArticles } from '@/hooks/use-articles';
+import { useArticles, useDeleteArticle, useDeleteManyArticles, useCategorizeAllArticles } from '@/hooks/use-articles';
 import { useCategories } from '@/hooks/use-categories';
 import { formatDate } from '@/lib/utils';
 import { useAuth } from '@/hooks/use-auth';
@@ -16,6 +16,7 @@ export default function AdminArticlesPage() {
   const { user } = useAuth();
   const deleteArticle = useDeleteArticle();
   const deleteManyArticles = useDeleteManyArticles();
+  const categorizeAllArticles = useCategorizeAllArticles();
 
   // Фильтры и сортировка
   const [searchQuery, setSearchQuery] = useState('');
@@ -40,6 +41,25 @@ export default function AdminArticlesPage() {
       deleteManyArticles.mutate(Array.from(selectedArticles), {
         onSuccess: () => {
           setSelectedArticles(new Set());
+        },
+      });
+    }
+  };
+
+  const handleCategorizeAll = async () => {
+    if (confirm('Вы уверены, что хотите автоматически распределить все статьи по категориям с помощью AI?\n\nЭто может занять несколько минут.')) {
+      categorizeAllArticles.mutate(undefined, {
+        onSuccess: (response) => {
+          alert(
+            `Категоризация завершена!\n\n` +
+            `Всего статей: ${response.data.stats.total}\n` +
+            `Обновлено: ${response.data.stats.updated}\n` +
+            `Пропущено: ${response.data.stats.skipped}\n` +
+            `Ошибок: ${response.data.stats.errors}`
+          );
+        },
+        onError: (error: any) => {
+          alert(`Ошибка категоризации: ${error.response?.data?.message || error.message}`);
         },
       });
     }
@@ -145,6 +165,26 @@ export default function AdminArticlesPage() {
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-4xl font-bold">Управление статьями</h1>
         <div className="flex gap-2">
+          {user?.role === 'ADMIN' && (
+            <button
+              onClick={handleCategorizeAll}
+              className="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={categorizeAllArticles.isPending || !articles || articles.length === 0}
+              title="Распределить все статьи по категориям с помощью AI"
+            >
+              {categorizeAllArticles.isPending ? (
+                <span className="flex items-center gap-2">
+                  <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Категоризация...
+                </span>
+              ) : (
+                '🤖 Категоризовать статьи'
+              )}
+            </button>
+          )}
           {selectedArticles.size > 0 && (
             <button
               onClick={handleDeleteSelected}
