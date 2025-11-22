@@ -1,4 +1,4 @@
-import { IsString, IsOptional } from 'class-validator';
+import { IsString, IsOptional, IsIn } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class AnalyzeArticleDto {
@@ -29,4 +29,15 @@ export class AnalyzeArticleDto {
   @IsString()
   @IsOptional()
   excerptRu?: string;
+
+  @ApiProperty({
+    description: 'Target language for AI improvements (kz or ru)',
+    required: false,
+    enum: ['kz', 'ru'],
+    default: 'kz'
+  })
+  @IsString()
+  @IsIn(['kz', 'ru'])
+  @IsOptional()
+  targetLanguage?: 'kz' | 'ru';
 }

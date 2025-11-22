@@ -482,6 +482,11 @@ export class ArticlesService {
         }
       : null;
 
+    // Determine target language for improvements (default to 'kz')
+    const targetLang = dto.targetLanguage || 'kz';
+    const targetLangName = targetLang === 'kz' ? 'Kazakh' : 'Russian';
+    const targetLangNative = targetLang === 'kz' ? 'казахском' : 'русском';
+
     const prompt = `You are an expert content editor for a bilingual news website (Kazakh/Russian). Analyze the following article and provide constructive suggestions for improvement.
 
 ARTICLE (Kazakh):
@@ -541,10 +546,14 @@ Return your analysis as a JSON object with this EXACT structure (respond in Russ
     "Сильная сторона 2"
   ],
   "improvements": {
-    "title": "Улучшенный вариант заголовка (опционально)",
-    "excerpt": "Улучшенный вариант описания (опционально)"
+    "title": "Улучшенный вариант заголовка на ${targetLangNative} языке (опционально)",
+    "excerpt": "Улучшенное краткое описание статьи на ${targetLangNative} языке (опционально, НЕ полный перевод)"
   }
 }
+
+IMPORTANT: The "improvements" field MUST contain improved versions in ${targetLangName} language ONLY.
+- "title": should be an improved headline in ${targetLangName} (brief, attention-grabbing)
+- "excerpt": should be a brief summary/description in ${targetLangName} (2-3 sentences max, NOT a full translation of the article)
 
 severity levels: "low", "medium", "high"
 categories: "Структура", "Контент", "Заголовок", "Язык", "SEO", "Двуязычность"
