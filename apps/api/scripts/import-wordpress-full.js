@@ -28,11 +28,12 @@ let adminId = null;
 let categoriesCache = {};
 let wpCategoriesCache = {};
 
-// HTTP запрос
+// HTTP запрос с таймаутом
 function request(url, options = {}) {
   return new Promise((resolve, reject) => {
     const urlObj = new URL(url);
     const lib = urlObj.protocol === 'https:' ? https : http;
+    const timeout = options.timeout || 30000; // 30 секунд по умолчанию
 
     const req = lib.request(url, options, (res) => {
       let data = '';
@@ -55,6 +56,12 @@ function request(url, options = {}) {
       });
     });
 
+    // Установить таймаут
+    req.setTimeout(timeout, () => {
+      req.destroy();
+      reject(new Error(`Request timeout after ${timeout}ms`));
+    });
+
     req.on('error', reject);
 
     if (options.body) {
@@ -66,16 +73,39 @@ function request(url, options = {}) {
   });
 }
 
+// HTTP запрос с retry логикой
+async function requestWithRetry(url, options = {}, maxRetries = 4) {
+  const delays = [2000, 4000, 8000, 16000]; // Экспоненциальная задержка
+
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await request(url, options);
+    } catch (error) {
+      const isLastAttempt = attempt === maxRetries;
+
+      if (isLastAttempt) {
+        throw error;
+      }
+
+      const delay = delays[attempt] || 16000;
+      console.log(`\n⚠️  Ошибка сети (попытка ${attempt + 1}/${maxRetries + 1}): ${error.message}`);
+      console.log(`   Повтор через ${delay / 1000} сек...`);
+
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+  }
+}
+
 // Скачать файл
-function downloadFile(url) {
+function downloadFile(url, timeout = 30000) {
   return new Promise((resolve, reject) => {
     const urlObj = new URL(url);
     const lib = urlObj.protocol === 'https:' ? https : http;
 
-    lib.get(url, (res) => {
+    const req = lib.get(url, (res) => {
       if (res.statusCode === 301 || res.statusCode === 302) {
         // Редирект
-        return downloadFile(res.headers.location).then(resolve).catch(reject);
+        return downloadFile(res.headers.location, timeout).then(resolve).catch(reject);
       }
 
       const chunks = [];
@@ -85,8 +115,36 @@ function downloadFile(url) {
         const contentType = res.headers['content-type'] || 'image/jpeg';
         resolve({ buffer, contentType });
       });
-    }).on('error', reject);
+    });
+
+    // Установить таймаут
+    req.setTimeout(timeout, () => {
+      req.destroy();
+      reject(new Error(`Download timeout after ${timeout}ms`));
+    });
+
+    req.on('error', reject);
   });
+}
+
+// Скачать файл с retry
+async function downloadFileWithRetry(url, maxRetries = 3) {
+  const delays = [2000, 4000, 8000];
+
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await downloadFile(url, 45000);
+    } catch (error) {
+      const isLastAttempt = attempt === maxRetries;
+
+      if (isLastAttempt) {
+        throw error;
+      }
+
+      const delay = delays[attempt] || 8000;
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+  }
 }
 
 // Загрузить изображение
@@ -204,7 +262,7 @@ async function getWordPressPosts(page = 1, perPage = 10) {
   const url = `${OLD_SITE}/wp-json/wp/v2/posts?per_page=${perPage}&page=${page}&_embed`;
 
   try {
-    const response = await request(url);
+    const response = await requestWithRetry(url, { timeout: 45000 });
     const totalPages = response.headers['x-wp-totalpages'];
 
     return {
@@ -212,7 +270,7 @@ async function getWordPressPosts(page = 1, perPage = 10) {
       totalPages: parseInt(totalPages) || 1
     };
   } catch (error) {
-    console.error('Ошибка получения статей:', error.message);
+    console.error('\n❌ Ошибка получения статей:', error.message);
     return { posts: [], totalPages: 0 };
   }
 }
@@ -247,7 +305,7 @@ async function processContentImages(html) {
   // Скачать и загрузить все изображения
   for (const img of replacements) {
     try {
-      const { buffer, contentType } = await downloadFile(img.url);
+      const { buffer, contentType } = await downloadFileWithRetry(img.url);
       const filename = path.basename(new URL(img.url).pathname);
       const newUrl = await uploadImage(buffer, contentType, filename);
 
@@ -327,7 +385,7 @@ async function importArticle(wpPost) {
     if (imageUrl) {
       process.stdout.write('📷');
       try {
-        const { buffer, contentType } = await downloadFile(imageUrl);
+        const { buffer, contentType } = await downloadFileWithRetry(imageUrl);
         const filename = path.basename(new URL(imageUrl).pathname);
         coverImageUrl = await uploadImage(buffer, contentType, filename);
 
@@ -401,6 +459,7 @@ async function main() {
 
   const args = process.argv.slice(2);
   const limit = args[0] ? parseInt(args[0]) : 20;
+  const skipCount = args[1] ? parseInt(args[1]) : 0; // Пропустить первые N статей
 
   // Вход
   const loggedIn = await login();
@@ -412,27 +471,42 @@ async function main() {
   await loadCategories();
   await loadWPCategories();
 
-  console.log(`📊 Импорт первых ${limit} статей...\n`);
+  if (skipCount > 0) {
+    console.log(`📊 Пропуск первых ${skipCount} статей, затем импорт ${limit} статей...\n`);
+  } else {
+    console.log(`📊 Импорт первых ${limit} статей...\n`);
+  }
 
   let imported = 0;
   let failed = 0;
+  let skipped = 0;
   let page = 1;
   const perPage = 10;
+  let totalProcessed = 0;
 
   while (imported < limit) {
     const { posts, totalPages } = await getWordPressPosts(page, perPage);
 
     if (posts.length === 0) {
+      console.log('\n⚠️  Статьи закончились');
       break;
     }
 
     for (const post of posts) {
       if (imported >= limit) break;
 
-      const wpCategory = wpCategoriesCache[post.categories[0]];
-      const catName = wpCategory ? wpCategory.name : 'Unknown';
+      // Пропустить если нужно
+      if (totalProcessed < skipCount) {
+        totalProcessed++;
+        skipped++;
+        continue;
+      }
 
-      process.stdout.write(`\n📝 [${imported + 1}/${limit}] [${catName}] ${stripHtml(post.title.rendered).substring(0, 40)}... `);
+      const wpCategory = wpCategoriesCache[post.categories[0]];
+      const catName = wpCategory ? wpCategory.name : 'Uncategorized';
+      const position = skipCount + imported + 1;
+
+      process.stdout.write(`\n📝 [${position}] [${catName}] ${stripHtml(post.title.rendered).substring(0, 40)}... `);
 
       const result = await importArticle(post);
 
@@ -440,25 +514,36 @@ async function main() {
         console.log(' ✅');
         imported++;
       } else {
-        console.log(' ❌', result.error.message || 'Ошибка');
+        console.log(` ❌ ${result.error}`);
         failed++;
       }
 
-      // Задержка
+      totalProcessed++;
+
+      // Задержка между статьями
       await new Promise(resolve => setTimeout(resolve, 300));
     }
 
     page++;
 
     if (page > totalPages) {
+      console.log('\n⚠️  Достигнут конец списка статей WordPress');
       break;
     }
   }
 
   console.log('\n=====================================');
+  if (skipped > 0) {
+    console.log(`⏭️  Пропущено: ${skipped}`);
+  }
   console.log(`✅ Импортировано: ${imported}`);
   console.log(`❌ Ошибок: ${failed}`);
   console.log('=====================================\n');
+
+  if (failed > 0) {
+    console.log(`💡 Для продолжения импорта с позиции ${totalProcessed + 1} выполните:`);
+    console.log(`   node apps/api/scripts/import-wordpress-full.js ${limit} ${totalProcessed}\n`);
+  }
 }
 
 main().catch(console.error);
