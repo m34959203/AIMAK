@@ -183,7 +183,7 @@ export function ArticleForm({ article, onSubmit, isLoading }: ArticleFormProps) 
           })
           .filter(Boolean) as string[];
 
-        setSelectedTags((prev) => [...new Set([...prev, ...existingTagIds])]);
+        setSelectedTags((prev) => Array.from(new Set([...prev, ...existingTagIds])));
       }
     } catch (error) {
       console.error('Error generating tags:', error);
