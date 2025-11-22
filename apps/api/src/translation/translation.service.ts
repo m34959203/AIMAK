@@ -90,7 +90,21 @@ IMPORTANT: Return ONLY the translated text without any explanations, notes, or a
         },
       );
 
-      const translatedText = response.data.choices[0].message.content.trim();
+      // Validate response structure
+      if (!response.data?.choices || response.data.choices.length === 0) {
+        console.error('Invalid OpenRouter response: no choices array');
+        console.error('Response data:', JSON.stringify(response.data));
+        throw new Error('Invalid response from OpenRouter: no choices');
+      }
+
+      const messageContent = response.data.choices[0]?.message?.content;
+      if (!messageContent || messageContent.trim().length === 0) {
+        console.error('Invalid OpenRouter response: empty content');
+        console.error('Choices[0]:', JSON.stringify(response.data.choices[0]));
+        throw new Error('Empty response from OpenRouter');
+      }
+
+      const translatedText = messageContent.trim();
       console.log('OpenRouter translation successful');
       return { translatedText };
     } catch (error) {
@@ -229,7 +243,22 @@ IMPORTANT: Return ONLY the JSON object, no additional text or explanations.`;
       );
 
       console.log('OpenRouter API response received');
-      const aiResponse = response.data.choices[0].message.content;
+
+      // Validate response structure
+      if (!response.data?.choices || response.data.choices.length === 0) {
+        console.error('Invalid OpenRouter response: no choices array');
+        console.error('Response data:', JSON.stringify(response.data));
+        throw new Error('Invalid response from OpenRouter: no choices');
+      }
+
+      const messageContent = response.data.choices[0]?.message?.content;
+      if (!messageContent || messageContent.trim().length === 0) {
+        console.error('Invalid OpenRouter response: empty content');
+        console.error('Choices[0]:', JSON.stringify(response.data.choices[0]));
+        throw new Error('Empty response from OpenRouter');
+      }
+
+      const aiResponse = messageContent;
 
       // Extract JSON from the response
       const jsonMatch = aiResponse.match(/\{[\s\S]*\}/);

@@ -233,8 +233,23 @@ Return only the JSON array, no explanations or additional text.`;
           },
         );
 
-        aiResponse = response.data.choices[0].message.content;
+        // Validate response structure
+        if (!response.data?.choices || response.data.choices.length === 0) {
+          console.error('Invalid OpenRouter response: no choices array');
+          console.error('Response data:', JSON.stringify(response.data));
+          throw new Error('Invalid response from OpenRouter: no choices');
+        }
+
+        const messageContent = response.data.choices[0]?.message?.content;
+        if (!messageContent || messageContent.trim().length === 0) {
+          console.error('Invalid OpenRouter response: empty content');
+          console.error('Choices[0]:', JSON.stringify(response.data.choices[0]));
+          throw new Error('Empty response from OpenRouter');
+        }
+
+        aiResponse = messageContent;
         console.log('OpenRouter tag generation successful');
+        console.log('Response preview:', messageContent.substring(0, 200));
       } catch (error) {
         console.error('OpenRouter tag generation error:', error);
         if (axios.isAxiosError(error) && error.response) {
