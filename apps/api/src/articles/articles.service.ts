@@ -84,6 +84,8 @@ export class ArticlesService {
     isFeatured?: boolean;
     isPinned?: boolean;
     categorySlug?: string;
+    page?: number;
+    limit?: number;
   }) {
     const where: any = {};
 
@@ -109,6 +111,53 @@ export class ArticlesService {
       };
     }
 
+    // Pagination parameters
+    const page = filters?.page && filters.page > 0 ? filters.page : 1;
+    const limit = filters?.limit && filters.limit > 0 ? filters.limit : 20;
+    const skip = (page - 1) * limit;
+
+    // If pagination is requested (page or limit is provided), return paginated response
+    if (filters?.page !== undefined || filters?.limit !== undefined) {
+      const [articles, total] = await Promise.all([
+        this.prisma.article.findMany({
+          where: Object.keys(where).length > 0 ? where : undefined,
+          include: {
+            author: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+              },
+            },
+            category: true,
+            tags: true,
+          },
+          orderBy: [
+            // Pinned articles first
+            { isPinned: 'desc' },
+            // Then by creation date
+            { createdAt: 'desc' },
+          ],
+          skip,
+          take: limit,
+        }),
+        this.prisma.article.count({
+          where: Object.keys(where).length > 0 ? where : undefined,
+        }),
+      ]);
+
+      return {
+        data: articles,
+        meta: {
+          total,
+          page,
+          limit,
+          totalPages: Math.ceil(total / limit),
+        },
+      };
+    }
+
+    // Otherwise, return all articles (backward compatibility)
     return this.prisma.article.findMany({
       where: Object.keys(where).length > 0 ? where : undefined,
       include: {
