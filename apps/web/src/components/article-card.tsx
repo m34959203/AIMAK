@@ -49,14 +49,26 @@ export function ArticleCard({ article, lang = 'kz' }: ArticleCardProps) {
             {article.author.firstName} {article.author.lastName}
           </div>
           <div className="flex gap-2">
-            {article.tags.slice(0, 3).map((tag) => (
-              <span
-                key={tag.id}
-                className="text-xs bg-gray-100 px-2 py-1 rounded"
-              >
-                {lang === 'kz' ? tag.nameKz : tag.nameRu}
-              </span>
-            ))}
+            {article.tags.slice(0, 3).map((tag) => {
+              // Safely extract tag name - handle malformed data
+              const getTagName = () => {
+                const tagName = lang === 'kz' ? tag.nameKz : tag.nameRu;
+                // If tagName is an object (malformed), try to extract string value
+                if (typeof tagName === 'object' && tagName !== null) {
+                  return (tagName as any).kazakh || (tagName as any).russian || (tag.nameKz as any)?.kazakh || (tag.nameRu as any)?.russian || 'Tag';
+                }
+                return tagName || tag.nameKz || tag.nameRu || 'Tag';
+              };
+
+              return (
+                <span
+                  key={tag.id}
+                  className="text-xs bg-gray-100 px-2 py-1 rounded"
+                >
+                  {getTagName()}
+                </span>
+              );
+            })}
           </div>
         </div>
       </div>

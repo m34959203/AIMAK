@@ -547,11 +547,27 @@ export function ArticleForm({ article, onSubmit, isLoading }: ArticleFormProps) 
             required
           >
             <option value="">Выберите категорию</option>
-            {categories?.map((category) => (
-              <option key={category.id} value={category.id}>
-                {category.nameKz} / {category.nameRu}
-              </option>
-            ))}
+            {categories?.map((category) => {
+              // Safely extract category names - handle malformed data
+              const getNameKz = () => {
+                if (typeof category.nameKz === 'object' && category.nameKz !== null) {
+                  return (category.nameKz as any).kazakh || (category.nameKz as any).russian || 'Category';
+                }
+                return category.nameKz || 'Category';
+              };
+              const getNameRu = () => {
+                if (typeof category.nameRu === 'object' && category.nameRu !== null) {
+                  return (category.nameRu as any).russian || (category.nameRu as any).kazakh || 'Category';
+                }
+                return category.nameRu || 'Category';
+              };
+
+              return (
+                <option key={category.id} value={category.id}>
+                  {getNameKz()} / {getNameRu()}
+                </option>
+              );
+            })}
           </select>
         </div>
 
@@ -606,14 +622,30 @@ export function ArticleForm({ article, onSubmit, isLoading }: ArticleFormProps) 
                       ✓ Найдены существующие теги (автоматически выбраны):
                     </p>
                     <div className="flex flex-wrap gap-2">
-                      {suggestedTags.existing.map((tag, index) => (
-                        <span
-                          key={index}
-                          className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm border border-green-300"
-                        >
-                          {tag.nameKz} / {tag.nameRu}
-                        </span>
-                      ))}
+                      {suggestedTags.existing.map((tag, index) => {
+                        // Safely extract tag names - handle malformed data
+                        const getNameKz = () => {
+                          if (typeof tag.nameKz === 'object' && tag.nameKz !== null) {
+                            return (tag.nameKz as any).kazakh || (tag.nameKz as any).russian || 'Tag';
+                          }
+                          return tag.nameKz || 'Tag';
+                        };
+                        const getNameRu = () => {
+                          if (typeof tag.nameRu === 'object' && tag.nameRu !== null) {
+                            return (tag.nameRu as any).russian || (tag.nameRu as any).kazakh || 'Tag';
+                          }
+                          return tag.nameRu || 'Tag';
+                        };
+
+                        return (
+                          <span
+                            key={index}
+                            className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm border border-green-300"
+                          >
+                            {getNameKz()} / {getNameRu()}
+                          </span>
+                        );
+                      })}
                     </div>
                   </div>
                 )}
@@ -624,14 +656,30 @@ export function ArticleForm({ article, onSubmit, isLoading }: ArticleFormProps) 
                       ✨ Созданы новые теги (автоматически выбраны):
                     </p>
                     <div className="flex flex-wrap gap-2">
-                      {suggestedTags.created.map((tag, index) => (
-                        <span
-                          key={index}
-                          className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm border border-blue-300"
-                        >
-                          {tag.nameKz} / {tag.nameRu}
-                        </span>
-                      ))}
+                      {suggestedTags.created.map((tag, index) => {
+                        // Safely extract tag names - handle malformed data
+                        const getNameKz = () => {
+                          if (typeof tag.nameKz === 'object' && tag.nameKz !== null) {
+                            return (tag.nameKz as any).kazakh || (tag.nameKz as any).russian || 'Tag';
+                          }
+                          return tag.nameKz || 'Tag';
+                        };
+                        const getNameRu = () => {
+                          if (typeof tag.nameRu === 'object' && tag.nameRu !== null) {
+                            return (tag.nameRu as any).russian || (tag.nameRu as any).kazakh || 'Tag';
+                          }
+                          return tag.nameRu || 'Tag';
+                        };
+
+                        return (
+                          <span
+                            key={index}
+                            className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm border border-blue-300"
+                          >
+                            {getNameKz()} / {getNameRu()}
+                          </span>
+                        );
+                      })}
                     </div>
                   </div>
                 )}
@@ -639,20 +687,30 @@ export function ArticleForm({ article, onSubmit, isLoading }: ArticleFormProps) 
             )}
 
             <div className="flex flex-wrap gap-2">
-              {tags.map((tag) => (
-                <button
-                  key={tag.id}
-                  type="button"
-                  onClick={() => handleTagToggle(tag.id)}
-                  className={`px-3 py-1 rounded-full text-sm ${
-                    selectedTags.includes(tag.id)
-                      ? 'bg-green-600 text-white'
-                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                  }`}
-                >
-                  {tag.nameKz}
-                </button>
-              ))}
+              {tags.map((tag) => {
+                // Safely extract tag name - handle malformed data
+                const getNameKz = () => {
+                  if (typeof tag.nameKz === 'object' && tag.nameKz !== null) {
+                    return (tag.nameKz as any).kazakh || (tag.nameKz as any).russian || 'Tag';
+                  }
+                  return tag.nameKz || 'Tag';
+                };
+
+                return (
+                  <button
+                    key={tag.id}
+                    type="button"
+                    onClick={() => handleTagToggle(tag.id)}
+                    className={`px-3 py-1 rounded-full text-sm ${
+                      selectedTags.includes(tag.id)
+                        ? 'bg-green-600 text-white'
+                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                    }`}
+                  >
+                    {getNameKz()}
+                  </button>
+                );
+              })}
             </div>
           </div>
         )}

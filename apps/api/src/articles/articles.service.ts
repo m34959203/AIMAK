@@ -698,8 +698,31 @@ Return ONLY the JSON object, no additional text.`;
       }
 
       console.log('JSON extracted, parsing...');
-      const analysis = JSON.parse(jsonMatch[0]);
+      let analysis = JSON.parse(jsonMatch[0]);
       console.log('Analysis parsed successfully');
+
+      // Normalize improvements - AI might return {kk, ru} instead of plain strings
+      if (analysis.improvements) {
+        // Handle title
+        if (analysis.improvements.title && typeof analysis.improvements.title === 'object') {
+          analysis.improvements.title =
+            analysis.improvements.title.kk ||
+            analysis.improvements.title.ru ||
+            analysis.improvements.title.kazakh ||
+            analysis.improvements.title.russian ||
+            '';
+        }
+
+        // Handle excerpt
+        if (analysis.improvements.excerpt && typeof analysis.improvements.excerpt === 'object') {
+          analysis.improvements.excerpt =
+            analysis.improvements.excerpt.kk ||
+            analysis.improvements.excerpt.ru ||
+            analysis.improvements.excerpt.kazakh ||
+            analysis.improvements.excerpt.russian ||
+            '';
+        }
+      }
 
       return analysis;
     } catch (error) {
