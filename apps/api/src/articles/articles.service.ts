@@ -527,12 +527,39 @@ Return ONLY the JSON object, no additional text.`;
     if (this.geminiClient) {
       try {
         console.log('Using Google Gemini API for article analysis...');
-        const model = this.geminiClient.getGenerativeModel({ model: 'gemini-1.5-flash' });
+        const model = this.geminiClient.getGenerativeModel({
+          model: 'gemini-1.5-flash',
+          generationConfig: {
+            temperature: 0.7,
+            maxOutputTokens: 2048,
+          },
+        });
         const result = await model.generateContent(prompt);
+
+        // Check if content was blocked
+        if (result.response.promptFeedback?.blockReason) {
+          console.error('Content blocked by Gemini:', result.response.promptFeedback.blockReason);
+          throw new Error(`Content blocked: ${result.response.promptFeedback.blockReason}`);
+        }
+
+        const candidates = result.response.candidates;
+        if (!candidates || candidates.length === 0) {
+          console.error('No candidates in Gemini response');
+          throw new Error('No response candidates from Gemini');
+        }
+
+        const candidate = candidates[0];
+        if (candidate.finishReason && candidate.finishReason !== 'STOP') {
+          console.error('Unexpected finish reason:', candidate.finishReason);
+          throw new Error(`Unexpected finish reason: ${candidate.finishReason}`);
+        }
+
         aiResponse = result.response.text();
         console.log('Google Gemini article analysis successful');
+        console.log('Response preview:', aiResponse.substring(0, 200));
       } catch (error) {
         console.error('Google Gemini article analysis error:', error);
+        console.error('Error details:', error instanceof Error ? error.message : String(error));
         // Fall through to OpenRouter
       }
     }
@@ -588,20 +615,28 @@ Return ONLY the JSON object, no additional text.`;
     try {
       // Ensure we have a response
       if (!aiResponse) {
-        throw new BadRequestException('No response received from AI service');
+        throw new BadRequestException('No response received from AI service. Both Gemini and OpenRouter failed.');
       }
+
+      console.log('Parsing AI response for article analysis...');
+      console.log('Full response length:', aiResponse.length);
 
       // Extract JSON from the response
       const jsonMatch = aiResponse.match(/\{[\s\S]*\}/);
       if (!jsonMatch) {
-        throw new Error('Failed to parse AI response');
+        console.error('Failed to extract JSON from response');
+        console.error('Response preview:', aiResponse.substring(0, 500));
+        throw new Error('Failed to parse AI response - no JSON found');
       }
 
+      console.log('JSON extracted, parsing...');
       const analysis = JSON.parse(jsonMatch[0]);
+      console.log('Analysis parsed successfully');
 
       return analysis;
     } catch (error) {
       console.error('Error analyzing article:', error);
+      console.error('Error type:', error?.constructor?.name);
 
       // Provide more detailed error information
       if (axios.isAxiosError(error) && error.response) {
@@ -611,14 +646,29 @@ Return ONLY the JSON object, no additional text.`;
         );
       }
 
-      if (error instanceof Error && error.message?.includes('Failed to parse')) {
+      if (error instanceof SyntaxError) {
+        console.error('JSON parsing error');
         throw new BadRequestException(
-          'AI returned invalid response format. Please try again or contact support.',
+          'AI returned invalid JSON format. Please try again.',
         );
       }
 
+      if (error instanceof Error) {
+        console.error('Error message:', error.message);
+        if (error.message?.includes('Failed to parse') || error.message?.includes('no JSON found')) {
+          throw new BadRequestException(
+            'AI returned invalid response format. Please try again.',
+          );
+        }
+        if (error.message?.includes('Content blocked')) {
+          throw new BadRequestException(
+            'Content was blocked by AI safety filters. Please modify your article content.',
+          );
+        }
+      }
+
       throw new BadRequestException(
-        'Failed to analyze article. Please try again later or contact support if the problem persists.',
+        'Failed to analyze article. Please try again later.',
       );
     }
   }
