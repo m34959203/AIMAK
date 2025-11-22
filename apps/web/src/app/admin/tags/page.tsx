@@ -1,16 +1,24 @@
 'use client';
 
 import { useState } from 'react';
-import { useTags, useCreateTag, useDeleteTag } from '@/hooks/use-tags';
+import { useTags, useCreateTag, useDeleteTag, useGenerateTagsFromArticles } from '@/hooks/use-tags';
 
 export default function AdminTagsPage() {
   const { data: tags, isLoading } = useTags();
   const createTag = useCreateTag();
   const deleteTag = useDeleteTag();
+  const generateTagsFromArticles = useGenerateTagsFromArticles();
 
   const [showForm, setShowForm] = useState(false);
   const [nameKz, setNameKz] = useState('');
   const [nameRu, setNameRu] = useState('');
+  const [showResult, setShowResult] = useState(false);
+  const [generationResult, setGenerationResult] = useState<{
+    totalArticles: number;
+    processedArticles: number;
+    errorCount: number;
+    newTagsCreated: number;
+  } | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,6 +40,17 @@ export default function AdminTagsPage() {
     }
   };
 
+  const handleGenerateFromArticles = () => {
+    if (confirm('Это займёт некоторое время. Для каждой статьи будут автоматически созданы теги с помощью AI. Продолжить?')) {
+      generateTagsFromArticles.mutate(undefined, {
+        onSuccess: (response) => {
+          setGenerationResult(response.data);
+          setShowResult(true);
+        },
+      });
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="container mx-auto px-4 py-12">
@@ -44,13 +63,59 @@ export default function AdminTagsPage() {
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-4xl font-bold">Управление тегами</h1>
-        <button
-          onClick={() => setShowForm(!showForm)}
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-        >
-          {showForm ? 'Отмена' : 'Добавить тег'}
-        </button>
+        <div className="flex gap-3">
+          <button
+            onClick={handleGenerateFromArticles}
+            disabled={generateTagsFromArticles.isPending}
+            className="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50"
+          >
+            {generateTagsFromArticles.isPending ? 'Обработка...' : 'Заполнить теги из статей'}
+          </button>
+          <button
+            onClick={() => setShowForm(!showForm)}
+            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+          >
+            {showForm ? 'Отмена' : 'Добавить тег'}
+          </button>
+        </div>
       </div>
+
+      {/* Result Modal */}
+      {showResult && generationResult && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-8 max-w-md w-full mx-4">
+            <h2 className="text-2xl font-bold mb-4">Результаты генерации тегов</h2>
+            <div className="space-y-3">
+              <p className="text-gray-700">
+                <span className="font-semibold">Всего статей:</span> {generationResult.totalArticles}
+              </p>
+              <p className="text-gray-700">
+                <span className="font-semibold">Обработано:</span> {generationResult.processedArticles}
+              </p>
+              <p className="text-gray-700">
+                <span className="font-semibold">Создано новых тегов:</span> {generationResult.newTagsCreated}
+              </p>
+              {generationResult.errorCount > 0 && (
+                <p className="text-red-600">
+                  <span className="font-semibold">Ошибок:</span> {generationResult.errorCount}
+                </p>
+              )}
+            </div>
+            <button
+              onClick={() => setShowResult(false)}
+              className="mt-6 w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+            >
+              Закрыть
+            </button>
+          </div>
+        </div>
+      )}
+
+      {generateTagsFromArticles.isError && (
+        <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+          Ошибка при генерации тегов. Пожалуйста, попробуйте снова.
+        </div>
+      )}
 
       {showForm && (
         <div className="bg-white shadow-md rounded-lg p-6 mb-8">
