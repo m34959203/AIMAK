@@ -236,9 +236,9 @@ export default async function ArticlePage({
           </article>
 
           {/* Sidebar - 4 cols */}
-          <aside className="lg:col-span-4">
+          <aside className="lg:col-span-4 space-y-6">
             {/* Popular */}
-            <div className="bg-white rounded-lg p-6 mb-6 sticky top-20">
+            <div className="bg-white rounded-lg p-6">
               <h3 className="text-xl font-bold mb-4 border-b pb-3">
                 {params.lang === 'kz' ? 'Танымал' : 'Популярное'}
               </h3>
