@@ -5,6 +5,7 @@ import { useCategories } from '@/hooks/use-categories';
 import { useTags, useGenerateTags } from '@/hooks/use-tags';
 import { useAnalyzeArticle } from '@/hooks/use-articles';
 import { useUploadImage } from '@/hooks/use-media';
+import { useTranslateArticle } from '@/hooks/use-translation';
 import { RichTextEditor } from './rich-text-editor';
 import { AISuggestionsPanel } from './ai-suggestions-panel';
 import { ArticleStatus } from '@/types';
@@ -53,6 +54,7 @@ export function ArticleForm({ article, onSubmit, isLoading }: ArticleFormProps) 
   const uploadImage = useUploadImage();
   const generateTags = useGenerateTags();
   const analyzeArticle = useAnalyzeArticle();
+  const translateArticle = useTranslateArticle();
 
   const [showSuggestedTags, setShowSuggestedTags] = useState(false);
   const [suggestedTags, setSuggestedTags] = useState<{
@@ -231,6 +233,62 @@ export function ArticleForm({ article, onSubmit, isLoading }: ArticleFormProps) 
     }
   };
 
+  const handleTranslateToRussian = async () => {
+    if (!titleKz || !contentKz) {
+      alert('Пожалуйста, заполните заголовок и содержание на казахском языке');
+      return;
+    }
+
+    try {
+      const response = await translateArticle.mutateAsync({
+        title: titleKz,
+        content: contentKz,
+        excerpt: excerptKz || undefined,
+        sourceLanguage: 'kk',
+        targetLanguage: 'ru',
+      });
+
+      setTitleRu(response.data.title);
+      setContentRu(response.data.content);
+      if (response.data.excerpt) {
+        setExcerptRu(response.data.excerpt);
+      }
+
+      alert('Перевод успешно завершен!');
+    } catch (error) {
+      console.error('Error translating article:', error);
+      alert('Ошибка при переводе статьи. Пожалуйста, попробуйте еще раз.');
+    }
+  };
+
+  const handleTranslateToKazakh = async () => {
+    if (!titleRu || !contentRu) {
+      alert('Пожалуйста, заполните заголовок и содержание на русском языке');
+      return;
+    }
+
+    try {
+      const response = await translateArticle.mutateAsync({
+        title: titleRu,
+        content: contentRu,
+        excerpt: excerptRu || undefined,
+        sourceLanguage: 'ru',
+        targetLanguage: 'kk',
+      });
+
+      setTitleKz(response.data.title);
+      setContentKz(response.data.content);
+      if (response.data.excerpt) {
+        setExcerptKz(response.data.excerpt);
+      }
+
+      alert('Аударма сәтті аяқталды!');
+    } catch (error) {
+      console.error('Error translating article:', error);
+      alert('Мақаланы аудару кезінде қате. Қайталап көріңіз.');
+    }
+  };
+
   return (
     <>
       {showAIAnalysis && aiAnalysis && (
@@ -272,6 +330,22 @@ export function ArticleForm({ article, onSubmit, isLoading }: ArticleFormProps) 
 
       {/* Kazakh Content */}
       <div className={`space-y-6 ${activeTab !== 'kz' ? 'hidden' : ''}`}>
+        {/* Translate from Russian button */}
+        {titleRu && contentRu && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <p className="text-sm text-blue-700 mb-2">
+              Русский контент доступен. Вы можете автоматически перевести его на казахский язык.
+            </p>
+            <button
+              type="button"
+              onClick={handleTranslateToKazakh}
+              disabled={translateArticle.isPending}
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-sm font-medium"
+            >
+              {translateArticle.isPending ? 'Аударылуда...' : '🌐 Орысшадан аудару'}
+            </button>
+          </div>
+        )}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Заголовок (казахский) *
@@ -313,6 +387,22 @@ export function ArticleForm({ article, onSubmit, isLoading }: ArticleFormProps) 
 
       {/* Russian Content */}
       <div className={`space-y-6 ${activeTab !== 'ru' ? 'hidden' : ''}`}>
+        {/* Auto-translate from Kazakh button */}
+        {titleKz && contentKz && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <p className="text-sm text-blue-700 mb-2">
+              Доступен казахский контент. Вы можете автоматически перевести его на русский язык.
+            </p>
+            <button
+              type="button"
+              onClick={handleTranslateToRussian}
+              disabled={translateArticle.isPending}
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-sm font-medium"
+            >
+              {translateArticle.isPending ? 'Переводится...' : '🌐 Перевести с казахского'}
+            </button>
+          </div>
+        )}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Заголовок (русский)

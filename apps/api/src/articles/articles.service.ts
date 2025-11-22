@@ -3,11 +3,16 @@ import { PrismaService } from '../common/prisma/prisma.service';
 import { CreateArticleDto, ArticleStatus } from './dto/create-article.dto';
 import { UpdateArticleDto } from './dto/update-article.dto';
 import { AnalyzeArticleDto } from './dto/analyze-article.dto';
+import { TranslationService } from '../translation/translation.service';
+import { TranslationLanguage } from '../translation/dto/translate.dto';
 import axios from 'axios';
 
 @Injectable()
 export class ArticlesService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private translationService: TranslationService,
+  ) {}
 
   private generateSlug(title: string): string {
     return title
@@ -18,7 +23,36 @@ export class ArticlesService {
 
   async create(dto: CreateArticleDto, authorId: string) {
     const slugKz = this.generateSlug(dto.titleKz);
-    const slugRu = dto.titleRu ? this.generateSlug(dto.titleRu) : undefined;
+    let slugRu = dto.titleRu ? this.generateSlug(dto.titleRu) : undefined;
+
+    // Auto-translate from Kazakh to Russian if Russian content is not provided
+    let titleRu = dto.titleRu;
+    let contentRu = dto.contentRu;
+    let excerptRu = dto.excerptRu;
+
+    if (!titleRu || !contentRu) {
+      try {
+        console.log('Auto-translating article from Kazakh to Russian...');
+        const translation = await this.translationService.translateArticle({
+          title: dto.titleKz,
+          content: dto.contentKz,
+          excerpt: dto.excerptKz,
+          sourceLanguage: TranslationLanguage.KAZAKH,
+          targetLanguage: TranslationLanguage.RUSSIAN,
+        });
+
+        titleRu = titleRu || translation.title;
+        contentRu = contentRu || translation.content;
+        excerptRu = excerptRu || translation.excerpt;
+        slugRu = titleRu ? this.generateSlug(titleRu) : undefined;
+
+        console.log('Auto-translation completed successfully');
+      } catch (error) {
+        console.error('Auto-translation failed:', error);
+        // Continue without translation if it fails
+        console.log('Proceeding without Russian translation');
+      }
+    }
 
     // Determine status based on both status field and backward-compatible published field
     let status: ArticleStatus = dto.status || ArticleStatus.DRAFT;
@@ -34,11 +68,11 @@ export class ArticlesService {
         contentKz: dto.contentKz,
         excerptKz: dto.excerptKz,
 
-        // Russian content (optional)
-        titleRu: dto.titleRu,
+        // Russian content (optional, auto-translated if not provided)
+        titleRu,
         slugRu,
-        contentRu: dto.contentRu,
-        excerptRu: dto.excerptRu,
+        contentRu,
+        excerptRu,
 
         // Common fields
         coverImage: dto.coverImage,

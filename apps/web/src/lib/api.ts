@@ -194,4 +194,26 @@ export const magazineIssuesApi = {
     api.post(`/magazine-issues/${id}/download`),
 };
 
+// Translation API
+export const translationApi = {
+  translateText: (data: {
+    text: string;
+    sourceLanguage: 'kk' | 'ru';
+    targetLanguage: 'kk' | 'ru';
+  }) =>
+    api.post<{ translatedText: string }>('/translation/text', data),
+  translateArticle: (data: {
+    title: string;
+    content: string;
+    excerpt?: string;
+    sourceLanguage: 'kk' | 'ru';
+    targetLanguage: 'kk' | 'ru';
+  }) =>
+    api.post<{
+      title: string;
+      content: string;
+      excerpt?: string;
+    }>('/translation/article', data),
+};
+
 export default api;

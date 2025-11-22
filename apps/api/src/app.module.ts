@@ -13,6 +13,7 @@ import { SetupModule } from './setup/setup.module';
 import { MediaModule } from './media/media.module';
 import { AdvertisementsModule } from './advertisements/advertisements.module';
 import { MagazineIssuesModule } from './magazine-issues/magazine-issues.module';
+import { TranslationModule } from './translation/translation.module';
 import { AppController } from './app.controller';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { BootstrapAdminService } from './bootstrap-admin.service';
@@ -34,6 +35,7 @@ import { BootstrapAdminService } from './bootstrap-admin.service';
     MediaModule,
     AdvertisementsModule,
     MagazineIssuesModule,
+    TranslationModule,
   ],
   controllers: [AppController],
   providers: [
