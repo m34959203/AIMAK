@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { CreateArticleDto, ArticleStatus } from './dto/create-article.dto';
 import { UpdateArticleDto } from './dto/update-article.dto';
@@ -348,7 +348,9 @@ export class ArticlesService {
     const apiKey = process.env.OPENROUTER_API_KEY;
 
     if (!apiKey) {
-      throw new Error('OpenRouter API key is not configured');
+      throw new BadRequestException(
+        'AI editor is not configured. Please contact the administrator to set up the OPENROUTER_API_KEY environment variable.',
+      );
     }
 
     // Prepare content for analysis
@@ -470,7 +472,24 @@ Return ONLY the JSON object, no additional text.`;
       return analysis;
     } catch (error) {
       console.error('Error analyzing article:', error);
-      throw new Error('Failed to analyze article. Please try again.');
+
+      // Provide more detailed error information
+      if (error.response) {
+        console.error('API Response Error:', error.response.data);
+        throw new BadRequestException(
+          `AI service error: ${error.response.data?.error?.message || 'Unknown error from AI service'}`,
+        );
+      }
+
+      if (error.message?.includes('Failed to parse')) {
+        throw new BadRequestException(
+          'AI returned invalid response format. Please try again or contact support.',
+        );
+      }
+
+      throw new BadRequestException(
+        'Failed to analyze article. Please try again later or contact support if the problem persists.',
+      );
     }
   }
 }
